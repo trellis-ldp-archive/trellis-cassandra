@@ -6,20 +6,16 @@
   <version>0.0.1-SNAPSHOT</version>
 
   <properties>
-    <trellis.version>0.3.0</trellis.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <trellis.version>0.4.0</trellis.version>
     <cassandra.driver.version>3.3.2</cassandra.driver.version>
   </properties>
 
   <build>
     <plugins>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.6.1</version>
-        <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
-        </configuration>
-      </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
@@ -37,7 +33,29 @@
                 <portName>cassandra.jmxPort</portName>
                 <portName>cassandra.storagePort</portName>
                 <portName>cassandra.stopPort</portName>
+                <portName>cassandra.nativeTransportPort</portName>
               </portNames>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>2.7.1</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+            <configuration>
+              <systemProperties>
+                <cassandra.rpcPort>${cassandra.rpcPort}</cassandra.rpcPort>
+                <cassandra.jmxPort>${cassandra.jmxPort}</cassandra.jmxPort>
+                <cassandra.storagePort>${cassandra.storagePort}</cassandra.storagePort>
+                <cassandra.stopPort>${cassandra.stopPort}</cassandra.stopPort>
+                <cassandra.nativeTransportPort>${cassandra.nativeTransportPort}</cassandra.nativeTransportPort>
+              </systemProperties>
             </configuration>
           </execution>
         </executions>
@@ -47,10 +65,14 @@
         <artifactId>cassandra-maven-plugin</artifactId>
         <version>3.6</version>
         <configuration>
+          <logLevel>DEBUG</logLevel>
           <rpcPort>${cassandra.rpcPort}</rpcPort>
           <jmxPort>${cassandra.jmxPort}</jmxPort>
           <storagePort>${cassandra.storagePort}</storagePort>
           <stopPort>${cassandra.stopPort}</stopPort>
+          <startNativeTransport>true</startNativeTransport>
+          <nativeTransportPort>${cassandra.nativeTransportPort}</nativeTransportPort>
+          <addTestClasspath>true</addTestClasspath>
         </configuration>
         <executions>
           <execution>
@@ -74,6 +96,20 @@
       <groupId>com.datastax.cassandra</groupId>
       <artifactId>cassandra-driver-mapping</artifactId>
       <version>${cassandra.driver.version}</version>
+    </dependency>
+
+    <!-- test gear -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.12</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>1.2.3</version>
+      <scope>test</scope>
     </dependency>
 
   </dependencies>

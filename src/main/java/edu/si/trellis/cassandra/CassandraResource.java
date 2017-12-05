@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.trellisldp.api.Resource;
