@@ -1,7 +1,11 @@
 package edu.si.trellis.cassandra;
 
+import static java.util.UUID.randomUUID;
+import static java.util.concurrent.CompletableFuture.runAsync;
+
 import java.time.Instant;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -15,12 +19,11 @@ import com.datastax.driver.mapping.Mapper;
 
 public class CassandraResourceService implements ResourceService {
 	
-	Mapper<CassandraResource> resourceManager;
+	private Mapper<RDFSource> resourceManager;
 
 	@Override
 	public Stream<IRI> compact(IRI identifier, Instant from, Instant until) {
-		// TODO Auto-generated method stub
-		return null;
+		return Stream.empty();
 	}
 
 	@Override
@@ -30,31 +33,27 @@ public class CassandraResourceService implements ResourceService {
 
 	@Override
 	public Optional<Resource> get(IRI identifier, Instant time) {
-		// TODO Auto-generated method stub
-		return null;
+		return get(identifier);
 	}
 
 	@Override
-	public Supplier<String> getIdentifierSupplier() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Stream<Triple> scan(String partition) {
-		// TODO Auto-generated method stub
+	public Stream<Triple> scan() {
 		return null;
 	}
 
 	@Override
 	public Stream<IRI> purge(IRI identifier) {
-		get(identifier).flatMap(Resource::getMembershipResource);
 		resourceManager.delete(identifier);
-		return null;
+		return Stream.empty();
 	}
 
-	@Override
-	public Boolean put(IRI identifier, Dataset quads) {
-		return true;
-	}
+    @Override
+    public CompletableFuture<Boolean> put(IRI id, IRI ixnModel, Dataset quads) {
+        return runAsync(() -> resourceManager.save(new RDFSource(id, quads)), Runnable::run).thenApply(x -> true);
+    }
+
+    @Override
+    public Supplier<String> getIdentifierSupplier() {
+        return () -> randomUUID().toString();
+    }
 }
