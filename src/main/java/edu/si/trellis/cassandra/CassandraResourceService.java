@@ -9,6 +9,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import javax.inject.Inject;
+
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Triple;
@@ -19,6 +21,7 @@ import com.datastax.driver.mapping.Mapper;
 
 public class CassandraResourceService implements ResourceService {
 	
+    @Inject
 	private Mapper<RDFSource> resourceManager;
 
 	@Override
