@@ -17,6 +17,8 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
 public class IRICodec extends TypeCodec<IRI> {
+    
+    public static final IRICodec iriCodec = new IRICodec();
 
     private static final int concurrencyLevel = 16;
 

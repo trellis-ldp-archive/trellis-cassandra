@@ -21,6 +21,8 @@ import com.datastax.driver.core.exceptions.InvalidTypeException;
 import com.datastax.driver.core.utils.Bytes;
 
 public class DatasetCodec extends TypeCodec<Dataset> {
+    
+    public static final DatasetCodec datasetCodec = new DatasetCodec();
 
     private static final JenaRDF rdf = new JenaRDF();
 
