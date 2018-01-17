@@ -1,12 +1,8 @@
 package edu.si.trellis.cassandra;
 
 import static java.util.Collections.emptyList;
-import static java.util.Optional.of;
-import static java.util.stream.Collectors.toList;
-import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
 import java.time.Instant;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -15,33 +11,31 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.VersionRange;
-import org.trellisldp.vocabulary.RDF;
 
 import com.datastax.driver.mapping.annotations.Computed;
 import com.datastax.driver.mapping.annotations.PartitionKey;
 import com.datastax.driver.mapping.annotations.Table;
+import com.datastax.driver.mapping.annotations.Transient;
 
-@Table(name = "rdfsource")
-public class RDFSource implements Resource {
+@Table(name = "Resource", keyspace = "Trellis")
+public class CassandraResource implements Resource {
 
     @PartitionKey
-    private IRI identifier;
+    public IRI identifier;
 
-    private Collection<IRI> types;
+    public IRI interactionModel;
 
-    private IRI ixnModel;
+    public Dataset quads;
 
-    private Dataset quads;
-    
-    public RDFSource() {}
+    public Instant modified;
 
-    public RDFSource(IRI identifier, Dataset quads) {
+    public CassandraResource() {}
+
+    public CassandraResource(IRI identifier, IRI ixnModel, Dataset quads) {
         this.identifier = identifier;
         this.quads = quads;
-        this.types = quads.stream(of(PreferUserManaged), null, RDF.type, null)
-                .map(Quad::getObject)
-                .map(IRI.class::cast)
-                .collect(toList());
+        this.interactionModel = ixnModel;
+        this.modified = Instant.now();
     }
 
     @Override
@@ -51,30 +45,27 @@ public class RDFSource implements Resource {
 
     @Override
     public IRI getInteractionModel() {
-        return ixnModel;
+        return interactionModel;
     }
 
+    @Transient
     @Override
     public List<VersionRange> getMementos() {
         return emptyList();
     }
 
-    @Computed("writetime()")
     @Override
     public Instant getModified() {
-        return null;
+        return modified;
     }
 
-    @Override
-    public Collection<IRI> getTypes() {
-        return types;
-    }
-
+    @Transient
     @Override
     public Boolean hasAcl() {
         return false;
     }
 
+    @Transient
     @Override
     public Stream<? extends Quad> stream() {
         return quads.stream();

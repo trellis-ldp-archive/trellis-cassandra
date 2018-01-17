@@ -11,11 +11,22 @@
     <java.version>1.8</java.version>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
-    <trellis.version>0.4.1-SNAPSHOT</trellis.version>
+    <trellis.version>0.5.1</trellis.version>
     <cassandra.driver.version>3.3.2</cassandra.driver.version>
+    <log4j.version>2.1</log4j.version>
+
+    <test.keyspace>Trellis</test.keyspace>
+
   </properties>
 
   <build>
+    <testResources>
+      <testResource>
+        <directory>src/test/resources</directory>
+        <filtering>true</filtering>
+      </testResource>
+    </testResources>
+
     <plugins>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -56,6 +67,7 @@
                 <cassandra.storagePort>${cassandra.storagePort}</cassandra.storagePort>
                 <cassandra.stopPort>${cassandra.stopPort}</cassandra.stopPort>
                 <cassandra.nativeTransportPort>${cassandra.nativeTransportPort}</cassandra.nativeTransportPort>
+                <test.keyspace>${test.keyspace}</test.keyspace>
               </systemProperties>
             </configuration>
           </execution>
@@ -67,13 +79,10 @@
         <version>3.6</version>
         <configuration>
           <logLevel>DEBUG</logLevel>
-          <rpcPort>${cassandra.rpcPort}</rpcPort>
-          <jmxPort>${cassandra.jmxPort}</jmxPort>
-          <storagePort>${cassandra.storagePort}</storagePort>
-          <stopPort>${cassandra.stopPort}</stopPort>
           <startNativeTransport>true</startNativeTransport>
-          <nativeTransportPort>${cassandra.nativeTransportPort}</nativeTransportPort>
           <addTestClasspath>true</addTestClasspath>
+          <!-- use a load script after resource filtering -->
+          <script>${project.build.directory}/test-classes/load.cql</script>
         </configuration>
         <executions>
           <execution>
@@ -83,6 +92,18 @@
             </goals>
           </execution>
         </executions>
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+            <version>${log4j.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4j.version}</version>
+          </dependency>
+        </dependencies>
       </plugin>
     </plugins>
   </build>
@@ -102,6 +123,12 @@
     <dependency>
       <groupId>com.datastax.cassandra</groupId>
       <artifactId>cassandra-driver-mapping</artifactId>
+      <version>${cassandra.driver.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.datastax.cassandra</groupId>
+      <artifactId>cassandra-driver-extras</artifactId>
       <version>${cassandra.driver.version}</version>
     </dependency>
 
@@ -131,10 +158,14 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
-      <version>1.2.3</version>
-      <scope>test</scope>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
+      <version>${log4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>${log4j.version}</version>
     </dependency>
 
   </dependencies>
