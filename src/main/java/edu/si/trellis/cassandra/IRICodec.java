@@ -4,7 +4,6 @@ import static java.nio.ByteBuffer.wrap;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.nio.ByteBuffer;
-import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.jena.JenaRDF;
@@ -47,7 +46,7 @@ public class IRICodec extends TypeCodec<IRI> {
     public IRI parse(String iri) throws InvalidTypeException {
         try {
             return cache.get(iri, () -> rdf.createIRI(iri));
-        } catch (ExecutionException e) {
+        } catch (Exception e) {
             throw new InvalidTypeException("Bad URI!", e);
         }
     }

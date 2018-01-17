@@ -12,7 +12,6 @@ import org.apache.commons.rdf.api.Quad;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.VersionRange;
 
-import com.datastax.driver.mapping.annotations.Computed;
 import com.datastax.driver.mapping.annotations.PartitionKey;
 import com.datastax.driver.mapping.annotations.Table;
 import com.datastax.driver.mapping.annotations.Transient;

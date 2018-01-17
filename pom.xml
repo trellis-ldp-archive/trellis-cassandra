@@ -78,7 +78,7 @@
         <artifactId>cassandra-maven-plugin</artifactId>
         <version>3.6</version>
         <configuration>
-          <logLevel>DEBUG</logLevel>
+          <logLevel>WARN</logLevel>
           <startNativeTransport>true</startNativeTransport>
           <addTestClasspath>true</addTestClasspath>
           <!-- use a load script after resource filtering -->
