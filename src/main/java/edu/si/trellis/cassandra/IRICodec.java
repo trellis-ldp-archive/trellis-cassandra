@@ -1,5 +1,7 @@
 package edu.si.trellis.cassandra;
 
+import static com.google.common.cache.CacheBuilder.newBuilder;
+import static com.google.common.cache.CacheLoader.from;
 import static java.nio.ByteBuffer.wrap;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -13,18 +15,20 @@ import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.TypeCodec;
 import com.datastax.driver.core.exceptions.InvalidTypeException;
 import com.datastax.driver.core.utils.Bytes;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.LoadingCache;
 
 public class IRICodec extends TypeCodec<IRI> {
-    
+
     public static final IRICodec iriCodec = new IRICodec();
 
-    private static final int concurrencyLevel = 16;
+    private static final int iriCacheConcurrencyLevel = 16;
 
-    Cache<String, IRI> cache = CacheBuilder.newBuilder().concurrencyLevel(concurrencyLevel).build();
+    private static final long iriCacheMaximumSize = 10 ^ 6;
 
     private static final JenaRDF rdf = new JenaRDF();
+
+    private static final LoadingCache<String, IRI> iriCache = newBuilder().concurrencyLevel(iriCacheConcurrencyLevel)
+                    .maximumSize(iriCacheMaximumSize).build(from(rdf::createIRI));
 
     protected IRICodec(DataType cqlType) {
         super(cqlType, IRI.class);
@@ -35,7 +39,7 @@ public class IRICodec extends TypeCodec<IRI> {
     }
 
     @Override
-    public ByteBuffer serialize(IRI iri, ProtocolVersion protocolVersion) throws InvalidTypeException {
+    public ByteBuffer serialize(IRI iri, ProtocolVersion protocolVersion) {
         return wrap(format(iri).getBytes(UTF_8));
     }
 
@@ -47,15 +51,14 @@ public class IRICodec extends TypeCodec<IRI> {
     @Override
     public IRI parse(String iri) throws InvalidTypeException {
         try {
-            return cache.get(iri, () -> rdf.createIRI(iri));
+            return iriCache.get(iri);
         } catch (Exception e) {
             throw new InvalidTypeException("Bad URI!", e);
         }
     }
 
     @Override
-    public String format(IRI iri) throws InvalidTypeException {
+    public String format(IRI iri) {
         return iri.getIRIString();
     }
-
 }

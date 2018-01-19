@@ -2,9 +2,12 @@ package edu.si.trellis.cassandra;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.UUID.randomUUID;
+import static java.util.stream.StreamSupport.stream;
+import static org.trellisldp.vocabulary.RDF.type;
 
 import java.time.Instant;
 import java.util.Optional;
+import java.util.Spliterator;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -14,18 +17,33 @@ import javax.inject.Inject;
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Triple;
+import org.apache.commons.rdf.jena.JenaRDF;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.Row;
+import com.datastax.driver.core.Session;
 import com.datastax.driver.mapping.Mapper;
+import com.datastax.driver.mapping.MappingManager;
 
 public class CassandraResourceService implements ResourceService {
 
-    @Inject
+    private static final String SCAN_QUERY = "SELECT identifier, interactionModel FROM Resource;";
+
     private Mapper<CassandraResource> resourceManager;
 
-    public CassandraResourceService(Mapper<CassandraResource> resourceManager) {
-        this.resourceManager = resourceManager;
+    private Session session;
+
+    private static final JenaRDF rdf = new JenaRDF();
+
+    private final BoundStatement scanStatement;
+
+    @Inject
+    public CassandraResourceService(Session session) {
+        this.session = session;
+        this.resourceManager = new MappingManager(session).mapper(CassandraResource.class);
+        scanStatement = session.prepare(SCAN_QUERY).bind();
     }
 
     @Override
@@ -45,8 +63,12 @@ public class CassandraResourceService implements ResourceService {
 
     @Override
     public Stream<Triple> scan() {
-        //TODO?
-        return null;
+        Spliterator<Row> spliterator = session.execute(scanStatement).spliterator();
+        return stream(spliterator, false).map(row -> {
+            IRI resource = row.get("identifier", IRI.class);
+            IRI ixnModel = row.get("interactionModel", IRI.class);
+            return rdf.createTriple(resource, type, ixnModel);
+        });
     }
 
     @Override
