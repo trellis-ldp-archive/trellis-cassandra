@@ -1,6 +1,10 @@
 package edu.si.trellis.cassandra;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.jena.atlas.io.IO.closeSilent;
+import static org.apache.jena.riot.Lang.NQUADS;
+import static org.apache.jena.riot.RDFDataMgr.read;
+import static org.apache.jena.riot.RDFDataMgr.writeQuads;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -8,10 +12,7 @@ import java.nio.ByteBuffer;
 
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.jena.JenaRDF;
-import org.apache.jena.atlas.io.IO;
 import org.apache.jena.query.DatasetFactory;
-import org.apache.jena.riot.Lang;
-import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RiotException;
 
 import com.datastax.driver.core.DataType;
@@ -45,12 +46,12 @@ public class DatasetCodec extends TypeCodec<Dataset> {
     private byte[] toNQuads(Dataset dataset) {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         try {
-            RDFDataMgr.writeQuads(bytes, dataset.stream().map(rdf::asJenaQuad).iterator());
+            writeQuads(bytes, dataset.stream().map(rdf::asJenaQuad).iterator());
             return bytes.toByteArray();
         } catch (RiotException e) {
             throw new InvalidTypeException("Dataset is impossible to serialize!", e);
         } finally {
-            IO.closeSilent(bytes);
+            closeSilent(bytes);
         }
     }
 
@@ -62,7 +63,7 @@ public class DatasetCodec extends TypeCodec<Dataset> {
     private Dataset fromNQuads(byte[] bytes) {
         org.apache.jena.query.Dataset dataset = DatasetFactory.create();
         try {
-            RDFDataMgr.read(dataset, new ByteArrayInputStream(bytes), null, Lang.NQUADS);
+            read(dataset, new ByteArrayInputStream(bytes), null, NQUADS);
             return rdf.asDataset(dataset);
         } catch (RiotException e) {
             throw new InvalidTypeException("Dataset is impossible to deserialize!", e);

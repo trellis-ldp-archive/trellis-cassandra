@@ -12,6 +12,9 @@ import com.datastax.driver.extras.codecs.jdk8.InstantCodec;
 
 class CassandraConnection extends ExternalResource {
 
+    static final String TEST_KEYSPACE = System.getProperty("test.keyspace", "test");
+
+
     protected Cluster cluster;
     protected Session session;
     public CassandraResourceService service;
@@ -27,7 +30,7 @@ class CassandraConnection extends ExternalResource {
     protected void before() {
         cluster = builder().addContactPoint(contact).withPort(port).build();
         cluster.getConfiguration().getCodecRegistry().register(iriCodec, datasetCodec, InstantCodec.instance);
-        session = cluster.connect(CassandraResourceServiceIT.TEST_KEYSPACE);
+        session = cluster.connect(TEST_KEYSPACE);
         service = new CassandraResourceService(session);
     }
 
