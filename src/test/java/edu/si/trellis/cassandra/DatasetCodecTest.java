@@ -11,29 +11,36 @@ import com.datastax.driver.core.exceptions.InvalidTypeException;
 
 public class DatasetCodecTest extends Assert {
 
+    private final DatasetCodec codec = new DatasetCodec();
+    
     @Test(expected = InvalidTypeException.class)
     public void badParse() {
-        DatasetCodec datasetCodec = new DatasetCodec();
         String badRDF = "dfshgou;sdfhgoudfhogh";
-        datasetCodec.parse(badRDF);
+        codec.parse(badRDF);
     }
 
     @Test
     public void testParse() {
-        DatasetCodec datasetCodec = new DatasetCodec();
         String quad = "<s> <p> <o> <g>.";
-        Dataset dataset = datasetCodec.parse(quad);
+        Dataset dataset = codec.parse(quad);
         Quad found = dataset.stream().findFirst().orElseThrow(AssertionError::new);
         assertEquals("Found wrong quad!", quad, found.toString());
     }
 
     @Test
     public void testDeserialize() {
-        DatasetCodec datasetCodec = new DatasetCodec();
         String quad = "<s> <p> <o> <g>.";
         ByteBuffer bytes = ByteBuffer.wrap(quad.getBytes());
-        Dataset dataset = datasetCodec.deserialize(bytes, null);
+        Dataset dataset = codec.deserialize(bytes, null);
         Quad found = dataset.stream().findFirst().orElseThrow(AssertionError::new);
         assertEquals("Found wrong quad!", quad, found.toString());
+    }
+    
+    @Test
+    public void nullOrEmptyForNull() {
+        assertEquals(0, codec.parse(null).size());
+        assertEquals(null, codec.format(null));
+        assertEquals(null, codec.serialize(null, null));
+        assertEquals(0, codec.deserialize(null, null).size());
     }
 }

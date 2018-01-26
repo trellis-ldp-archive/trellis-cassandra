@@ -1,11 +1,13 @@
 package edu.si.trellis.cassandra;
 
+import static java.util.Collections.emptyList;
 import static java.util.Objects.requireNonNull;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.StreamSupport.stream;
 import static org.trellisldp.vocabulary.RDF.type;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.Spliterator;
 import java.util.concurrent.CompletableFuture;
@@ -14,6 +16,7 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.Range;
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Triple;
@@ -26,6 +29,7 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.mapping.Mapper;
 import com.datastax.driver.mapping.MappingManager;
+import com.datastax.driver.mapping.annotations.Transient;
 
 public class CassandraResourceService implements ResourceService {
 
@@ -62,6 +66,11 @@ public class CassandraResourceService implements ResourceService {
     }
 
     @Override
+    public Optional<IRI> getContainer(IRI identifier) {
+        return get(identifier).map(CassandraResource.class::cast).map(CassandraResource::parent);
+    }
+
+    @Override
     public Stream<Triple> scan() {
         Spliterator<Row> spliterator = session.execute(scanStatement).spliterator();
         return stream(spliterator, false).map(row -> {
@@ -86,6 +95,12 @@ public class CassandraResourceService implements ResourceService {
 
     @Override
     public Supplier<String> getIdentifierSupplier() {
-        return () -> randomUUID().toString();
+        return randomUUID()::toString;
+    }
+
+    @Transient
+    @Override
+    public List<Range<Instant>> getMementos(IRI identifier) {
+        return emptyList();
     }
 }

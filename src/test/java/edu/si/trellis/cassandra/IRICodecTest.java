@@ -22,4 +22,12 @@ public class IRICodecTest extends Assert {
         IRI iri = rdf.createIRI("http://example.com");
         assertEquals(iri, new IRICodec().parse(iri.getIRIString()));
     }
+    
+    @Test
+    public void nullForNull() {
+        assertEquals(null, new IRICodec().parse(null));
+        assertEquals(null, new IRICodec().format(null));
+        assertEquals(null, new IRICodec().serialize(null, null));
+        assertEquals(null, new IRICodec().deserialize(null, null));
+    }
 }

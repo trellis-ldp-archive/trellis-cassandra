@@ -3,4 +3,4 @@ CREATE KEYSPACE ${test.keyspace} WITH replication = {'class':'SimpleStrategy', '
 
 USE ${test.keyspace};
 
-CREATE TABLE Resource (identifier text PRIMARY KEY, interactionModel text, quads text, modified timestamp);
+CREATE TABLE Resource (identifier text PRIMARY KEY, interactionModel text, quads text, parent text, modified timestamp);

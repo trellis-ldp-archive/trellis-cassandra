@@ -11,7 +11,7 @@
     <java.version>1.8</java.version>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
-    <trellis.version>0.5.1</trellis.version>
+    <trellis.version>0.6.0-SNAPSHOT</trellis.version>
     <cassandra.driver.version>3.3.2</cassandra.driver.version>
     <log4j.version>2.1</log4j.version>
 

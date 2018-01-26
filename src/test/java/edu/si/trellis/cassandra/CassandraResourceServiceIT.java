@@ -5,6 +5,7 @@ import static org.trellisldp.vocabulary.RDF.type;
 import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.function.Supplier;
 
 import org.apache.commons.rdf.api.Dataset;
@@ -29,7 +30,7 @@ public class CassandraResourceServiceIT extends Assert {
     protected RDF rdfFactory = new SimpleRDF();
 
     @ClassRule
-    public static final CassandraConnection cassandraConnection = new CassandraConnection("127.0.0.1", port);
+    public static final CassandraConnection connection = new CassandraConnection("127.0.0.1", port);
 
     @Test
     public void testPutAndGet() throws InterruptedException, ExecutionException {
@@ -38,12 +39,12 @@ public class CassandraResourceServiceIT extends Assert {
         Dataset quads = rdfFactory.createDataset();
         Quad quad = rdfFactory.createQuad(id, ixnModel, id, ixnModel);
         quads.add(quad);
-        CompletableFuture<Boolean> put = cassandraConnection.service.put(id, ixnModel, quads);
+        Future<Boolean> put = connection.service.put(id, ixnModel, quads);
         assertTrue(put.get());
-        Resource resource = cassandraConnection.service.get(id).orElseThrow(MISSING_RESOURCE);
+        Resource resource = connection.service.get(id).orElseThrow(missing("Failed to retrieve resource!"));
         assertEquals(id, resource.getIdentifier());
         assertEquals(ixnModel, resource.getInteractionModel());
-        Quad firstQuad = resource.stream().findFirst().orElseThrow(() -> new AssertionError("Failed to find quad!"));
+        Quad firstQuad = resource.stream().findFirst().orElseThrow(missing("Failed to find quad!"));
         assertEquals(quad, firstQuad);
     }
 
@@ -51,14 +52,14 @@ public class CassandraResourceServiceIT extends Assert {
     public void testScan() throws InterruptedException, ExecutionException {
         IRI id = createIRI("http://example.com/id2");
         IRI ixnModel = createIRI("http://example.com/ixnModel");
-        cassandraConnection.service.put(id, ixnModel, rdfFactory.createDataset()).get();
-        assertEquals(1, cassandraConnection.service.scan().count());
-        Triple triple = cassandraConnection.service.scan().findFirst().orElseThrow(MISSING_RESOURCE);
+        connection.service.put(id, ixnModel, rdfFactory.createDataset()).get();
+        assertEquals(1, connection.service.scan().count());
+        Triple triple = connection.service.scan().findFirst().orElseThrow(missing("Failed to retrieve resource!"));
         assertEquals(id, triple.getSubject());
         assertEquals(type, triple.getPredicate());
         assertEquals(ixnModel, triple.getObject());
     }
-    
+
     @Test
     public void testGetWithTime() throws InterruptedException, ExecutionException {
         IRI id = createIRI("http://example.com/id3");
@@ -66,19 +67,28 @@ public class CassandraResourceServiceIT extends Assert {
         Dataset quads = rdfFactory.createDataset();
         Quad quad = rdfFactory.createQuad(id, ixnModel, id, ixnModel);
         quads.add(quad);
-        CompletableFuture<Boolean> put = cassandraConnection.service.put(id, ixnModel, quads);
+        CompletableFuture<Boolean> put = connection.service.put(id, ixnModel, quads);
         assertTrue(put.get());
-        Resource resource = cassandraConnection.service.get(id, Instant.ofEpochMilli(-10^10)).orElseThrow(MISSING_RESOURCE);
+        Instant longAgo = Instant.ofEpochMilli(-(10 ^ 10));
+        Resource resource = connection.service.get(id, longAgo).orElseThrow(missing("Failed to retrieve resource!"));
         assertEquals(id, resource.getIdentifier());
         assertEquals(ixnModel, resource.getInteractionModel());
-        Quad firstQuad = resource.stream().findFirst().orElseThrow(() -> new AssertionError("Failed to find quad!"));
+        Quad firstQuad = resource.stream().findFirst().orElseThrow(missing("Failed to find quad!"));
         assertEquals(quad, firstQuad);
+    }
+
+    @Test
+    public void testCompact() {
+        // compact does nothing TODO
+        assertFalse(connection.service.compact(null, null, null).findFirst().isPresent());
     }
 
     private IRI createIRI(String iri) {
         return rdfFactory.createIRI(iri);
     }
 
-    private static final Supplier<Error> MISSING_RESOURCE = () -> new AssertionError("Failed to retrieve resource!");
+    private static final Supplier<Error> missing(String msg) {
+        return () -> new AssertionError(msg);
+    }
 
 }

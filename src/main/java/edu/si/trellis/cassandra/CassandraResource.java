@@ -1,16 +1,12 @@
 package edu.si.trellis.cassandra;
 
-import static java.util.Collections.emptyList;
-
 import java.time.Instant;
-import java.util.List;
 import java.util.stream.Stream;
 
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.trellisldp.api.Resource;
-import org.trellisldp.api.VersionRange;
 
 import com.datastax.driver.mapping.annotations.PartitionKey;
 import com.datastax.driver.mapping.annotations.Table;
@@ -25,6 +21,8 @@ public class CassandraResource implements Resource {
     public IRI interactionModel;
 
     public Dataset quads;
+
+    public IRI parent;
 
     public Instant modified;
 
@@ -42,15 +40,13 @@ public class CassandraResource implements Resource {
         return identifier;
     }
 
+    public IRI parent() {
+        return parent;
+    }
+
     @Override
     public IRI getInteractionModel() {
         return interactionModel;
-    }
-
-    @Transient
-    @Override
-    public List<VersionRange> getMementos() {
-        return emptyList();
     }
 
     @Override

@@ -27,8 +27,6 @@ public class DatasetCodec extends TypeCodec<Dataset> {
 
     private static final JenaRDF rdf = new JenaRDF();
 
-    private static final ByteBuffer EMPTY_BYTE_BUFFER = ByteBuffer.allocate(0);
-
     protected DatasetCodec(DataType cqlType) {
         super(cqlType, Dataset.class);
     }
@@ -39,7 +37,7 @@ public class DatasetCodec extends TypeCodec<Dataset> {
 
     @Override
     public ByteBuffer serialize(Dataset dataset, ProtocolVersion protocolVersion) {
-        if (dataset == null || dataset.size() == 0) return EMPTY_BYTE_BUFFER;
+        if (dataset == null || dataset.size() == 0) return null;
         return ByteBuffer.wrap(toNQuads(dataset));
     }
 
@@ -77,9 +75,9 @@ public class DatasetCodec extends TypeCodec<Dataset> {
     }
 
     @Override
-    public String format(Dataset graph) {
-        if (graph == null || graph.size() == 0) return "";
-        return new String(toNQuads(graph), UTF_8);
+    public String format(Dataset dataset) {
+        if (dataset == null || dataset.size() == 0) return null;
+        return new String(toNQuads(dataset), UTF_8);
     }
 
 }

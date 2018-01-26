@@ -40,16 +40,17 @@ public class IRICodec extends TypeCodec<IRI> {
 
     @Override
     public ByteBuffer serialize(IRI iri, ProtocolVersion protocolVersion) {
-        return wrap(format(iri).getBytes(UTF_8));
+        return iri != null ? wrap(format(iri).getBytes(UTF_8)) : null;
     }
 
     @Override
     public IRI deserialize(ByteBuffer bytes, ProtocolVersion protocolVersion) throws InvalidTypeException {
-        return parse(new String(Bytes.getArray(bytes), UTF_8));
+        return bytes == null || bytes.remaining() == 0 ? null : parse(new String(Bytes.getArray(bytes), UTF_8));
     }
 
     @Override
     public IRI parse(String iri) throws InvalidTypeException {
+        if (iri == null || iri.isEmpty()) return null;
         try {
             return iriCache.get(iri);
         } catch (Exception e) {
@@ -59,6 +60,6 @@ public class IRICodec extends TypeCodec<IRI> {
 
     @Override
     public String format(IRI iri) {
-        return iri.getIRIString();
+        return iri != null ? iri.getIRIString() : null;
     }
 }
