@@ -1,37 +1,47 @@
 package edu.si.trellis.cassandra;
 
 import static com.datastax.driver.core.Cluster.builder;
-import static edu.si.trellis.cassandra.DatasetCodec.datasetCodec;
+import static edu.si.trellis.cassandra.BlankNodeOrIRICodec.blankNodeOrIRICodec;
 import static edu.si.trellis.cassandra.IRICodec.iriCodec;
+import static edu.si.trellis.cassandra.RDFTermCodec.rdfTermCodec;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import org.junit.rules.ExternalResource;
+import org.slf4j.Logger;
 
 import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.extras.codecs.jdk8.InstantCodec;
 
 class CassandraConnection extends ExternalResource {
 
-    static final String TEST_KEYSPACE = System.getProperty("test.keyspace", "test");
+    private static final Logger log = getLogger(CassandraConnection.class);
 
+    private static final String KEYSPACE = "Trellis";
 
     protected Cluster cluster;
     protected Session session;
     public CassandraResourceService service;
     private final int port;
-    private final String contact;
+    private final String contactLocation;
 
-    public CassandraConnection(String contact, int port) {
-        this.contact = contact;
+    public CassandraConnection(final String contactLocation, final int port) {
+        this.contactLocation = contactLocation;
         this.port = port;
     }
 
     @Override
     protected void before() {
-        cluster = builder().addContactPoint(contact).withPort(port).build();
-        cluster.getConfiguration().getCodecRegistry().register(iriCodec, datasetCodec, InstantCodec.instance);
-        session = cluster.connect(TEST_KEYSPACE);
+        cluster = builder().addContactPoint(contactLocation).withPort(port).build();
+        codecRegistry().register(iriCodec, rdfTermCodec, blankNodeOrIRICodec, InstantCodec.instance);
+        session = cluster.connect(KEYSPACE);
         service = new CassandraResourceService(session);
+        
+    }
+
+    private CodecRegistry codecRegistry() {
+        return cluster.getConfiguration().getCodecRegistry();
     }
 
     @Override

@@ -20,13 +20,6 @@
   </properties>
 
   <build>
-    <testResources>
-      <testResource>
-        <directory>src/test/resources</directory>
-        <filtering>true</filtering>
-      </testResource>
-    </testResources>
-
     <plugins>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -118,6 +111,12 @@
       <groupId>org.trellisldp</groupId>
       <artifactId>trellis-vocabulary</artifactId>
       <version>0.1.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.trellisldp</groupId>
+      <artifactId>trellis-io-jena</artifactId>
+      <version>${trellis.version}</version>
     </dependency>
 
     <dependency>

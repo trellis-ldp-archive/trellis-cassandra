@@ -1,17 +1,29 @@
 package edu.si.trellis.cassandra;
 
+import static com.datastax.driver.core.querybuilder.QueryBuilder.batch;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.set;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.update;
+import static edu.si.trellis.cassandra.CassandraResourceService.Mutability.Immutable;
+import static edu.si.trellis.cassandra.CassandraResourceService.Mutability.Meta;
+import static edu.si.trellis.cassandra.CassandraResourceService.Mutability.Mutable;
 import static java.util.Collections.emptyList;
-import static java.util.Objects.requireNonNull;
+import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
+import static java.util.concurrent.CompletableFuture.supplyAsync;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.StreamSupport.stream;
 import static org.trellisldp.vocabulary.RDF.type;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Spliterator;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -19,88 +31,208 @@ import javax.inject.Inject;
 import org.apache.commons.lang3.Range;
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
+import org.apache.commons.rdf.api.Quad;
+import org.apache.commons.rdf.api.RDFTerm;
 import org.apache.commons.rdf.api.Triple;
 import org.apache.commons.rdf.jena.JenaRDF;
-import org.trellisldp.api.Resource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.trellisldp.api.ResourceService;
+import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.api.Session;
 
 import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.CodecRegistry;
+import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.RegularStatement;
+import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.mapping.Mapper;
-import com.datastax.driver.mapping.MappingManager;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.mapping.annotations.Transient;
 
+/**
+ * Implements persistence into a simple Apache Cassandra schema.
+ *
+ * @author ajs6f
+ *
+ */
 public class CassandraResourceService implements ResourceService {
 
-    private static final String SCAN_QUERY = "SELECT identifier, interactionModel FROM Resource;";
+    private static final Logger log = LoggerFactory.getLogger(CassandraResourceService.class);
 
-    private Mapper<CassandraResource> resourceManager;
-
-    private Session session;
+    private static final String[] DATA_COLUMNS = new String[] { "identifier", "graph", "subject", "predicate",
+            "object" };
+    private final com.datastax.driver.core.Session cassandraSession;
 
     private static final JenaRDF rdf = new JenaRDF();
 
+    private static final IRI defaultGraph = rdf.createIRI("");
+
+    private static final String SCAN_QUERY = "SELECT identifier, interactionModel FROM " + Meta.tableName + " ;";
+
+    /**
+     * Scans the Cassandra cluster, for use by {@link #scan()}. Should normally
+     * contain a bound form of {@value #SCAN_QUERY} drawn from {@link #SCAN_QUERY}.
+     *
+     * @see #SCAN_QUERY
+     */
     private final BoundStatement scanStatement;
 
+    private static final String CONTAINS_QUERY = "SELECT identifier FROM " + Meta.tableName
+                    + " WHERE identifier = ?;";
+
+    private final PreparedStatement containsStatement;
+
+    private static final String DELETE_QUERY = "DELETE FROM " + Mutable.tableName + " WHERE identifier = ?;";
+
+    private final PreparedStatement deleteStatement;
+
+    /**
+     * Same-thread execution. TODO optimize with a threadpool
+     */
+    private final Executor executor = Runnable::run;
+
+    /**
+     * Constructor.
+     *
+     * @param session a Cassandra object mapper {@link Session} for use by this
+     *            service for its lifetime
+     */
     @Inject
-    public CassandraResourceService(Session session) {
-        this.session = session;
-        this.resourceManager = new MappingManager(session).mapper(CassandraResource.class);
+    public CassandraResourceService(final com.datastax.driver.core.Session session) {
+        this.cassandraSession = session;
         scanStatement = session.prepare(SCAN_QUERY).bind();
+        containsStatement = session.prepare(CONTAINS_QUERY);
+        deleteStatement = session.prepare(DELETE_QUERY);
     }
 
     @Override
-    public Stream<IRI> compact(IRI identifier, Instant from, Instant until) {
+    public Stream<IRI> compact(final IRI identifier, final Instant from, final Instant until) {
+        // TODO do something with bitstreams
         return Stream.empty();
     }
 
     @Override
-    public Optional<Resource> get(IRI identifier) {
-        return Optional.ofNullable(resourceManager.get(identifier));
+    public Optional<CassandraResource> get(final IRI id) {
+        BoundStatement boundStatement = containsStatement.bind(id);
+        boolean absent = cassandraSession.execute(boundStatement).one() == null;
+        return ofNullable(absent ? null : new CassandraResource(id, cassandraSession));
     }
 
     @Override
-    public Optional<Resource> get(IRI identifier, Instant time) {
+    public Optional<CassandraResource> get(final IRI identifier, final Instant time) {
+        // TODO maybe someone wants versioning, but not me
         return get(identifier);
     }
 
     @Override
-    public Optional<IRI> getContainer(IRI identifier) {
-        return get(identifier).map(CassandraResource.class::cast).map(CassandraResource::parent);
+    public Optional<IRI> getContainer(final IRI identifier) {
+        return get(identifier).map(CassandraResource::getParent);
     }
 
     @Override
     public Stream<Triple> scan() {
-        Spliterator<Row> spliterator = session.execute(scanStatement).spliterator();
+        final Spliterator<Row> spliterator = cassandraSession.execute(scanStatement).spliterator();
         return stream(spliterator, false).map(row -> {
-            IRI resource = row.get("identifier", IRI.class);
-            IRI ixnModel = row.get("interactionModel", IRI.class);
+            final IRI resource = row.get("identifier", IRI.class);
+            final IRI ixnModel = row.get("interactionModel", IRI.class);
             return rdf.createTriple(resource, type, ixnModel);
         });
     }
 
     @Override
-    public Stream<IRI> purge(IRI identifier) {
-        resourceManager.delete(identifier);
+    public Stream<IRI> purge(final IRI id) {
+        BoundStatement boundStatement = deleteStatement.bind(id);
+        cassandraSession.execute(boundStatement);
+        // TODO do something with binaries!
         return Stream.empty();
     }
 
     @Override
-    public CompletableFuture<Boolean> put(IRI id, IRI ixnModel, Dataset quads) {
-        final CassandraResource resource = new CassandraResource(requireNonNull(id), requireNonNull(ixnModel), quads);
-        resourceManager.save(resource);
-        return CompletableFuture.completedFuture(true);
-    }
-
-    @Override
-    public Supplier<String> getIdentifierSupplier() {
-        return randomUUID()::toString;
+    public String generateIdentifier() {
+        return randomUUID().toString();
     }
 
     @Transient
     @Override
-    public List<Range<Instant>> getMementos(IRI identifier) {
+    public List<Range<Instant>> getMementos(final IRI identifier) {
+        // TODO maybe someone uses versioning? Not me.
         return emptyList();
+    }
+
+    private static RDFTerm[] immutabledataRow(IRI id, Quad q) {
+        return new RDFTerm[] { id, q.getGraphName().orElse(defaultGraph), q.getSubject(), q.getPredicate(),
+                q.getObject() };
+    }
+
+    @Override
+    public Future<Boolean> add(final IRI id, Session session, final Dataset dataset) {
+        return writeQuads(buildInserts(Immutable, id, dataset));
+    }
+
+    @Override
+    public Future<Boolean> create(final IRI id, final Session session, final IRI ixnModel, final Dataset dataset) {
+        return write(id, ixnModel, dataset);
+    }
+
+    @Override
+    public Future<Boolean> replace(final IRI id, final Session session, final IRI ixnModel, final Dataset dataset) {
+        return write(id, ixnModel, dataset);
+    }
+
+    @Override
+    public Future<Boolean> delete(final IRI id, final Session session, final IRI ixnModel, final Dataset dataset) {
+        return write(id, ixnModel, dataset);
+    }
+
+    enum Mutability {
+        Mutable("Mutabledata"), Immutable("Immutabledata"), Meta("Metadata");
+
+        private Mutability(String tName) {
+            this.tableName = tName;
+        }
+
+        public final String tableName;
+    }
+
+    private Future<Boolean> write(final IRI id, final IRI ixnModel, final Dataset dataset) {
+        List<RegularStatement> ops = new ArrayList<>(buildInserts(Mutable, id, dataset));
+        ops.add(buildMetadata(id, ixnModel));
+        return writeQuads(ops);
+    }
+
+    private Future<Boolean> writeQuads(List<RegularStatement> statements) {
+        RegularStatement[] statementsArray = statements.toArray(new RegularStatement[statements.size()]);
+        return translate(cassandraSession.executeAsync(batch(statementsArray)));
+    }
+
+    private List<RegularStatement> buildInserts(Mutability mutability, final IRI id, final Dataset dataset) {
+        return dataset.stream().map(q -> immutabledataRow(id, q))
+                        .map(fields -> insertInto(mutability.tableName).values(DATA_COLUMNS, fields))
+                        .peek(insert -> log.debug("Built {} quad insert: {}", mutability,
+                                        insert.getQueryString(codecRegistry())))
+                        .collect(toList());
+    }
+
+    private RegularStatement buildMetadata(final IRI id, final IRI ixnModel) {
+        RegularStatement statement = update(Meta.tableName).with(set("interactionModel", ixnModel)).where(QueryBuilder.eq("identifier", id));
+        log.debug("Using IRI codec: ",codecRegistry().codecFor(defaultGraph));
+        log.debug("Created metadata update statement:\n{}", statement.getQueryString(codecRegistry()));
+        return statement;
+    }
+
+    private CodecRegistry codecRegistry() {
+        return cassandraSession.getCluster().getConfiguration().getCodecRegistry();
+    }
+
+    private Future<Boolean> translate(ResultSetFuture result) {
+        return supplyAsync(() -> {
+            try {
+                return result.get().wasApplied();
+            } catch (InterruptedException | ExecutionException e) {
+                // we don't know that persistence failed but we can't assume that it succeeded
+                throw new RuntimeTrellisException(new CompletionException(e));
+            }
+        }, executor);
     }
 }

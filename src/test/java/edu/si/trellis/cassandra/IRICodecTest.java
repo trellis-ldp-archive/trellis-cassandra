@@ -20,7 +20,8 @@ public class IRICodecTest extends Assert {
     @Test
     public void testParse() {
         IRI iri = rdf.createIRI("http://example.com");
-        assertEquals(iri, new IRICodec().parse(iri.getIRIString()));
+        String fieldForm = "<" + iri.getIRIString() + ">";
+        assertEquals(iri, new IRICodec().parse(fieldForm));
     }
     
     @Test
