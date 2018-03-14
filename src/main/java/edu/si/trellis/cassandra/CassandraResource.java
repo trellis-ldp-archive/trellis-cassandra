@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.apache.commons.rdf.api.BlankNodeOrIRI;
+import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
@@ -31,12 +32,15 @@ public class CassandraResource implements Resource {
      */
     private final Executor executor = Runnable::run;
 
-    public static final String quadStreamQuery = "SELECT graph, subject, predicate, object FROM " + Mutable.tableName
+    public static final String mutableQuadStreamQuery = "SELECT quads FROM " + Mutable.tableName
+                    + "  WHERE identifier = ? ;";
+
+    public static final String immutableQuadStreamQuery = "SELECT quads FROM " + Immutable.tableName
                     + "  WHERE identifier = ? ;";
 
     public static final String metadataQuery = "SELECT * FROM " + Meta.tableName + " WHERE identifier = ? LIMIT 1 ;";
 
-    private final PreparedStatement quadStreamStatement, metadataStatement;
+    private final PreparedStatement immutableQuadStreamStatement, mutableQuadStreamStatement, metadataStatement;
 
     private Session session;
 
@@ -54,7 +58,8 @@ public class CassandraResource implements Resource {
         this.identifier = requireNonNull(identifier);
         this.session = requireNonNull(session);
         this.interactionModel = ixnModel;
-        this.quadStreamStatement = session.prepare(quadStreamQuery);
+        this.mutableQuadStreamStatement = session.prepare(mutableQuadStreamQuery);
+        this.immutableQuadStreamStatement = session.prepare(immutableQuadStreamQuery);
         this.metadataStatement = session.prepare(metadataQuery);
     }
 
@@ -114,14 +119,15 @@ public class CassandraResource implements Resource {
 
     @Override
     public Stream<? extends Quad> stream() {
-        final BoundStatement boundStatement = quadStreamStatement.bind(identifier);
+        BoundStatement boundStatement = mutableQuadStreamStatement.bind(identifier);
+        Stream<Quad> mutableQuads = quadStreamQuery(boundStatement);
+        boundStatement = immutableQuadStreamStatement.bind(identifier);
+        Stream<Quad> immutableQuads = quadStreamQuery(boundStatement);
+        return Stream.concat(mutableQuads, immutableQuads);
+    }
+
+    private Stream<Quad> quadStreamQuery(final BoundStatement boundStatement) {
         final Spliterator<Row> rows = session.execute(boundStatement).spliterator();
-        return StreamSupport.stream(rows, false).map(row -> {
-            final BlankNodeOrIRI graph = row.get("graph", BlankNodeOrIRI.class);
-            final BlankNodeOrIRI subj = row.get("subject", BlankNodeOrIRI.class);
-            final IRI pred = row.get("predicate", IRI.class);
-            final RDFTerm obj = row.get("object", RDFTerm.class);
-            return RDF.createQuad(graph, subj, pred, obj);
-        });
+        return StreamSupport.stream(rows, false).flatMap(row -> row.get("quads", Dataset.class).stream());
     }
 }

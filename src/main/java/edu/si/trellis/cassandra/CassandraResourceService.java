@@ -1,9 +1,11 @@
 package edu.si.trellis.cassandra;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.batch;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.set;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.update;
+import static com.google.common.collect.Lists.newArrayList;
 import static edu.si.trellis.cassandra.CassandraResourceService.Mutability.Immutable;
 import static edu.si.trellis.cassandra.CassandraResourceService.Mutability.Meta;
 import static edu.si.trellis.cassandra.CassandraResourceService.Mutability.Mutable;
@@ -47,8 +49,10 @@ import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Row;
+import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.mapping.annotations.Transient;
+import com.google.common.collect.Lists;
 
 /**
  * Implements persistence into a simple Apache Cassandra schema.
@@ -60,13 +64,10 @@ public class CassandraResourceService implements ResourceService {
 
     private static final Logger log = LoggerFactory.getLogger(CassandraResourceService.class);
 
-    private static final String[] DATA_COLUMNS = new String[] { "identifier", "graph", "subject", "predicate",
-            "object" };
+    private static final String[] DATA_COLUMNS = new String[] { "identifier", "quads" };
     private final com.datastax.driver.core.Session cassandraSession;
 
     private static final JenaRDF rdf = new JenaRDF();
-
-    private static final IRI defaultGraph = rdf.createIRI("");
 
     private static final String SCAN_QUERY = "SELECT identifier, interactionModel FROM " + Meta.tableName + " ;";
 
@@ -78,8 +79,7 @@ public class CassandraResourceService implements ResourceService {
      */
     private final BoundStatement scanStatement;
 
-    private static final String CONTAINS_QUERY = "SELECT identifier FROM " + Meta.tableName
-                    + " WHERE identifier = ?;";
+    private static final String CONTAINS_QUERY = "SELECT identifier FROM " + Meta.tableName + " WHERE identifier = ?;";
 
     private final PreparedStatement containsStatement;
 
@@ -121,7 +121,7 @@ public class CassandraResourceService implements ResourceService {
 
     @Override
     public Optional<CassandraResource> get(final IRI identifier, final Instant time) {
-        // TODO maybe someone wants versioning, but not me
+        // TODO versioning, but not today
         return get(identifier);
     }
 
@@ -156,18 +156,14 @@ public class CassandraResourceService implements ResourceService {
     @Transient
     @Override
     public List<Range<Instant>> getMementos(final IRI identifier) {
-        // TODO maybe someone uses versioning? Not me.
+        // TODO maybe someone uses versioning?
         return emptyList();
-    }
-
-    private static RDFTerm[] immutabledataRow(IRI id, Quad q) {
-        return new RDFTerm[] { id, q.getGraphName().orElse(defaultGraph), q.getSubject(), q.getPredicate(),
-                q.getObject() };
     }
 
     @Override
     public Future<Boolean> add(final IRI id, Session session, final Dataset dataset) {
-        return writeQuads(buildInserts(Immutable, id, dataset));
+        Insert immutableDataInsert = insertInto(Immutable.tableName).values(DATA_COLUMNS, new Object[] { id, dataset });
+        return writeQuads(immutableDataInsert);
     }
 
     @Override
@@ -196,33 +192,19 @@ public class CassandraResourceService implements ResourceService {
     }
 
     private Future<Boolean> write(final IRI id, final IRI ixnModel, final Dataset dataset) {
-        List<RegularStatement> ops = new ArrayList<>(buildInserts(Mutable, id, dataset));
-        ops.add(buildMetadata(id, ixnModel));
+        Insert mutableDataInsert = insertInto(Mutable.tableName).values(DATA_COLUMNS, new Object[] { id, dataset });
+        RegularStatement[] ops = new RegularStatement[] { mutableDataInsert, metadataInsert(id, ixnModel) };
         return writeQuads(ops);
     }
 
-    private Future<Boolean> writeQuads(List<RegularStatement> statements) {
-        RegularStatement[] statementsArray = statements.toArray(new RegularStatement[statements.size()]);
-        return translate(cassandraSession.executeAsync(batch(statementsArray)));
+    private Future<Boolean> writeQuads(RegularStatement... statements) {
+        return translate(cassandraSession.executeAsync(batch(statements)));
     }
 
-    private List<RegularStatement> buildInserts(Mutability mutability, final IRI id, final Dataset dataset) {
-        return dataset.stream().map(q -> immutabledataRow(id, q))
-                        .map(fields -> insertInto(mutability.tableName).values(DATA_COLUMNS, fields))
-                        .peek(insert -> log.debug("Built {} quad insert: {}", mutability,
-                                        insert.getQueryString(codecRegistry())))
-                        .collect(toList());
-    }
-
-    private RegularStatement buildMetadata(final IRI id, final IRI ixnModel) {
-        RegularStatement statement = update(Meta.tableName).with(set("interactionModel", ixnModel)).where(QueryBuilder.eq("identifier", id));
-        log.debug("Using IRI codec: ",codecRegistry().codecFor(defaultGraph));
-        log.debug("Created metadata update statement:\n{}", statement.getQueryString(codecRegistry()));
+    private RegularStatement metadataInsert(final IRI id, final IRI ixnModel) {
+        RegularStatement statement = update(Meta.tableName).with(set("interactionModel", ixnModel))
+                        .where(eq("identifier", id));
         return statement;
-    }
-
-    private CodecRegistry codecRegistry() {
-        return cassandraSession.getCluster().getConfiguration().getCodecRegistry();
     }
 
     private Future<Boolean> translate(ResultSetFuture result) {
