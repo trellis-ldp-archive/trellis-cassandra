@@ -11,7 +11,7 @@
     <java.version>1.8</java.version>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
-    <trellis.version>0.6.0-SNAPSHOT</trellis.version>
+    <trellis.version>0.6.0</trellis.version>
     <cassandra.driver.version>3.3.2</cassandra.driver.version>
     <log4j.version>2.1</log4j.version>
 
@@ -114,22 +114,22 @@
     </dependency>
 
     <dependency>
-      <groupId>org.trellisldp</groupId>
-      <artifactId>trellis-io-jena</artifactId>
-      <version>${trellis.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.datastax.cassandra</groupId>
-      <artifactId>cassandra-driver-mapping</artifactId>
-      <version>${cassandra.driver.version}</version>
-    </dependency>
-
-    <dependency>
       <groupId>com.datastax.cassandra</groupId>
       <artifactId>cassandra-driver-extras</artifactId>
       <version>${cassandra.driver.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>io.dropwizard.metrics</groupId>
+          <artifactId>metrics-core</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
+
+    <!--  <dependency>
+      <groupId>io.dropwizard.metrics</groupId>
+      <artifactId>metrics-core</artifactId>
+      <version>4.0.2</version>
+    </dependency>-->
 
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -150,6 +150,12 @@
     </dependency>
 
     <!-- test gear -->
+    <dependency>
+      <groupId>org.trellisldp</groupId>
+      <artifactId>trellis-test</artifactId>
+      <version>${trellis.version}</version>
+    </dependency>
+
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>

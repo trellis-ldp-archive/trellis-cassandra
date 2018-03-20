@@ -1,5 +1,8 @@
 package edu.si.trellis.cassandra;
 
+import static edu.si.trellis.cassandra.CassandraResourceService.Mutability.Immutable;
+import static edu.si.trellis.cassandra.CassandraResourceService.Mutability.Meta;
+import static edu.si.trellis.cassandra.CassandraResourceService.Mutability.Mutable;
 import static java.util.Objects.requireNonNull;
 
 import java.time.Instant;
@@ -8,12 +11,10 @@ import java.util.concurrent.Executor;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import org.apache.commons.rdf.api.BlankNodeOrIRI;
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
-import org.apache.commons.rdf.api.RDFTerm;
 import org.trellisldp.api.RDFUtils;
 import org.trellisldp.api.Resource;
 
@@ -21,7 +22,6 @@ import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
-import static edu.si.trellis.cassandra.CassandraResourceService.Mutability.*;
 
 public class CassandraResource implements Resource {
 

@@ -5,7 +5,6 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.set;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.update;
-import static com.google.common.collect.Lists.newArrayList;
 import static edu.si.trellis.cassandra.CassandraResourceService.Mutability.Immutable;
 import static edu.si.trellis.cassandra.CassandraResourceService.Mutability.Meta;
 import static edu.si.trellis.cassandra.CassandraResourceService.Mutability.Mutable;
@@ -13,12 +12,10 @@ import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.StreamSupport.stream;
 import static org.trellisldp.vocabulary.RDF.type;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Spliterator;
@@ -33,8 +30,6 @@ import javax.inject.Inject;
 import org.apache.commons.lang3.Range;
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
-import org.apache.commons.rdf.api.Quad;
-import org.apache.commons.rdf.api.RDFTerm;
 import org.apache.commons.rdf.api.Triple;
 import org.apache.commons.rdf.jena.JenaRDF;
 import org.slf4j.Logger;
@@ -44,15 +39,11 @@ import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.Session;
 
 import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.querybuilder.Insert;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.mapping.annotations.Transient;
-import com.google.common.collect.Lists;
 
 /**
  * Implements persistence into a simple Apache Cassandra schema.
@@ -126,8 +117,10 @@ public class CassandraResourceService implements ResourceService {
     }
 
     @Override
-    public Optional<IRI> getContainer(final IRI identifier) {
-        return get(identifier).map(CassandraResource::getParent);
+    public Optional<IRI> getContainer(final IRI id) {
+        // TODO Java 9 fixes this with Optional::or
+        return get(id).map(CassandraResource::getParent).map(Optional::of)
+                        .orElseGet(() -> ResourceService.super.getContainer(id));
     }
 
     @Override
@@ -153,7 +146,6 @@ public class CassandraResourceService implements ResourceService {
         return randomUUID().toString();
     }
 
-    @Transient
     @Override
     public List<Range<Instant>> getMementos(final IRI identifier) {
         // TODO maybe someone uses versioning?
@@ -163,7 +155,7 @@ public class CassandraResourceService implements ResourceService {
     @Override
     public Future<Boolean> add(final IRI id, Session session, final Dataset dataset) {
         Insert immutableDataInsert = insertInto(Immutable.tableName).values(DATA_COLUMNS, new Object[] { id, dataset });
-        return writeQuads(immutableDataInsert);
+        return execute(immutableDataInsert);
     }
 
     @Override
@@ -194,17 +186,15 @@ public class CassandraResourceService implements ResourceService {
     private Future<Boolean> write(final IRI id, final IRI ixnModel, final Dataset dataset) {
         Insert mutableDataInsert = insertInto(Mutable.tableName).values(DATA_COLUMNS, new Object[] { id, dataset });
         RegularStatement[] ops = new RegularStatement[] { mutableDataInsert, metadataInsert(id, ixnModel) };
-        return writeQuads(ops);
+        return execute(ops);
     }
 
-    private Future<Boolean> writeQuads(RegularStatement... statements) {
+    private Future<Boolean> execute(RegularStatement... statements) {
         return translate(cassandraSession.executeAsync(batch(statements)));
     }
 
     private RegularStatement metadataInsert(final IRI id, final IRI ixnModel) {
-        RegularStatement statement = update(Meta.tableName).with(set("interactionModel", ixnModel))
-                        .where(eq("identifier", id));
-        return statement;
+        return update(Meta.tableName).with(set("interactionModel", ixnModel)).where(eq("identifier", id));
     }
 
     private Future<Boolean> translate(ResultSetFuture result) {
