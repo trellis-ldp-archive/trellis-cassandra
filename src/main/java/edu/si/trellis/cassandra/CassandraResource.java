@@ -111,6 +111,7 @@ public class CassandraResource implements Resource {
                     hasAcl = metadata.getBool("hasAcl");
                     modified = Instant.ofEpochMilli(metadata.get("modified", Long.class));
                     interactionModel = metadata.get("interactionModel", IRI.class);
+                    binaryIdentifier = metadata.get("binaryIdentifier", IRI.class);
                     mimeType = metadata.getString("mimetype");
                     size = metadata.getLong("size");
                     parent = metadata.get("parent", IRI.class);
@@ -121,7 +122,7 @@ public class CassandraResource implements Resource {
     
     @Override
     public Optional<Binary> getBinary() {
-        return Optional.ofNullable(isBinary() ? new Binary(identifier, modified, mimeType, size) : null);
+        return Optional.ofNullable(isBinary() ? new Binary(binaryIdentifier, modified, mimeType, size) : null);
     }
 
     private boolean isBinary() {

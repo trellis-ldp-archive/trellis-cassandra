@@ -30,6 +30,7 @@ import javax.inject.Inject;
 import org.apache.commons.lang3.Range;
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
+import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.Triple;
 import org.apache.commons.rdf.jena.JenaRDF;
 import org.slf4j.Logger;
@@ -37,6 +38,9 @@ import org.slf4j.LoggerFactory;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.Session;
+import org.trellisldp.vocabulary.DC;
+import org.trellisldp.vocabulary.LDP;
+import org.trellisldp.vocabulary.Trellis;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Metadata;
@@ -57,9 +61,6 @@ public class CassandraResourceService implements ResourceService {
     private static final Logger log = LoggerFactory.getLogger(CassandraResourceService.class);
 
     private static final String[] DATA_COLUMNS = new String[] { "identifier", "quads" };
-    private static final String[] METADATA_COLUMNS = new String[] { "identifier", "interactionModel", "hasAcl",
-            "parent text"};    
-    
     private final com.datastax.driver.core.Session cassandraSession;
 
     private static final JenaRDF rdf = new JenaRDF();
@@ -191,18 +192,50 @@ public class CassandraResourceService implements ResourceService {
     }
 
     private Future<Boolean> write(final IRI id, final IRI ixnModel, final Dataset dataset) {
+
         Insert mutableDataInsert = insertInto(Mutable.tableName).values(DATA_COLUMNS, new Object[] { id, dataset });
-        //Insert mutableDataInsert = insertInto(Mutable.tableName).values(DATA_COLUMNS, new Object[] { id, dataset });
-        RegularStatement[] ops = new RegularStatement[] { mutableDataInsert, metadataInsert(id, ixnModel) };
+
+        final RegularStatement metadataInsert = metadataInsert(id, ixnModel, dataset);
+        RegularStatement[] ops = new RegularStatement[] { mutableDataInsert, metadataInsert };
         return execute(ops);
+    }
+
+    private static RegularStatement metadataInsert(final IRI id, final IRI ixnModel, final Dataset dataset) {
+        return dataset.getGraph(Trellis.PreferServerManaged).map(serverManaged -> {
+            // if this has a binary/bitstream, pick up the extra metadata therefor
+            if (LDP.NonRDFSource.equals(ixnModel)) {
+                IRI binaryIdentifier = serverManaged.stream(id, DC.hasPart, null).map(Triple::getObject)
+                                .map(IRI.class::cast).findFirst().orElseThrow(() -> new RuntimeTrellisException(
+                                                "Binary persisted with no bitstream IRI!"));
+                long size = serverManaged.stream(binaryIdentifier, DC.extent, null).map(Triple::getObject)
+                                .map(Literal.class::cast).map(Literal::getLexicalForm).map(Long::parseLong).findFirst()
+                                .orElse(0L);
+                String mimeType = serverManaged.stream(binaryIdentifier, DC.format, null).map(Triple::getObject)
+                                .map(Literal.class::cast).map(Literal::getLexicalForm).findFirst()
+                                .orElse("application/octet-stream");
+                log.debug("Persisting a NonRDFSource at {} with bitstream at {} of size {} and mimeType {}.", id,
+                                binaryIdentifier, size, mimeType);
+                return metadataForBinaryInsert(id, ixnModel, binaryIdentifier, size, mimeType);
+            }
+            // it's not a binary
+            return null;
+            // so just create RDFSource metadata
+        }).orElse(metadataInsert(id, ixnModel));
+    }
+
+    private static RegularStatement metadataInsert(final IRI id, final IRI ixnModel) {
+        return update(Meta.tableName).with(set("interactionModel", ixnModel)).where(eq("identifier", id));
+    }
+
+    private static RegularStatement metadataForBinaryInsert(final IRI id, final IRI ixnModel, IRI binaryIdentifier,
+                    long size, String mimeType) {
+        return update(Meta.tableName).with(set("interactionModel", ixnModel)).and(set("size", size))
+                        .and(set("mimeType", mimeType)).and(set("binaryIdentifier", binaryIdentifier))
+                        .where(eq("identifier", id));
     }
 
     private Future<Boolean> execute(RegularStatement... statements) {
         return translate(cassandraSession.executeAsync(batch(statements)));
-    }
-
-    private RegularStatement metadataInsert(final IRI id, final IRI ixnModel) {
-        return update(Meta.tableName).with(set("interactionModel", ixnModel)).where(eq("identifier", id));
     }
 
     private Future<Boolean> translate(ResultSetFuture result) {
