@@ -3,8 +3,9 @@ CREATE KEYSPACE Trellis WITH replication = {'class':'SimpleStrategy', 'replicati
 
 USE Trellis;
 
-CREATE TABLE Metadata (identifier text PRIMARY KEY, interactionModel text, hasAcl boolean, parent text, modified timestamp);
+CREATE TABLE Metadata
+(identifier text PRIMARY KEY, interactionModel text, hasAcl boolean, parent text);
                         
-CREATE TABLE Mutabledata (identifier text PRIMARY KEY, quads text, modified timestamp);
+CREATE TABLE Mutabledata (identifier text PRIMARY KEY, quads text);
                            
-CREATE TABLE Immutabledata (identifier text PRIMARY KEY, quads text, modified timestamp);
+CREATE TABLE Immutabledata (identifier text PRIMARY KEY, quads text);

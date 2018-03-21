@@ -39,6 +39,7 @@ import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.Session;
 
 import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.Metadata;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.ResultSetFuture;
@@ -56,6 +57,9 @@ public class CassandraResourceService implements ResourceService {
     private static final Logger log = LoggerFactory.getLogger(CassandraResourceService.class);
 
     private static final String[] DATA_COLUMNS = new String[] { "identifier", "quads" };
+    private static final String[] METADATA_COLUMNS = new String[] { "identifier", "interactionModel", "hasAcl",
+            "parent text"};    
+    
     private final com.datastax.driver.core.Session cassandraSession;
 
     private static final JenaRDF rdf = new JenaRDF();
@@ -92,6 +96,9 @@ public class CassandraResourceService implements ResourceService {
     @Inject
     public CassandraResourceService(final com.datastax.driver.core.Session session) {
         this.cassandraSession = session;
+        Metadata metadata = session.getCluster().getMetadata();
+        log.info("Connecting to cluster: {}", metadata.getClusterName());
+        log.info("with nodes: {}", metadata.getAllHosts());
         scanStatement = session.prepare(SCAN_QUERY).bind();
         containsStatement = session.prepare(CONTAINS_QUERY);
         deleteStatement = session.prepare(DELETE_QUERY);
@@ -185,6 +192,7 @@ public class CassandraResourceService implements ResourceService {
 
     private Future<Boolean> write(final IRI id, final IRI ixnModel, final Dataset dataset) {
         Insert mutableDataInsert = insertInto(Mutable.tableName).values(DATA_COLUMNS, new Object[] { id, dataset });
+        //Insert mutableDataInsert = insertInto(Mutable.tableName).values(DATA_COLUMNS, new Object[] { id, dataset });
         RegularStatement[] ops = new RegularStatement[] { mutableDataInsert, metadataInsert(id, ixnModel) };
         return execute(ops);
     }

@@ -38,7 +38,8 @@ public class CassandraResource implements Resource {
     public static final String immutableQuadStreamQuery = "SELECT quads FROM " + Immutable.tableName
                     + "  WHERE identifier = ? ;";
 
-    public static final String metadataQuery = "SELECT * FROM " + Meta.tableName + " WHERE identifier = ? LIMIT 1 ;";
+    public static final String metadataQuery = "SELECT identifier, interactionModel, hasAcl, parent, WRITETIME(interactionModel) AS modified FROM "
+                    + Meta.tableName + " WHERE identifier = ? LIMIT 1 ;";
 
     private final PreparedStatement immutableQuadStreamStatement, mutableQuadStreamStatement, metadataStatement;
 
@@ -104,7 +105,7 @@ public class CassandraResource implements Resource {
                 if (result == null) { // Second check (with locking)
                     final Row metadata = fetchMetadata();
                     hasAcl = metadata.getBool("hasAcl");
-                    modified = metadata.get("modified", Instant.class);
+                    modified = Instant.ofEpochMilli(metadata.get("modified", Long.class));
                     interactionModel = metadata.get("interactionModel", IRI.class);
                     parent = metadata.get("parent", IRI.class);
                 }
