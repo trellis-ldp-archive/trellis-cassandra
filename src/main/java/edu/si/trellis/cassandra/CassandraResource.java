@@ -6,6 +6,7 @@ import static edu.si.trellis.cassandra.CassandraResourceService.Mutability.Mutab
 import static java.util.Objects.requireNonNull;
 
 import java.time.Instant;
+import java.util.Optional;
 import java.util.Spliterator;
 import java.util.concurrent.Executor;
 import java.util.stream.Stream;
@@ -15,8 +16,10 @@ import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
+import org.trellisldp.api.Binary;
 import org.trellisldp.api.RDFUtils;
 import org.trellisldp.api.Resource;
+import org.trellisldp.vocabulary.LDP;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
@@ -27,45 +30,43 @@ public class CassandraResource implements Resource {
 
     private static final RDF RDF = RDFUtils.getInstance();
 
-    /**
-     * Same-thread execution. TODO optimize with a threadpool
-     */
-    private final Executor executor = Runnable::run;
-
     public static final String mutableQuadStreamQuery = "SELECT quads FROM " + Mutable.tableName
                     + "  WHERE identifier = ? ;";
 
     public static final String immutableQuadStreamQuery = "SELECT quads FROM " + Immutable.tableName
                     + "  WHERE identifier = ? ;";
 
-    public static final String metadataQuery = "SELECT identifier, interactionModel, hasAcl, parent, WRITETIME(interactionModel) AS modified FROM "
-                    + Meta.tableName + " WHERE identifier = ? LIMIT 1 ;";
+    public static final String metadataQuery = "SELECT identifier, interactionModel, hasAcl, binaryIdentifier, "
+                    + "mimeType, size, parent, WRITETIME(interactionModel) AS modified FROM " + Meta.tableName
+                    + " WHERE identifier = ? LIMIT 1 ;";
 
-    private final PreparedStatement immutableQuadStreamStatement, mutableQuadStreamStatement, metadataStatement;
+    private static PreparedStatement immutableQuadStreamStatement, mutableQuadStreamStatement, metadataStatement;
 
     private Session session;
 
     private final IRI identifier;
 
-    public IRI parent;
+    private volatile IRI binaryIdentifier, parent, interactionModel;
+    
+    private volatile String mimeType;
 
-    private volatile IRI interactionModel;
-
+    private volatile long size;
+    
     private volatile Boolean hasAcl;
 
     private volatile Instant modified;
 
-    public CassandraResource(final IRI identifier, final IRI ixnModel, final Session session) {
+    public CassandraResource(final IRI identifier, final Session session) {
         this.identifier = requireNonNull(identifier);
         this.session = requireNonNull(session);
-        this.interactionModel = ixnModel;
-        this.mutableQuadStreamStatement = session.prepare(mutableQuadStreamQuery);
-        this.immutableQuadStreamStatement = session.prepare(immutableQuadStreamQuery);
-        this.metadataStatement = session.prepare(metadataQuery);
+        // don't need to synchronize because preparing twice is inefficient but not a fault
+        if (mutableQuadStreamStatement == null) prepareQueries();
     }
 
-    public CassandraResource(final IRI identifier, final Session session) {
-        this(identifier, null, session);
+    private void prepareQueries() {
+        mutableQuadStreamStatement = session.prepare(mutableQuadStreamQuery);
+        immutableQuadStreamStatement = session.prepare(immutableQuadStreamQuery);
+        metadataStatement = session.prepare(metadataQuery);
     }
 
     @Override
@@ -73,6 +74,9 @@ public class CassandraResource implements Resource {
         return identifier;
     }
 
+    /**
+     * @return a container for this resource
+     */
     public IRI getParent() {
         computeMetadata();
         return parent;
@@ -107,10 +111,21 @@ public class CassandraResource implements Resource {
                     hasAcl = metadata.getBool("hasAcl");
                     modified = Instant.ofEpochMilli(metadata.get("modified", Long.class));
                     interactionModel = metadata.get("interactionModel", IRI.class);
+                    mimeType = metadata.getString("mimetype");
+                    size = metadata.getLong("size");
                     parent = metadata.get("parent", IRI.class);
                 }
             }
         }
+    }
+    
+    @Override
+    public Optional<Binary> getBinary() {
+        return Optional.ofNullable(isBinary() ? new Binary(identifier, modified, mimeType, size) : null);
+    }
+
+    private boolean isBinary() {
+        return LDP.NonRDFSource.equals(getInteractionModel());
     }
 
     private Row fetchMetadata() {
