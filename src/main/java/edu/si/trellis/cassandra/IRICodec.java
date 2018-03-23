@@ -5,17 +5,18 @@ import static com.google.common.cache.CacheLoader.from;
 import static java.nio.ByteBuffer.wrap;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import java.nio.ByteBuffer;
-
-import org.apache.commons.rdf.api.IRI;
-import org.apache.commons.rdf.jena.JenaRDF;
-
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.TypeCodec;
 import com.datastax.driver.core.exceptions.InvalidTypeException;
 import com.datastax.driver.core.utils.Bytes;
 import com.google.common.cache.LoadingCache;
+
+import java.nio.ByteBuffer;
+
+import org.apache.commons.rdf.api.IRI;
+import org.apache.commons.rdf.api.RDF;
+import org.trellisldp.api.RDFUtils;
 
 /**
  * (De)serializes Commons RDF {@link IRI}s (out of)into Cassandra fields.
@@ -34,7 +35,7 @@ public class IRICodec extends TypeCodec<IRI> {
 
     protected static final long cacheMaximumSize = 10 ^ 6;
 
-    protected static final JenaRDF rdf = new JenaRDF();
+    protected static final RDF rdf = RDFUtils.getInstance();
 
     private final LoadingCache<String, IRI> cache = newBuilder().concurrencyLevel(cacheConcurrencyLevel)
                     .maximumSize(cacheMaximumSize).build(from(this::deserialize));
