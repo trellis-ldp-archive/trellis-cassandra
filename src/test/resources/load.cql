@@ -1,12 +1,12 @@
 
-CREATE KEYSPACE Trellis WITH replication = {'class':'SimpleStrategy', 'replication_factor':1};
+CREATE KEYSPACE IF NOT EXISTS Trellis WITH replication = {'class':'SimpleStrategy', 'replication_factor':1};
 
 USE Trellis;
 
-CREATE TABLE Metadata
+CREATE TABLE IF NOT EXISTS Metadata
 (identifier text PRIMARY KEY, interactionModel text, hasAcl boolean, binaryIdentifier text, 
 mimeType text, size bigint, parent text);
                         
-CREATE TABLE Mutabledata (identifier text PRIMARY KEY, quads text);
+CREATE TABLE IF NOT EXISTS Mutabledata (identifier text PRIMARY KEY, quads text);
 
-CREATE TABLE Immutabledata (identifier text PRIMARY KEY, quads text);
+CREATE TABLE IF NOT EXISTS Immutabledata (identifier text PRIMARY KEY, quads text);

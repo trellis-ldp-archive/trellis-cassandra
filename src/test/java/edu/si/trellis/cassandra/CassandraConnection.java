@@ -11,14 +11,16 @@ import org.slf4j.Logger;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.TypeCodec;
 import com.datastax.driver.extras.codecs.jdk8.InstantCodec;
 
 class CassandraConnection extends ExternalResource {
 
+    private static final String[] CLEANOUT_QUERIES = new String[] { "TRUNCATE Metadata ; ", "TRUNCATE Mutabledata ; ",
+            "TRUNCATE Immutabledata ;" };
+
     private static final Logger log = getLogger(CassandraConnection.class);
 
-    private static final String KEYSPACE = "Trellis";
+    private final String keyspace;
 
     protected Cluster cluster;
     protected Session session;
@@ -26,18 +28,29 @@ class CassandraConnection extends ExternalResource {
     private final int port;
     private final String contactLocation;
 
-    public CassandraConnection(final String contactLocation, final int port) {
+    private final boolean cleanBefore, cleanAfter;
+
+    public CassandraConnection(final String contactLocation, final int port, final String keyspace,
+                    final boolean cleanBefore, final boolean cleanAfter) {
         this.contactLocation = contactLocation;
         this.port = port;
+        this.keyspace = keyspace;
+        this.cleanBefore = cleanBefore;
+        this.cleanAfter = cleanAfter;
     }
 
     @Override
     protected void before() {
         cluster = builder().withoutMetrics().addContactPoint(contactLocation).withPort(port).build();
-        codecRegistry().register(iriCodec, datasetCodec, InstantCodec.instance, TypeCodec.bigint());
-        session = cluster.connect(KEYSPACE);
+        codecRegistry().register(iriCodec, datasetCodec, InstantCodec.instance);
+        session = cluster.connect(keyspace);
         service = new CassandraResourceService(session);
-        
+        if (cleanBefore) cleanOut();
+    }
+
+    private void cleanOut() {
+        log.info("Cleaning out test keyspace {}", keyspace);
+        for (String q : CLEANOUT_QUERIES) session.execute(q);
     }
 
     private CodecRegistry codecRegistry() {
@@ -46,6 +59,7 @@ class CassandraConnection extends ExternalResource {
 
     @Override
     protected void after() {
+        if (cleanAfter) cleanOut();
         session.close();
         cluster.close();
     }
