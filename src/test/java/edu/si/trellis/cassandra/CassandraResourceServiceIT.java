@@ -46,7 +46,7 @@ public class CassandraResourceServiceIT extends Assert {
         Dataset quads = rdfFactory.createDataset();
         Quad quad = rdfFactory.createQuad(id, ixnModel, id, ixnModel);
         quads.add(quad);
-        Future<Boolean> put = connection.service.create(id, null, ixnModel, quads);
+        Future<Boolean> put = connection.service.create(id, null, ixnModel, quads, null, null);
         assertTrue(put.get());
         Resource resource = connection.service.get(id).orElseThrow(missing());
         assertEquals(id, resource.getIdentifier());
@@ -59,7 +59,7 @@ public class CassandraResourceServiceIT extends Assert {
     public void testScan() throws InterruptedException, ExecutionException {
         IRI id = createIRI("http://example.com/id2");
         IRI ixnModel = createIRI("http://example.com/ixnModel");
-        connection.service.create(id, null, ixnModel, rdfFactory.createDataset()).get();
+        connection.service.create(id, null, ixnModel, rdfFactory.createDataset(), null, null).get();
         assertEquals(1, connection.service.scan().count());
         Triple triple = connection.service.scan().findFirst().orElseThrow(missing());
         assertEquals(id, triple.getSubject());
@@ -74,7 +74,7 @@ public class CassandraResourceServiceIT extends Assert {
         Dataset quads = rdfFactory.createDataset();
         Quad quad = rdfFactory.createQuad(id, ixnModel, id, ixnModel);
         quads.add(quad);
-        Future<Boolean> put = connection.service.create(id, null, ixnModel, quads);
+        Future<Boolean> put = connection.service.create(id, null, ixnModel, quads, null, null);
         assertTrue(put.get());
         Instant longAgo = Instant.ofEpochMilli(-(10 ^ 10));
         Resource resource = connection.service.get(id, longAgo).orElseThrow(missing());
