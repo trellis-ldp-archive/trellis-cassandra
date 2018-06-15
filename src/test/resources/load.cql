@@ -10,3 +10,5 @@ mimeType text, size bigint, parent text);
 CREATE TABLE Mutabledata (identifier text PRIMARY KEY, quads text);
 
 CREATE TABLE Immutabledata (identifier text PRIMARY KEY, quads text);
+
+CREATE TABLE Binarydata (identifier text, chunk_index int, chunk blob, PRIMARY KEY (identifier, chunk_index)) WITH CLUSTERING ORDER BY (chunk_index ASC);

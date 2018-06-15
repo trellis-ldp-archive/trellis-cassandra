@@ -7,12 +7,14 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
+import org.trellisldp.api.IdentifierService;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TypeCodec;
 import com.datastax.driver.extras.codecs.jdk8.InstantCodec;
+import org.trellisldp.id.UUIDGenerator;
 
 class CassandraConnection extends ExternalResource {
 
@@ -23,6 +25,7 @@ class CassandraConnection extends ExternalResource {
     protected Cluster cluster;
     protected Session session;
     public CassandraResourceService service;
+    public CassandraBinaryService binaryService;
     private final int port;
     private final String contactLocation;
 
@@ -37,7 +40,8 @@ class CassandraConnection extends ExternalResource {
         codecRegistry().register(iriCodec, datasetCodec, InstantCodec.instance, TypeCodec.bigint());
         session = cluster.connect(KEYSPACE);
         service = new CassandraResourceService(session);
-        
+        // UUIDGenerator idService = new UUIDGenerator();
+        binaryService = new CassandraBinaryService(null, session, 1 * 1024 * 1024);
     }
 
     private CodecRegistry codecRegistry() {

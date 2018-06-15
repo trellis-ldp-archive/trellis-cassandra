@@ -97,9 +97,6 @@ public class CassandraResourceService implements ResourceService {
     @Inject
     public CassandraResourceService(final com.datastax.driver.core.Session session) {
         this.cassandraSession = session;
-        Metadata metadata = session.getCluster().getMetadata();
-        log.info("Connecting to cluster: {}", metadata.getClusterName());
-        log.info("with nodes: {}", metadata.getAllHosts());
         scanStatement = session.prepare(SCAN_QUERY).bind();
         containsStatement = session.prepare(CONTAINS_QUERY);
         deleteStatement = session.prepare(DELETE_QUERY);
