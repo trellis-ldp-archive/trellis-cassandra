@@ -27,11 +27,18 @@ public class CassandraResourceServiceIT extends Assert {
 
     protected static int port = Integer.getInteger("cassandra.nativeTransportPort");
 
+    protected static boolean cleanBefore = Boolean.getBoolean("cleanBeforeTests");
+    protected static boolean cleanAfter = Boolean.getBoolean("cleanAfterTests");
+
     protected RDF rdfFactory = new SimpleRDF();
 
+    /**
+     * Connects to test cluster.
+     */
     @ClassRule
-    public static final CassandraConnection connection = new CassandraConnection("127.0.0.1", port);
- 
+    public static final CassandraConnection connection = new CassandraConnection("127.0.0.1", port, "Trellis",
+                    cleanBefore, cleanAfter);
+
     @Test
     public void testCreateAndGet() throws InterruptedException, ExecutionException {
         IRI id = createIRI("http://example.com/id");

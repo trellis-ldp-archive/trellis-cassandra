@@ -21,16 +21,22 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.io.CountingInputStream;
+
 public class CassandraBinaryServiceIT extends Assert {
 
     private static final Logger log = LoggerFactory.getLogger(CassandraBinaryServiceIT.class);
 
     protected static int port = Integer.getInteger("cassandra.nativeTransportPort");
     
+    protected static boolean cleanBefore = Boolean.getBoolean("cleanBeforeTests");
+    protected static boolean cleanAfter = Boolean.getBoolean("cleanAfterTests");
+    
     protected RDF rdfFactory = new SimpleRDF();
     
     @ClassRule
-    public static final CassandraConnection connection = new CassandraConnection("127.0.0.1", port);
+    public static final CassandraConnection connection = new CassandraConnection("127.0.0.1", port, "Trellis",
+            cleanBefore, cleanAfter);
     
     @Test
     public void testSetAndGetSmallContent() throws IOException, InterruptedException {
@@ -39,7 +45,7 @@ public class CassandraBinaryServiceIT extends Assert {
     	InputStream testInput = IOUtils.toInputStream(content, "utf-8");
         connection.binaryService.setContent(id, testInput);
         
-        assertTrue(connection.binaryService.exists(id));
+        assertTrue("Binary must exist in storage.", connection.binaryService.exists(id));
         
         Optional<InputStream> got = connection.binaryService.getContent(id);
         assertTrue(got.isPresent());
@@ -60,12 +66,16 @@ public class CassandraBinaryServiceIT extends Assert {
     	IRI id = createIRI("http://example.com/id2");
     	final String md5sum = "89c4b71c69f59cde963ce8aa9dbe1617";
     	FileInputStream fis = new FileInputStream("src/test/resources/test.jpg");
-        connection.binaryService.setContent(id, fis);
+    	CountingInputStream cis = new CountingInputStream(fis);
+        connection.binaryService.setContent(id, cis);
+        long bytesWritten = cis.getCount();
         
         Optional<InputStream> got = connection.binaryService.getContent(id);
         assertTrue(got.isPresent());
         InputStream is = got.get();
-        String digest = DigestUtils.md5Hex(is);
+        CountingInputStream counting = new CountingInputStream(is);
+        String digest = DigestUtils.md5Hex(counting);
+        assertEquals(bytesWritten, counting.getCount());
         assertEquals(md5sum, digest);
     }
     
@@ -75,7 +85,9 @@ public class CassandraBinaryServiceIT extends Assert {
     	FileInputStream fis = new FileInputStream("src/test/resources/test.jpg");
     	BoundedInputStream bounded = new BoundedInputStream(fis, 1048576+1);
     	for(int i = 0; i < 500; i++) bounded.read();
-    	String rangedigest = DigestUtils.md5Hex(bounded);
+    	CountingInputStream cis = new CountingInputStream(bounded);
+    	String rangedigest = DigestUtils.md5Hex(cis);
+    	long byteCount = cis.getCount();
     	FileInputStream input = new FileInputStream("src/test/resources/test.jpg");
         connection.binaryService.setContent(id, input);
         
@@ -89,7 +101,9 @@ public class CassandraBinaryServiceIT extends Assert {
         Optional<InputStream> got = connection.binaryService.getContent(id, ranges);
         assertTrue(got.isPresent());
         
-        String digest = DigestUtils.md5Hex(got.get());
+        CountingInputStream counting = new CountingInputStream(got.get());
+        String digest = DigestUtils.md5Hex(counting);
+        assertEquals(byteCount, counting.getCount());
         assertEquals(rangedigest, digest);
     }
     

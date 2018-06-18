@@ -18,6 +18,7 @@ import static org.trellisldp.vocabulary.RDF.type;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.Spliterator;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
@@ -43,12 +44,12 @@ import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Trellis;
 
 import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.Metadata;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.querybuilder.Insert;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Implements persistence into a simple Apache Cassandra schema.
@@ -57,6 +58,9 @@ import com.datastax.driver.core.querybuilder.Insert;
  *
  */
 public class CassandraResourceService implements ResourceService {
+
+    private static final ImmutableSet<IRI> SUPPORTED_INTERACTION_MODELS = ImmutableSet.of(LDP.Resource, LDP.RDFSource, LDP.NonRDFSource, LDP.Container,
+                    LDP.BasicContainer, LDP.DirectContainer, LDP.IndirectContainer);
 
     private static final Logger log = LoggerFactory.getLogger(CassandraResourceService.class);
 
@@ -163,12 +167,10 @@ public class CassandraResourceService implements ResourceService {
         return execute(immutableDataInsert);
     }
 
-    @Override
-    public Future<Boolean> create(final IRI id, final Session session, final IRI ixnModel, final Dataset dataset) {
+    public Future<Boolean> create(IRI id, Session session, IRI ixnModel, Dataset dataset) {
         return write(id, ixnModel, dataset);
     }
 
-    @Override
     public Future<Boolean> replace(final IRI id, final Session session, final IRI ixnModel, final Dataset dataset) {
         return write(id, ixnModel, dataset);
     }
@@ -244,5 +246,9 @@ public class CassandraResourceService implements ResourceService {
                 throw new RuntimeTrellisException(new CompletionException(e));
             }
         }, executor);
+    }
+
+    public Set<IRI> supportedInteractionModels() {
+        return SUPPORTED_INTERACTION_MODELS;
     }
 }
