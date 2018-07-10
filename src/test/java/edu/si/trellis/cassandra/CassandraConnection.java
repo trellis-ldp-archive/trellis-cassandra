@@ -7,13 +7,11 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
-import org.trellisldp.api.IdentifierService;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.extras.codecs.jdk8.InstantCodec;
-import org.trellisldp.id.UUIDGenerator;
 
 class CassandraConnection extends ExternalResource {
 

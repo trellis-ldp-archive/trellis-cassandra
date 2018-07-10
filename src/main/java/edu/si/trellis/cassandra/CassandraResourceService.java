@@ -36,6 +36,7 @@ import org.apache.commons.rdf.api.Triple;
 import org.apache.commons.rdf.jena.JenaRDF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.trellisldp.api.Binary;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.Session;
@@ -167,11 +168,11 @@ public class CassandraResourceService implements ResourceService {
         return execute(immutableDataInsert);
     }
 
-    public Future<Boolean> create(IRI id, Session session, IRI ixnModel, Dataset dataset) {
+    public Future<Boolean> create(IRI id, Session session, IRI ixnModel, Dataset dataset, IRI container, Binary binary) {
         return write(id, ixnModel, dataset);
     }
 
-    public Future<Boolean> replace(final IRI id, final Session session, final IRI ixnModel, final Dataset dataset) {
+    public Future<Boolean> replace(final IRI id, final Session session, final IRI ixnModel, final Dataset dataset, final IRI container, final Binary binary) {
         return write(id, ixnModel, dataset);
     }
 

@@ -41,12 +41,13 @@ public class CassandraResourceServiceIT extends Assert {
 
     @Test
     public void testCreateAndGet() throws InterruptedException, ExecutionException {
-        IRI id = createIRI("http://example.com/id");
+        IRI id = createIRI("http://example.com/id/foo");
+        IRI container = createIRI("http://example.com/id");
         IRI ixnModel = createIRI("http://example.com/ixnModel");
         Dataset quads = rdfFactory.createDataset();
         Quad quad = rdfFactory.createQuad(id, ixnModel, id, ixnModel);
         quads.add(quad);
-        Future<Boolean> put = connection.service.create(id, null, ixnModel, quads);
+        Future<Boolean> put = connection.service.create(id, null, ixnModel, quads, container, null);
         assertTrue(put.get());
         Resource resource = connection.service.get(id).orElseThrow(missing());
         assertEquals(id, resource.getIdentifier());
@@ -57,9 +58,10 @@ public class CassandraResourceServiceIT extends Assert {
 
     @Test
     public void testScan() throws InterruptedException, ExecutionException {
-        IRI id = createIRI("http://example.com/id2");
+        IRI id = createIRI("http://example.com/id/foo2");
+        IRI container = createIRI("http://example.com/id");
         IRI ixnModel = createIRI("http://example.com/ixnModel");
-        connection.service.create(id, null, ixnModel, rdfFactory.createDataset()).get();
+        connection.service.create(id, null, ixnModel, rdfFactory.createDataset(), container, null).get();
         assertEquals(1, connection.service.scan().count());
         Triple triple = connection.service.scan().findFirst().orElseThrow(missing());
         assertEquals(id, triple.getSubject());
@@ -69,12 +71,13 @@ public class CassandraResourceServiceIT extends Assert {
 
     @Test
     public void testGetWithTime() throws InterruptedException, ExecutionException {
-        IRI id = createIRI("http://example.com/id3");
+        IRI id = createIRI("http://example.com/id/foo3");
+        IRI container = createIRI("http://example.com/id");
         IRI ixnModel = createIRI("http://example.com/ixnModel");
         Dataset quads = rdfFactory.createDataset();
         Quad quad = rdfFactory.createQuad(id, ixnModel, id, ixnModel);
         quads.add(quad);
-        Future<Boolean> put = connection.service.create(id, null, ixnModel, quads);
+        Future<Boolean> put = connection.service.create(id, null, ixnModel, quads, container, null);
         assertTrue(put.get());
         Instant longAgo = Instant.ofEpochMilli(-(10 ^ 10));
         Resource resource = connection.service.get(id, longAgo).orElseThrow(missing());
