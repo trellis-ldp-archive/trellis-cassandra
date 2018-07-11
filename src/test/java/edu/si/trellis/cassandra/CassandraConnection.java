@@ -16,7 +16,7 @@ import com.datastax.driver.extras.codecs.jdk8.InstantCodec;
 class CassandraConnection extends ExternalResource {
 
     private static final String[] CLEANOUT_QUERIES = new String[] { "TRUNCATE Metadata ; ", "TRUNCATE Mutabledata ; ",
-            "TRUNCATE Immutabledata ;" };
+            "TRUNCATE Immutabledata ;", "TRUNCATE Binarydata ;" };
 
     private static final Logger log = getLogger(CassandraConnection.class);
 
@@ -25,6 +25,7 @@ class CassandraConnection extends ExternalResource {
     protected Cluster cluster;
     protected Session session;
     public CassandraResourceService service;
+    public CassandraBinaryService binaryService;
     private final int port;
     private final String contactLocation;
 
@@ -45,6 +46,8 @@ class CassandraConnection extends ExternalResource {
         codecRegistry().register(iriCodec, datasetCodec, InstantCodec.instance);
         session = cluster.connect(keyspace);
         service = new CassandraResourceService(session);
+        // UUIDGenerator idService = new UUIDGenerator();
+        binaryService = new CassandraBinaryService(null, session, 1 * 1024 * 1024);
         if (cleanBefore) cleanOut();
     }
 

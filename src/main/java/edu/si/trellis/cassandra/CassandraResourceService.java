@@ -45,7 +45,6 @@ import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Trellis;
 
 import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.Metadata;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.RegularStatement;
 import com.datastax.driver.core.ResultSetFuture;
@@ -103,9 +102,6 @@ public class CassandraResourceService implements ResourceService {
     @Inject
     public CassandraResourceService(final com.datastax.driver.core.Session session) {
         this.cassandraSession = session;
-        Metadata metadata = session.getCluster().getMetadata();
-        log.info("Connecting to cluster: {}", metadata.getClusterName());
-        log.info("with nodes: {}", metadata.getAllHosts());
         scanStatement = session.prepare(SCAN_QUERY).bind();
         containsStatement = session.prepare(CONTAINS_QUERY);
         deleteStatement = session.prepare(DELETE_QUERY);
@@ -172,15 +168,11 @@ public class CassandraResourceService implements ResourceService {
         return execute(immutableDataInsert);
     }
 
-    @Override
-    public Future<Boolean> create(IRI id, Session session, IRI ixnModel, Dataset dataset, IRI container,
-                    Binary binary) {
+    public Future<Boolean> create(IRI id, Session session, IRI ixnModel, Dataset dataset, IRI container, Binary binary) {
         return write(id, ixnModel, dataset);
     }
 
-    @Override
-    public Future<Boolean> replace(final IRI id, final Session session, final IRI ixnModel, final Dataset dataset, IRI container,
-                    Binary binary) {
+    public Future<Boolean> replace(final IRI id, final Session session, final IRI ixnModel, final Dataset dataset, final IRI container, final Binary binary) {
         return write(id, ixnModel, dataset);
     }
 
@@ -257,7 +249,6 @@ public class CassandraResourceService implements ResourceService {
         }, executor);
     }
 
-    @Override
     public Set<IRI> supportedInteractionModels() {
         return SUPPORTED_INTERACTION_MODELS;
     }

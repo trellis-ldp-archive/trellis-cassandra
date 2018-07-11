@@ -10,3 +10,6 @@ mimeType text, size bigint, parent text);
 CREATE TABLE IF NOT EXISTS Mutabledata (identifier text PRIMARY KEY, quads text);
 
 CREATE TABLE IF NOT EXISTS Immutabledata (identifier text PRIMARY KEY, quads text);
+
+CREATE TABLE IF NOT EXISTS Binarydata (identifier text, chunk_index int, chunk blob,
+PRIMARY KEY (identifier, chunk_index)) WITH CLUSTERING ORDER BY (chunk_index ASC);
