@@ -102,16 +102,14 @@ public class CassandraBinaryService implements BinaryService {
     @Override
     public Optional<InputStream> getContent(IRI identifier, List<Range<Integer>> ranges) {
         requireNonNull(ranges, "Byte ranges may not be null!");
+        if (ranges.isEmpty()) throw new IllegalArgumentException("ranges cannot be empty!");
+
         // TODO https://github.com/trellis-ldp/trellis/issues/148
         try {
-            return Optional.of(_getContent(identifier, ranges).get());
+            return Optional.of(readRanges(identifier, ranges).get());
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeTrellisException(e);
         }
-    }
-
-    private CompletableFuture<InputStream> _getContent(IRI identifier, List<Range<Integer>> ranges) {
-        return ranges.isEmpty() ? readAll(identifier) : readRanges(identifier, ranges);
     }
 
     private Executor translator = Runnable::run;
@@ -124,6 +122,16 @@ public class CassandraBinaryService implements BinaryService {
                 throw new RuntimeTrellisException(e);
             }
         }, translator);
+    }
+
+    @Override
+    public Optional<InputStream> getContent(IRI identifier) {
+        // TODO https://github.com/trellis-ldp/trellis/issues/148
+        try {
+            return Optional.of(readAll(identifier).get());
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeTrellisException(e);
+        }
     }
 
     private CompletableFuture<InputStream> readAll(IRI identifier) {
