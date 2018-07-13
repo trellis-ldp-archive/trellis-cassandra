@@ -1,5 +1,9 @@
 package edu.si.trellis.cassandra;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
+import com.google.common.io.CountingInputStream;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,8 +24,6 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.io.CountingInputStream;
 
 public class CassandraBinaryServiceIT extends Assert {
 
@@ -57,7 +59,7 @@ public class CassandraBinaryServiceIT extends Assert {
         Optional<InputStream> got2 = connection.binaryService.getContent(id, ranges);
         assertTrue(got2.isPresent());
         InputStream is = got2.get();
-        String reply2 = IOUtils.toString(is, "utf-8");
+        String reply2 = IOUtils.toString(is, UTF_8);
         assertEquals(content.subSequence(5, 12), reply2);
     }
     
@@ -92,7 +94,7 @@ public class CassandraBinaryServiceIT extends Assert {
         connection.binaryService.setContent(id, input);
         
         List<Range<Integer>> ranges = new ArrayList<>();
-        // bytes=0-835583
+        // bytes=500-835583
         // bytes=835584-1048576  (1 * 1024 * 1024)
         // FIXME: Range requests can be one sided, i.e. bytes=-900 for last 900 bytes, or 900- for bytes 900 on.
         ranges.add(Range.between(500, 835583));

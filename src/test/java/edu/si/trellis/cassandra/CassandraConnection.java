@@ -3,6 +3,7 @@ package edu.si.trellis.cassandra;
 import static com.datastax.driver.core.Cluster.builder;
 import static edu.si.trellis.cassandra.DatasetCodec.datasetCodec;
 import static edu.si.trellis.cassandra.IRICodec.iriCodec;
+import static edu.si.trellis.cassandra.InputStreamCodec.inputStreamCodec;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import org.junit.rules.ExternalResource;
@@ -43,7 +44,7 @@ class CassandraConnection extends ExternalResource {
     @Override
     protected void before() {
         cluster = builder().withoutMetrics().addContactPoint(contactLocation).withPort(port).build();
-        codecRegistry().register(iriCodec, datasetCodec, InstantCodec.instance);
+        codecRegistry().register(inputStreamCodec, iriCodec, datasetCodec, InstantCodec.instance);
         session = cluster.connect(keyspace);
         service = new CassandraResourceService(session);
         // UUIDGenerator idService = new UUIDGenerator();
