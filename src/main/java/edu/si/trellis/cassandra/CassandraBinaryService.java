@@ -11,12 +11,7 @@ import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static java.util.stream.StreamSupport.stream;
-import static org.apache.commons.codec.digest.MessageDigestAlgorithms.MD2;
-import static org.apache.commons.codec.digest.MessageDigestAlgorithms.MD5;
-import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_1;
-import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_256;
-import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_384;
-import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_512;
+import static org.apache.commons.codec.digest.MessageDigestAlgorithms.*;
 
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSetFuture;
@@ -206,9 +201,10 @@ public class CassandraBinaryService implements BinaryService {
 
     @Override
     public Optional<String> digest(final String algorithm, final InputStream stream) {
-        if (SHA.equals(algorithm)) { return of(SHA_1).map(DigestUtils::getDigest).flatMap(digest(stream)); }
-        return ofNullable(algorithm).filter(supportedAlgorithms()::contains).map(DigestUtils::getDigest)
-                        .flatMap(digest(stream));
+        return SHA.equals(algorithm) 
+                        ? of(SHA_1).map(DigestUtils::getDigest).map(digest(stream))
+                        : ofNullable(algorithm).filter(supportedAlgorithms()::contains).map(DigestUtils::getDigest)
+                                        .map(digest(stream));
     }
 
     @Override
@@ -216,16 +212,16 @@ public class CassandraBinaryService implements BinaryService {
         return algorithms;
     }
 
-    private Function<MessageDigest, Optional<String>> digest(final InputStream stream) {
+    private Function<MessageDigest, String> digest(final InputStream stream) {
         return algorithm -> {
             try {
                 final String digest = getEncoder().encodeToString(DigestUtils.updateDigest(algorithm, stream).digest());
                 stream.close();
-                return of(digest);
-            } catch (final IOException ex) {
-                log.error("Error computing digest", ex);
+                return digest;
+            } catch (final IOException e) {
+                log.error("Error computing digest!", e);
             }
-            return empty();
+            return "";
         };
     }
 
@@ -233,6 +229,4 @@ public class CassandraBinaryService implements BinaryService {
     public String generateIdentifier() {
         return idService.getSupplier().get();
     }
-
-
 }
