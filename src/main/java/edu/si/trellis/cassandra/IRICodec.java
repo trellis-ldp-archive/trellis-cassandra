@@ -11,8 +11,10 @@ import com.datastax.driver.core.TypeCodec;
 import com.datastax.driver.core.exceptions.InvalidTypeException;
 import com.datastax.driver.core.utils.Bytes;
 import com.google.common.cache.LoadingCache;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 
 import java.nio.ByteBuffer;
+import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
@@ -63,7 +65,7 @@ class IRICodec extends TypeCodec<IRI> {
 
     @Override
     public IRI deserialize(ByteBuffer bytes, ProtocolVersion protocolVersion) throws InvalidTypeException {
-        return bytes == null || bytes.remaining() == 0 ? null : parse(new String(Bytes.getArray(bytes), UTF_8));
+        return bytes == null ? null : parse(new String(Bytes.getArray(bytes), UTF_8));
     }
 
     @Override
@@ -71,7 +73,7 @@ class IRICodec extends TypeCodec<IRI> {
         if (v == null || v.isEmpty()) return null;
         try {
             return cache.get(v);
-        } catch (Exception e) {
+        } catch (ExecutionException|UncheckedExecutionException e) {
             throw new InvalidTypeException("Bad URI!", e);
         }
     }
