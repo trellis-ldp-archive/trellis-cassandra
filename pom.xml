@@ -88,9 +88,9 @@
         </executions>
         <dependencies>
           <dependency>
-              <groupId>org.apache.cassandra</groupId>
-              <artifactId>cassandra-all</artifactId>
-              <version>${cassandra.test.version}</version>
+            <groupId>org.apache.cassandra</groupId>
+            <artifactId>cassandra-all</artifactId>
+            <version>${cassandra.test.version}</version>
           </dependency>
         </dependencies>
       </plugin>
@@ -114,7 +114,7 @@
       <artifactId>trellis-id</artifactId>
       <version>0.1.0</version>
     </dependency>
-    
+
     <dependency>
       <groupId>com.datastax.cassandra</groupId>
       <artifactId>cassandra-driver-extras</artifactId>
@@ -127,11 +127,8 @@
       </exclusions>
     </dependency>
 
-    <!--  <dependency>
-      <groupId>io.dropwizard.metrics</groupId>
-      <artifactId>metrics-core</artifactId>
-      <version>4.0.2</version>
-    </dependency>-->
+    <!-- <dependency> <groupId>io.dropwizard.metrics</groupId> <artifactId>metrics-core</artifactId> <version>4.0.2</version> 
+      </dependency> -->
 
     <dependency>
       <groupId>org.apache.commons</groupId>

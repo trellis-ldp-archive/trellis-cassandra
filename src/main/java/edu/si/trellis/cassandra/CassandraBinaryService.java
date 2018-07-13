@@ -1,7 +1,5 @@
 package edu.si.trellis.cassandra;
-import static com.google.common.collect.Lists.transform;
 import static java.util.Base64.getEncoder;
-import static java.util.Collections.enumeration;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
@@ -99,9 +97,9 @@ public class CassandraBinaryService implements BinaryService {
     public Optional<InputStream> getContent(IRI identifier, List<Range<Integer>> ranges) {
         requireNonNull(ranges, "Byte ranges may not be null");
         return ranges.isEmpty() ? Optional.ofNullable(readAll(identifier))
-                        : Optional.of(new SequenceInputStream(
-                                        enumeration(transform(ranges, r -> readRange(identifier, r)))));
-    }                
+                        : ranges.stream().map(r -> readRange(identifier, r)).sequential()
+                                        .reduce(SequenceInputStream::new);
+    }              
 
     private InputStream readAll(IRI identifier) {
         final PipedOutputStream output = new PipedOutputStream();
