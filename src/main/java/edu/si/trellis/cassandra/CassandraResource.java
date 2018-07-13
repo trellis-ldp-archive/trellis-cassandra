@@ -5,10 +5,14 @@ import static edu.si.trellis.cassandra.CassandraResourceService.Mutability.Meta;
 import static edu.si.trellis.cassandra.CassandraResourceService.Mutability.Mutable;
 import static java.util.Objects.requireNonNull;
 
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.Row;
+import com.datastax.driver.core.Session;
+
 import java.time.Instant;
 import java.util.Optional;
 import java.util.Spliterator;
-import java.util.concurrent.Executor;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -20,11 +24,6 @@ import org.trellisldp.api.Binary;
 import org.trellisldp.api.RDFUtils;
 import org.trellisldp.api.Resource;
 import org.trellisldp.vocabulary.LDP;
-
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
 
 public class CassandraResource implements Resource {
 

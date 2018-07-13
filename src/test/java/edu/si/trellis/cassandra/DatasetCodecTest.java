@@ -1,5 +1,7 @@
 package edu.si.trellis.cassandra;
 
+import static edu.si.trellis.cassandra.DatasetCodec.datasetCodec;
+
 import com.datastax.driver.core.exceptions.InvalidTypeException;
 
 import org.apache.commons.rdf.api.BlankNodeOrIRI;
@@ -18,7 +20,7 @@ public class DatasetCodecTest extends Assert {
 
     @Test(expected = InvalidTypeException.class)
     public void badParse() {
-        new DatasetCodec().parse("SGDF   &&$$$dfshgou;sdfhgoudfhogh");
+        datasetCodec.parse("SGDF   &&$$$dfshgou;sdfhgoudfhogh");
     }
 
     @Test
@@ -30,7 +32,7 @@ public class DatasetCodecTest extends Assert {
         String nQuad3 = "<s> <p> <o> <g2> .";
         Quad q3 = quad(iri("g2"), iri("s"), iri("p"), iri("o"));
         String nQuads = String.join("\n", nQuad1, nQuad2, nQuad3);
-        try (Dataset dataset = new DatasetCodec().parse(nQuads)) {
+        try (Dataset dataset = datasetCodec.parse(nQuads)) {
             assertEquals(3, dataset.size());
             for (Quad q : new Quad[] { q1, q2, q3 })
                 assertTrue(dataset.contains(q));
@@ -39,10 +41,10 @@ public class DatasetCodecTest extends Assert {
 
     @Test
     public void nullForNull() {
-        assertEquals(0, new DatasetCodec().parse(null).size());
-        assertEquals(null, new DatasetCodec().format(null));
-        assertEquals(null, new DatasetCodec().serialize(null, null));
-        assertEquals(0, new DatasetCodec().deserialize(null, null).size());
+        assertEquals(0, datasetCodec.parse(null).size());
+        assertEquals(null, datasetCodec.format(null));
+        assertEquals(null, datasetCodec.serialize(null, null));
+        assertEquals(0, datasetCodec.deserialize(null, null).size());
     }
 
     private Quad quad(BlankNodeOrIRI g, BlankNodeOrIRI s, IRI p, RDFTerm o) {

@@ -1,12 +1,14 @@
 package edu.si.trellis.cassandra;
 
+import static edu.si.trellis.cassandra.IRICodec.iriCodec;
+
+import com.datastax.driver.core.exceptions.InvalidTypeException;
+
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.simple.SimpleRDF;
 import org.junit.Assert;
 import org.junit.Test;
-
-import com.datastax.driver.core.exceptions.InvalidTypeException;
 
 public class IRICodecTest extends Assert {
 
@@ -14,21 +16,21 @@ public class IRICodecTest extends Assert {
 
     @Test(expected = InvalidTypeException.class)
     public void badParse() {
-        new IRICodec().parse("SGDF   &&$$$dfshgou;sdfhgoudfhogh");
+        iriCodec.parse("SGDF   &&$$$dfshgou;sdfhgoudfhogh");
     }
 
     @Test
     public void testParse() {
         IRI iri = rdf.createIRI("http://example.com");
         String fieldForm = iri.getIRIString();
-        assertEquals(iri, new IRICodec().parse(fieldForm));
+        assertEquals(iri, iriCodec.parse(fieldForm));
     }
 
     @Test
     public void nullForNull() {
-        assertEquals(null, new IRICodec().parse(null));
-        assertEquals(null, new IRICodec().format(null));
-        assertEquals(null, new IRICodec().serialize(null, null));
-        assertEquals(null, new IRICodec().deserialize(null, null));
+        assertEquals(null, iriCodec.parse(null));
+        assertEquals(null, iriCodec.format(null));
+        assertEquals(null, iriCodec.serialize(null, null));
+        assertEquals(null, iriCodec.deserialize(null, null));
     }
 }

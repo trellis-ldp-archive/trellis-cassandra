@@ -24,12 +24,12 @@ import org.trellisldp.api.RDFUtils;
  * @author ajs6f
  *
  */
-public class IRICodec extends TypeCodec<IRI> {
+class IRICodec extends TypeCodec<IRI> {
 
     /**
      * Singleton instance.
      */
-    public static final IRICodec iriCodec = new IRICodec();
+    static final IRICodec iriCodec = new IRICodec();
 
     protected static final int cacheConcurrencyLevel = 16;
 
@@ -43,7 +43,7 @@ public class IRICodec extends TypeCodec<IRI> {
     /**
      * Default constructor.
      */
-    public IRICodec() {
+    private IRICodec() {
         super(DataType.text(), IRI.class);
     }
 

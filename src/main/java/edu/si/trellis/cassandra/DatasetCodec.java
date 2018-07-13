@@ -21,13 +21,13 @@ import com.datastax.driver.core.TypeCodec;
 import com.datastax.driver.core.exceptions.InvalidTypeException;
 import com.datastax.driver.core.utils.Bytes;
 
-public class DatasetCodec extends TypeCodec<Dataset> {
+class DatasetCodec extends TypeCodec<Dataset> {
     
-    public static final DatasetCodec datasetCodec = new DatasetCodec();
+    static final DatasetCodec datasetCodec = new DatasetCodec();
 
     private static final JenaRDF rdf = new JenaRDF();
     
-    public DatasetCodec() {
+    private DatasetCodec() {
         super(DataType.text(), Dataset.class);
     }
 

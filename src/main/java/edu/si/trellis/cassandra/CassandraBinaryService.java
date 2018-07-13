@@ -1,9 +1,13 @@
 package edu.si.trellis.cassandra;
+
+import static java.util.Arrays.copyOf;
 import static java.util.Base64.getEncoder;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
+import static java.util.concurrent.CompletableFuture.supplyAsync;
+import static java.util.stream.StreamSupport.stream;
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.MD2;
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.MD5;
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_1;
@@ -11,28 +15,29 @@ import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_256;
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_384;
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_512;
 
-import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
+import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.Statement;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.util.concurrent.ListenableFuture;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.io.SequenceInputStream;
 import java.io.UncheckedIOException;
-import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.input.BoundedInputStream;
@@ -42,6 +47,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IdentifierService;
+import org.trellisldp.api.RuntimeTrellisException;
 
 /**
  * Implements {@link BinaryService} by chunking binary data across Cassandra.
@@ -72,7 +78,7 @@ public class CassandraBinaryService implements BinaryService {
 
     private final PreparedStatement readStatement;
 
-    private static final String READ_RANGE_QUERY = "SELECT chunk FROM Binarydata WHERE identifier = ? and chunk_index >= :start and chunk_index <= :end;";
+    private static final String READ_RANGE_QUERY = "SELECT chunk, chunk_index FROM Binarydata WHERE identifier = ? and chunk_index >= :start and chunk_index <= :end;";
 
     private final PreparedStatement readRangeStatement;
 
@@ -95,81 +101,81 @@ public class CassandraBinaryService implements BinaryService {
 
     @Override
     public Optional<InputStream> getContent(IRI identifier, List<Range<Integer>> ranges) {
-        requireNonNull(ranges, "Byte ranges may not be null");
-        return ranges.isEmpty() ? Optional.ofNullable(readAll(identifier))
-                        : ranges.stream().map(r -> readRange(identifier, r)).sequential()
-                                        .reduce(SequenceInputStream::new);
-    }              
-
-    private InputStream readAll(IRI identifier) {
-        final PipedOutputStream output = new PipedOutputStream();
-        final PipedInputStream input;
+        requireNonNull(ranges, "Byte ranges may not be null!");
+        // TODO https://github.com/trellis-ldp/trellis/issues/148
         try {
-            input = new PipedInputStream(output);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
+            return Optional.of(_getContent(identifier, ranges).get());
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeTrellisException(e);
         }
-        BoundStatement boundStatement = readStatement.bind(identifier.getIRIString());
-        boundStatement.setConsistencyLevel(ConsistencyLevel.LOCAL_ONE);
-        ResultSet results = cassandraSession.execute(boundStatement);
-        new Thread(() -> {
-            try {
-                for (Row r : results) {
-                    ByteBuffer bbuf = r.getBytes(0);
-                    output.write(bbuf.array());
-                    output.flush();
-                }
-                output.close();
-            } catch (IOException e) {
-                log.error("Error reading chunk into stream: {}", e);
-                throw new UncheckedIOException("Error reading chunk into stream: {}", e);
-            }
-        }).start();
-        return input;
     }
 
-    private InputStream readRange(IRI identifier, Range<Integer> range) {
-        PipedOutputStream output = new PipedOutputStream();
-        final PipedInputStream input;
-        try {
-            input = new PipedInputStream(output);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+    private CompletableFuture<InputStream> _getContent(IRI identifier, List<Range<Integer>> ranges) {
+        return ranges.isEmpty() ? readAll(identifier) : readRanges(identifier, ranges);
+    }
+
+    private Executor translator = Runnable::run;
+
+    private <T> CompletableFuture<T> translate(ListenableFuture<T> from) {
+        return supplyAsync(() -> {
+            try {
+                return from.get();
+            } catch (InterruptedException | ExecutionException e) {
+                throw new RuntimeTrellisException(e);
+            }
+        }, translator);
+    }
+
+    private CompletableFuture<InputStream> readAll(IRI identifier) {
+        Statement boundStatement = readStatement.bind(identifier.getIRIString())
+                        .setConsistencyLevel(ConsistencyLevel.LOCAL_ONE);
+        ResultSetFuture results = cassandraSession.executeAsync(boundStatement);
+        return translate(results).thenApply(resultSet -> stream(resultSet.spliterator(), false)
+                        .map(r -> r.get(0, InputStream.class))
+                        .reduce(SequenceInputStream::new)
+                        // https://bugs.openjdk.java.net/browse/JDK-8054569
+                        .<RuntimeTrellisException>orElseThrow(noDataForIRI(identifier)));
+    }
+    
+    private static Supplier<RuntimeTrellisException> noDataForIRI(IRI identifier) {
+        return () -> new RuntimeTrellisException("No data for IRI: " + identifier + "!");
+    }
+
+    private CompletableFuture<InputStream> readRanges(IRI identifier, List<Range<Integer>> ranges) {
+        return ranges.stream().map(r -> readRange(identifier, r)).sequential()
+                        .reduce((chunk1, chunk2) -> chunk1.thenCombine(chunk2, SequenceInputStream::new))
+                        .<RuntimeTrellisException>orElseThrow(noDataForIRI(identifier));
+    }
+
+    private CompletableFuture<InputStream> readRange(IRI identifier, Range<Integer> range) {
         int startIndex = Math.floorDiv(range.getMinimum(), chunkLength);
         int endIndex = Math.floorDiv(range.getMaximum(), chunkLength);
         int chunkStreamStart = range.getMinimum() % chunkLength;
         int rangeSize = range.getMaximum() - range.getMinimum() + 1; // +1 because range is inclusive
-        int chunkStreamSize = chunkStreamStart + rangeSize;
-        BoundStatement boundStatement = readRangeStatement.bind(identifier.getIRIString(), startIndex, endIndex);
-        boundStatement.setConsistencyLevel(ConsistencyLevel.LOCAL_ONE);
-        ResultSet results = cassandraSession.execute(boundStatement);
-        new Thread(() -> {
-            try (OutputStream out = output) {
-                for (Row r : results) {
-                    ByteBuffer bbuf = r.getBytes(0);
-                    out.write(bbuf.array());
-                    out.flush();
-                }
-            } catch (IOException e) {
-                log.error("Error reading chunk into stream: {} for readRange {}", e.getMessage(), range.toString());
-                throw new UncheckedIOException("Error reading chunk into stream", e);
-            }
-        }).start();
-        try (BoundedInputStream boundedInputStream = new BoundedInputStream(input, chunkStreamSize)) {
-            boundedInputStream.setPropagateClose(false);
-            for (int i = 0; i < chunkStreamStart; i++)
-                boundedInputStream.read();
-            return boundedInputStream;
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+        Statement boundStatement = readRangeStatement.bind(identifier.getIRIString(), startIndex, endIndex)
+                        .setConsistencyLevel(ConsistencyLevel.LOCAL_ONE);
+        ResultSetFuture results = cassandraSession.executeAsync(boundStatement);
+        return translate(results).thenApply(resultSet -> stream(resultSet.spliterator(), false)
+                        .peek(r -> { log.debug("Retrieving chunk: {}", r.getInt("chunk_index")); })
+                        .map(r -> r.get("chunk", InputStream.class))
+                        .reduce(SequenceInputStream::new)
+                        // https://bugs.openjdk.java.net/browse/JDK-8054569
+                        .<RuntimeTrellisException>orElseThrow(noDataForIRI(identifier)))
+                        .thenApply(in -> {
+                            try {
+                                in.skip(chunkStreamStart);
+                            } catch (IOException e) {
+                                throw new UncheckedIOException(e);
+                            }
+                            return in;
+                        })
+                        .thenApply(in -> new BoundedInputStream(in, rangeSize));
     }
 
     @Override
     public Boolean exists(IRI identifier) {
-        BoundStatement boundStatement = containsStatement.bind(identifier.getIRIString());
-        containsStatement.setConsistencyLevel(ConsistencyLevel.LOCAL_ONE);
+        Statement boundStatement = containsStatement.bind(identifier.getIRIString())
+                        .setConsistencyLevel(ConsistencyLevel.LOCAL_ONE);
         return cassandraSession.execute(boundStatement).one() != null;
     }
 
@@ -180,11 +186,11 @@ public class CassandraBinaryService implements BinaryService {
         try {
             for (int len = stream.read(buffer); len != -1; len = stream.read(buffer)) {
                 chunkIndex++;
-                ByteBuffer chunk = ByteBuffer.allocate(len).put(buffer, 0, len);
-                chunk.flip();
-                BoundStatement boundStatement = insertStatement.bind(identifier.getIRIString(), chunkIndex, chunk);
-                boundStatement.setConsistencyLevel(ConsistencyLevel.LOCAL_QUORUM);
-                this.cassandraSession.execute(boundStatement);
+                try (ByteArrayInputStream chunk = new ByteArrayInputStream(copyOf(buffer, len))) {
+                    Statement boundStatement = insertStatement.bind(identifier.getIRIString(), chunkIndex, chunk)
+                                    .setConsistencyLevel(ConsistencyLevel.LOCAL_QUORUM);
+                    cassandraSession.execute(boundStatement);
+                }
             }
         } catch (final IOException ex) {
             log.error("Error while setting content: {}", ex.getMessage());
@@ -194,7 +200,7 @@ public class CassandraBinaryService implements BinaryService {
 
     @Override
     public void purgeContent(IRI identifier) {
-        BoundStatement boundStatement = deleteStatement.bind(identifier.getIRIString());
+        Statement boundStatement = deleteStatement.bind(identifier.getIRIString());
         cassandraSession.execute(boundStatement);
     }
 
@@ -227,5 +233,6 @@ public class CassandraBinaryService implements BinaryService {
     public String generateIdentifier() {
         return idService.getSupplier().get();
     }
+
 
 }
