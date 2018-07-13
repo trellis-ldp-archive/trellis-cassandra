@@ -6,7 +6,6 @@ import static java.lang.Math.floorDiv;
 import static java.util.Arrays.copyOf;
 import static java.util.Base64.getEncoder;
 import static java.util.Objects.requireNonNull;
-import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
@@ -135,7 +134,7 @@ public class CassandraBinaryService implements BinaryService {
                         .setConsistencyLevel(LOCAL_ONE);
         ResultSetFuture results = cassandraSession.executeAsync(boundStatement);
         return translate(results).thenApply(resultSet -> stream(resultSet.spliterator(), false)
-                        .map(r -> r.get(0, InputStream.class))
+                        .map(r -> r.get("chunk", InputStream.class))
                         .reduce(SequenceInputStream::new).get());
     }
 
@@ -212,12 +211,10 @@ public class CassandraBinaryService implements BinaryService {
         return algorithms;
     }
 
-    private Function<MessageDigest, String> digest(final InputStream stream) {
+    private Function<MessageDigest, String> digest(final InputStream in) {
         return algorithm -> {
-            try {
-                final String digest = getEncoder().encodeToString(DigestUtils.updateDigest(algorithm, stream).digest());
-                stream.close();
-                return digest;
+            try (InputStream stream = in) {
+                return getEncoder().encodeToString(DigestUtils.updateDigest(algorithm, stream).digest());
             } catch (final IOException e) {
                 log.error("Error computing digest!", e);
             }
