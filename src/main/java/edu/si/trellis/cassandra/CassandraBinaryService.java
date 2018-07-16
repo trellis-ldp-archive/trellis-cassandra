@@ -25,7 +25,6 @@ import java.io.InputStream;
 import java.io.SequenceInputStream;
 import java.io.UncheckedIOException;
 import java.security.MessageDigest;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -36,7 +35,6 @@ import java.util.function.Function;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.input.BoundedInputStream;
-import org.apache.commons.lang3.Range;
 import org.apache.commons.rdf.api.IRI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,38 +93,15 @@ public class CassandraBinaryService implements BinaryService {
     }
 
     @Override
-    public Optional<InputStream> getContent(IRI identifier, List<Range<Integer>> ranges) {
-        requireNonNull(ranges, "Byte ranges may not be null!");
-        if (ranges.isEmpty()) throw new IllegalArgumentException("ranges cannot be empty!");
-
-        // TODO https://github.com/trellis-ldp/trellis/issues/148
-        try {
-            return Optional.of(readRanges(identifier, ranges).get());
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeTrellisException(e);
-        }
-    }
-
-    private Executor translator = Runnable::run;
-
-    private <T> CompletableFuture<T> translate(ListenableFuture<T> from) {
-        return supplyAsync(() -> {
-            try {
-                return from.get();
-            } catch (InterruptedException | ExecutionException e) {
-                throw new RuntimeTrellisException(e);
-            }
-        }, translator);
+    public Optional<InputStream> getContent(IRI identifier, Integer from, Integer to) {
+        requireNonNull(from, "Byte range component 'from' may not be null!");
+        requireNonNull(to, "Byte range component 'to' may not be null!");
+        return resynchronize(readRange(identifier, from, to));
     }
 
     @Override
     public Optional<InputStream> getContent(IRI identifier) {
-        // TODO https://github.com/trellis-ldp/trellis/issues/148
-        try {
-            return Optional.of(readAll(identifier).get());
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeTrellisException(e);
-        }
+        return resynchronize(readAll(identifier));
     }
 
     private CompletableFuture<InputStream> readAll(IRI identifier) {
@@ -138,24 +113,19 @@ public class CassandraBinaryService implements BinaryService {
                         .reduce(SequenceInputStream::new).get());
     }
 
-    private CompletableFuture<InputStream> readRanges(IRI identifier, List<Range<Integer>> ranges) {
-        return ranges.stream().map(r -> readRange(identifier, r)).sequential()
-                        .reduce((chunk1, chunk2) -> chunk1.thenCombine(chunk2, SequenceInputStream::new)).get();
-    }
-
-    private CompletableFuture<InputStream> readRange(IRI identifier, Range<Integer> range) {
-        int startIndex = floorDiv(range.getMinimum(), chunkLength);
-        int endIndex = floorDiv(range.getMaximum(), chunkLength);
-        int chunkStreamStart = range.getMinimum() % chunkLength;
-        int rangeSize = range.getMaximum() - range.getMinimum() + 1; // +1 because range is inclusive
-        Statement boundStatement = readRangeStatement.bind(identifier.getIRIString(), startIndex, endIndex)
+    private CompletableFuture<InputStream> readRange(IRI identifier, Integer from, Integer to) {
+        int firstChunk = floorDiv(from, chunkLength);
+        int lastChunk = floorDiv(to, chunkLength);
+        int chunkStreamStart = from % chunkLength;
+        int rangeSize = to - from + 1; // +1 because range is inclusive
+        Statement boundStatement = readRangeStatement.bind(identifier.getIRIString(), firstChunk, lastChunk)
                         .setConsistencyLevel(LOCAL_ONE);
         ResultSetFuture results = cassandraSession.executeAsync(boundStatement);
         return translate(results).thenApply(resultSet -> stream(resultSet.spliterator(), false)
                         .peek(r -> { log.debug("Retrieving chunk: {}", r.getInt("chunk_index")); })
                         .map(r -> r.get("chunk", InputStream.class))
-                        .reduce(SequenceInputStream::new).get())
-                        .thenApply(in -> {
+                        .reduce(SequenceInputStream::new).get()) // chunks now in one large stream
+                        .thenApply(in -> { // skip to fulfill lower end of range
                             try {
                                 in.skip(chunkStreamStart);
                             } catch (IOException e) {
@@ -163,7 +133,7 @@ public class CassandraBinaryService implements BinaryService {
                             }
                             return in;
                         })
-                        .thenApply(in -> new BoundedInputStream(in, rangeSize));
+                        .thenApply(in -> new BoundedInputStream(in, rangeSize)); // apply limit for upper end of range
     }
 
     @Override
@@ -225,5 +195,26 @@ public class CassandraBinaryService implements BinaryService {
     @Override
     public String generateIdentifier() {
         return idService.getSupplier().get();
+    }
+
+    private Executor translator = Runnable::run;
+
+    private <T> CompletableFuture<T> translate(ListenableFuture<T> from) {
+        return supplyAsync(() -> {
+            try {
+                return from.get();
+            } catch (InterruptedException | ExecutionException e) {
+                throw new RuntimeTrellisException(e);
+            }
+        }, translator);
+    }
+
+    private <T> Optional<T> resynchronize(CompletableFuture<T> from) {
+        // TODO https://github.com/trellis-ldp/trellis/issues/148
+        try {
+            return Optional.of(from.get());
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeTrellisException(e);
+        }
     }
 }
