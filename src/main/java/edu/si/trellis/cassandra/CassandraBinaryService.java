@@ -67,7 +67,7 @@ public class CassandraBinaryService implements BinaryService {
 
     private final PreparedStatement containsStatement;
 
-    private static final String READ_QUERY = "SELECT chunk FROM Binarydata WHERE identifier = ?;";
+    private static final String READ_QUERY = "SELECT chunk, chunk_index FROM Binarydata WHERE identifier = ?;";
 
     private final PreparedStatement readStatement;
 
@@ -107,10 +107,7 @@ public class CassandraBinaryService implements BinaryService {
     private CompletableFuture<InputStream> readAll(IRI identifier) {
         Statement boundStatement = readStatement.bind(identifier.getIRIString())
                         .setConsistencyLevel(LOCAL_ONE);
-        ResultSetFuture results = cassandraSession.executeAsync(boundStatement);
-        return translate(results).thenApply(resultSet -> stream(resultSet.spliterator(), false)
-                        .map(r -> r.get("chunk", InputStream.class))
-                        .reduce(SequenceInputStream::new).get());
+        return retrieve(boundStatement);
     }
 
     private CompletableFuture<InputStream> readRange(IRI identifier, Integer from, Integer to) {
@@ -120,11 +117,7 @@ public class CassandraBinaryService implements BinaryService {
         int rangeSize = to - from + 1; // +1 because range is inclusive
         Statement boundStatement = readRangeStatement.bind(identifier.getIRIString(), firstChunk, lastChunk)
                         .setConsistencyLevel(LOCAL_ONE);
-        ResultSetFuture results = cassandraSession.executeAsync(boundStatement);
-        return translate(results).thenApply(resultSet -> stream(resultSet.spliterator(), false)
-                        .peek(r -> { log.debug("Retrieving chunk: {}", r.getInt("chunk_index")); })
-                        .map(r -> r.get("chunk", InputStream.class))
-                        .reduce(SequenceInputStream::new).get()) // chunks now in one large stream
+        return retrieve(boundStatement)
                         .thenApply(in -> { // skip to fulfill lower end of range
                             try {
                                 in.skip(chunkStreamStart);
@@ -134,6 +127,14 @@ public class CassandraBinaryService implements BinaryService {
                             return in;
                         })
                         .thenApply(in -> new BoundedInputStream(in, rangeSize)); // apply limit for upper end of range
+    }
+
+    private CompletableFuture<InputStream> retrieve(Statement boundStatement) {
+        ResultSetFuture results = cassandraSession.executeAsync(boundStatement);
+        return translate(results).thenApply(resultSet -> stream(resultSet.spliterator(), false)
+                        .peek(r -> { log.debug("Retrieving chunk: {}", r.getInt("chunk_index")); })
+                        .map(r -> r.get("chunk", InputStream.class))
+                        .reduce(SequenceInputStream::new).get()); // chunks now in one large stream
     }
 
     @Override

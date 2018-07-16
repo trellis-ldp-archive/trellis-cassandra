@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.CodecRegistry;
+import com.datastax.driver.core.QueryLogger;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.extras.codecs.jdk8.InstantCodec;
 
@@ -45,6 +46,8 @@ class CassandraConnection extends ExternalResource {
     protected void before() {
         cluster = builder().withoutMetrics().addContactPoint(contactLocation).withPort(port).build();
         codecRegistry().register(inputStreamCodec, iriCodec, datasetCodec, InstantCodec.instance);
+        QueryLogger queryLogger = QueryLogger.builder().build();
+        cluster.register(queryLogger);
         session = cluster.connect(keyspace);
         service = new CassandraResourceService(session);
         // UUIDGenerator idService = new UUIDGenerator();
