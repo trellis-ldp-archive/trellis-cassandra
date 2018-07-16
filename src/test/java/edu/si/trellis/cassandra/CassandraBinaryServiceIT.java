@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 public class CassandraBinaryServiceIT extends CassandraServiceIT {
 
     private static final Logger log = LoggerFactory.getLogger(CassandraBinaryServiceIT.class);
-    
+
     @Test
     public void testSetAndGetSmallContent() throws IOException, InterruptedException {
     	IRI id = createIRI("http://example.com/id");      

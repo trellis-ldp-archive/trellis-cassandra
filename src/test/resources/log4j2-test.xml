@@ -6,12 +6,11 @@
     </Console>
   </Appenders>
   <Loggers>
-    <Logger name="org.apache.cassandra" level="TRACE">
-      <AppenderRef ref="Console"/>
-    </Logger>
-    <Logger name="edu.si" level="DEBUG">
-      <!--<AppenderRef ref="Console"/> -->
-    </Logger>
+    <Logger name="org.apache.cassandra" level="ERROR"/>
+    <Logger name="com.datastax.driver.core.QueryLogger.NORMAL" level="TRACE"/>
+    <Logger name="com.datastax.driver.core.QueryLogger.ERROR" level="TRACE"/>
+
+    <Logger name="edu.si" level="DEBUG"/>
     <Root level="INFO">
       <AppenderRef ref="Console"/>
     </Root>
