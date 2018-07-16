@@ -9,33 +9,11 @@ import java.util.function.Supplier;
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
-import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.Triple;
-import org.apache.commons.rdf.simple.SimpleRDF;
-import org.junit.Assert;
-import org.junit.ClassRule;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.trellisldp.api.Resource;
 
-public class CassandraResourceServiceIT extends Assert {
-
-    private static final Logger log = LoggerFactory.getLogger(CassandraResourceServiceIT.class);
-
-    protected static int port = Integer.getInteger("cassandra.nativeTransportPort");
-
-    protected static boolean cleanBefore = Boolean.getBoolean("cleanBeforeTests");
-    protected static boolean cleanAfter = Boolean.getBoolean("cleanAfterTests");
-
-    protected RDF rdfFactory = new SimpleRDF();
-
-    /**
-     * Connects to test cluster.
-     */
-    @ClassRule
-    public static final CassandraConnection connection = new CassandraConnection("127.0.0.1", port, "Trellis",
-                    cleanBefore, cleanAfter);
+public class CassandraResourceServiceIT extends CassandraServiceIT {
 
     @Test
     public void testCreateAndGet() throws InterruptedException, ExecutionException {

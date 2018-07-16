@@ -12,28 +12,13 @@ import java.util.Optional;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.rdf.api.IRI;
-import org.apache.commons.rdf.api.RDF;
-import org.apache.commons.rdf.simple.SimpleRDF;
-import org.junit.Assert;
-import org.junit.ClassRule;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CassandraBinaryServiceIT extends Assert {
+public class CassandraBinaryServiceIT extends CassandraServiceIT {
 
     private static final Logger log = LoggerFactory.getLogger(CassandraBinaryServiceIT.class);
-
-    protected static int port = Integer.getInteger("cassandra.nativeTransportPort");
-    
-    protected static boolean cleanBefore = Boolean.getBoolean("cleanBeforeTests");
-    protected static boolean cleanAfter = Boolean.getBoolean("cleanAfterTests");
-    
-    protected RDF rdfFactory = new SimpleRDF();
-    
-    @ClassRule
-    public static final CassandraConnection connection = new CassandraConnection("127.0.0.1", port, "Trellis",
-            cleanBefore, cleanAfter);
     
     @Test
     public void testSetAndGetSmallContent() throws IOException, InterruptedException {
