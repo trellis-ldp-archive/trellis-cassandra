@@ -189,7 +189,7 @@ public class CassandraBinaryService implements BinaryService {
             } catch (final IOException e) {
                 log.error("Error computing digest!", e);
             }
-            return "";
+            return null;
         };
     }
 
