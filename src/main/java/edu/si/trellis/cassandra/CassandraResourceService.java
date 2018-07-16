@@ -8,15 +8,12 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.update;
 import static edu.si.trellis.cassandra.CassandraResourceService.Mutability.Immutable;
 import static edu.si.trellis.cassandra.CassandraResourceService.Mutability.Meta;
 import static edu.si.trellis.cassandra.CassandraResourceService.Mutability.Mutable;
-import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static java.util.stream.StreamSupport.stream;
 import static org.trellisldp.vocabulary.RDF.type;
 
-import java.time.Instant;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterator;
@@ -28,7 +25,6 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
-import org.apache.commons.lang3.Range;
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
@@ -84,12 +80,8 @@ public class CassandraResourceService implements ResourceService {
 
     private final PreparedStatement containsStatement;
 
-    private static final String DELETE_QUERY = "DELETE FROM " + Mutable.tableName + " WHERE identifier = ?;";
-
-    private final PreparedStatement deleteStatement;
-
     /**
-     * Same-thread execution. TODO optimize with a threadpool
+     * Same-thread execution. TODO optimize with a threadpool?
      */
     private final Executor executor = Runnable::run;
 
@@ -104,13 +96,6 @@ public class CassandraResourceService implements ResourceService {
         this.cassandraSession = session;
         scanStatement = session.prepare(SCAN_QUERY).bind();
         containsStatement = session.prepare(CONTAINS_QUERY);
-        deleteStatement = session.prepare(DELETE_QUERY);
-    }
-
-    @Override
-    public Stream<IRI> compact(final IRI identifier, final Instant from, final Instant until) {
-        // TODO do something with bitstreams
-        return Stream.empty();
     }
 
     @Override
@@ -121,14 +106,8 @@ public class CassandraResourceService implements ResourceService {
     }
 
     @Override
-    public Optional<CassandraResource> get(final IRI identifier, final Instant time) {
-        // TODO versioning, but not today
-        return get(identifier);
-    }
-
-    @Override
     public Optional<IRI> getContainer(final IRI id) {
-        // TODO Java 9 fixes this with Optional::or
+        // w
         return get(id).map(CassandraResource::getParent).map(Optional::of)
                         .orElseGet(() -> ResourceService.super.getContainer(id));
     }
@@ -144,22 +123,8 @@ public class CassandraResourceService implements ResourceService {
     }
 
     @Override
-    public Stream<IRI> purge(final IRI id) {
-        BoundStatement boundStatement = deleteStatement.bind(id);
-        cassandraSession.execute(boundStatement);
-        // TODO do something with binaries!
-        return Stream.empty();
-    }
-
-    @Override
     public String generateIdentifier() {
         return randomUUID().toString();
-    }
-
-    @Override
-    public List<Range<Instant>> getMementos(final IRI identifier) {
-        // TODO maybe someone uses versioning?
-        return emptyList();
     }
 
     @Override
@@ -168,10 +133,12 @@ public class CassandraResourceService implements ResourceService {
         return execute(immutableDataInsert);
     }
 
+    @Override
     public Future<Boolean> create(IRI id, Session session, IRI ixnModel, Dataset dataset, IRI container, Binary binary) {
         return write(id, ixnModel, dataset);
     }
 
+    @Override
     public Future<Boolean> replace(final IRI id, final Session session, final IRI ixnModel, final Dataset dataset, final IRI container, final Binary binary) {
         return write(id, ixnModel, dataset);
     }
@@ -249,6 +216,7 @@ public class CassandraResourceService implements ResourceService {
         }, executor);
     }
 
+    @Override
     public Set<IRI> supportedInteractionModels() {
         return SUPPORTED_INTERACTION_MODELS;
     }
