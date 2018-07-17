@@ -3,7 +3,6 @@ package edu.si.trellis.cassandra;
 import static com.datastax.driver.core.ConsistencyLevel.LOCAL_ONE;
 import static com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM;
 import static java.lang.Math.floorDiv;
-import static java.util.Arrays.copyOf;
 import static java.util.Base64.getEncoder;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.of;
@@ -22,7 +21,6 @@ import com.google.common.util.concurrent.ListenableFuture;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.SequenceInputStream;
 import java.io.UncheckedIOException;
 import java.security.MessageDigest;
 import java.util.Map;
@@ -34,6 +32,7 @@ import java.util.concurrent.Executor;
 import java.util.function.Function;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.rdf.api.IRI;
 import org.slf4j.Logger;
@@ -51,7 +50,7 @@ public class CassandraBinaryService implements BinaryService {
 
     private final Session cassandraSession;
 
-    private int chunkLength = 1 * 1024 * 1024;
+    private int maxChunkLength = 1 * 1024 * 1024;
 
     private static final String SHA = "SHA";
 
@@ -84,7 +83,7 @@ public class CassandraBinaryService implements BinaryService {
     public CassandraBinaryService(IdentifierService idService, Session session, int chunkLength) {
         this.idService = idService;
         this.cassandraSession = session;
-        this.chunkLength = chunkLength;
+        this.maxChunkLength = chunkLength;
         insertStatement = session.prepare(INSERT_QUERY);
         containsStatement = session.prepare(CONTAINS_QUERY);
         readStatement = session.prepare(READ_QUERY);
@@ -110,11 +109,11 @@ public class CassandraBinaryService implements BinaryService {
         return retrieve(boundStatement);
     }
 
-    private CompletableFuture<InputStream> readRange(IRI identifier, Integer from, Integer to) {
-        int firstChunk = floorDiv(from, chunkLength);
-        int lastChunk = floorDiv(to, chunkLength);
-        int chunkStreamStart = from % chunkLength;
-        int rangeSize = to - from + 1; // +1 because range is inclusive
+    private CompletableFuture<InputStream> readRange(IRI identifier, long from, long to) {
+        long firstChunk = floorDiv(from, maxChunkLength);
+        long lastChunk = floorDiv(to, maxChunkLength);
+        long chunkStreamStart = from % maxChunkLength;
+        long rangeSize = to - from + 1; // +1 because range is inclusive
         Statement boundStatement = readRangeStatement.bind(identifier.getIRIString(), firstChunk, lastChunk)
                         .setConsistencyLevel(LOCAL_ONE);
         return retrieve(boundStatement)
@@ -132,7 +131,7 @@ public class CassandraBinaryService implements BinaryService {
     private CompletableFuture<InputStream> retrieve(Statement boundStatement) {
         ResultSetFuture results = cassandraSession.executeAsync(boundStatement);
         return translate(results).thenApply(resultSet -> stream(resultSet.spliterator(), false)
-                        .peek(r -> log.debug("Retrieving chunk: {}", r.getInt("chunk_index")))
+                        .peek(r -> log.debug("Retrieving chunk: {}", r.getLong("chunk_index")))
                         .map(r -> r.get("chunk", InputStream.class))
                         .reduce(SequenceInputStream::new).get()); // chunks now in one large stream
     }
@@ -146,18 +145,15 @@ public class CassandraBinaryService implements BinaryService {
 
     @Override
     public void setContent(IRI identifier, InputStream stream, Map<String, String> metadata /* ignored */) {
-        byte[] buffer = new byte[chunkLength];
-        int len, chunkIndex = 0;
-        try {
-            while ((len = stream.read(buffer)) != -1)
-                try (ByteArrayInputStream chunk = new ByteArrayInputStream(copyOf(buffer, len))) {
-                    Statement boundStatement = insertStatement.bind(identifier.getIRIString(), chunkIndex++, chunk)
-                                    .setConsistencyLevel(LOCAL_QUORUM);
-                    cassandraSession.execute(boundStatement);
-                }
-        } catch (final IOException e) {
-            log.error("Error while setting content!", e);
-            throw new UncheckedIOException(e);
+        long chunkLength = maxChunkLength;
+        long chunkIndex = 0;
+        while (chunkLength == maxChunkLength) { // first chunk less than maxChunkLength will be the last chunk
+            try (CountingInputStream chunk = new CountingInputStream(new BoundedInputStream(stream, maxChunkLength))) {
+                Statement boundStatement = insertStatement.bind(identifier.getIRIString(), chunkIndex++, chunk)
+                                .setConsistencyLevel(LOCAL_QUORUM);
+                cassandraSession.execute(boundStatement);
+                chunkLength = chunk.getByteCount();
+            }
         }
     }
 
@@ -214,6 +210,82 @@ public class CassandraBinaryService implements BinaryService {
             return Optional.of(from.get());
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeTrellisException(e);
+        }
+    }
+    
+    /**
+     * An {@link InputStream} that counts the bytes read from it and does not propagate {@link #close()}.
+     *
+     */
+    private static class CountingInputStream extends org.apache.commons.io.input.CountingInputStream {
+
+        public CountingInputStream(InputStream in) {
+            super(in);
+        }
+
+        @Override
+        public void close() { /* NO OP */ }
+    }
+    
+    /**
+     * An {@link InputStream} that sequentially streams two underlying streams. {@link #skip(long)} calls {@code skip}
+     * on the underlying streams before defaulting to using {@link IOUtils#skip(InputStream, long)}, and
+     * {@link #read(byte[], int, int)} also calls {@code read(byte[], int, int)} on the underlying streams. This is
+     * useful in particular with {@link ByteArrayInputStream}s, which have very fast
+     * {@link ByteArrayInputStream#skip(long)} and {@link ByteArrayInputStream#read(byte[], int, int)} implementations.
+     *
+     */
+    private static class SequenceInputStream extends InputStream {
+
+        private final InputStream s1, s2;
+        
+        private InputStream current;
+        
+        public SequenceInputStream(InputStream s1, InputStream s2) {
+            this.current = (this.s1 = s1);
+            this.s2 = s2;
+        }
+
+        @Override
+        public long skip(long n) throws IOException {
+            if (current == null || n < 0) return 0;
+            long toSkip = n;
+            toSkip -= current.skip(toSkip);
+            toSkip -= IOUtils.skip(current, toSkip);
+            if (toSkip > 0) { // we ran out of bytes to skip or read from current
+                next();
+                toSkip -= skip(toSkip);
+            }
+            return n - toSkip;
+        }
+
+        @Override
+        public int read() throws IOException {
+            if (current == null) return -1;
+            int take = current.read();
+            if (take == -1) {
+                next();
+                return read();
+            }
+            return take;
+        }
+
+        @Override
+        public int read(byte b[], int offset, int length) throws IOException {
+            if (offset < 0 || length < 0 || length > b.length - offset) throw new IndexOutOfBoundsException();
+            if (length == 0) return 0;
+            if (current == null) return -1;
+            int read = current.read(b, offset, length);
+            if (read <= 0) { // we couldn't get any bytes from current
+                next();
+                return read(b, offset, length);
+            }
+            return read;
+        }
+
+        private void next() throws IOException {
+            if (current != null) current.close();
+            current = current == s1 ? s2 : null;
         }
     }
 }
