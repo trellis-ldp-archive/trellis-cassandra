@@ -127,9 +127,6 @@
       </exclusions>
     </dependency>
 
-    <!-- <dependency> <groupId>io.dropwizard.metrics</groupId> <artifactId>metrics-core</artifactId> <version>4.0.2</version> 
-      </dependency> -->
-
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-rdf-jena</artifactId>
@@ -149,12 +146,6 @@
     </dependency>
 
     <!-- test gear -->
-    <dependency>
-      <groupId>org.trellisldp</groupId>
-      <artifactId>trellis-test</artifactId>
-      <version>${trellis.version}</version>
-    </dependency>
-
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
