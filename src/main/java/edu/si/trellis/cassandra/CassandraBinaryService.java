@@ -132,7 +132,7 @@ public class CassandraBinaryService implements BinaryService {
     private CompletableFuture<InputStream> retrieve(Statement boundStatement) {
         ResultSetFuture results = cassandraSession.executeAsync(boundStatement);
         return translate(results).thenApply(resultSet -> stream(resultSet.spliterator(), false)
-                        .peek(r -> { log.debug("Retrieving chunk: {}", r.getInt("chunk_index")); })
+                        .peek(r -> log.debug("Retrieving chunk: {}", r.getInt("chunk_index")))
                         .map(r -> r.get("chunk", InputStream.class))
                         .reduce(SequenceInputStream::new).get()); // chunks now in one large stream
     }
@@ -147,19 +147,17 @@ public class CassandraBinaryService implements BinaryService {
     @Override
     public void setContent(IRI identifier, InputStream stream, Map<String, String> metadata /* ignored */) {
         byte[] buffer = new byte[chunkLength];
-        int chunkIndex = -1;
+        int len, chunkIndex = 0;
         try {
-            for (int len = stream.read(buffer); len != -1; len = stream.read(buffer)) {
-                chunkIndex++;
+            while ((len = stream.read(buffer)) != -1)
                 try (ByteArrayInputStream chunk = new ByteArrayInputStream(copyOf(buffer, len))) {
-                    Statement boundStatement = insertStatement.bind(identifier.getIRIString(), chunkIndex, chunk)
+                    Statement boundStatement = insertStatement.bind(identifier.getIRIString(), chunkIndex++, chunk)
                                     .setConsistencyLevel(LOCAL_QUORUM);
                     cassandraSession.execute(boundStatement);
                 }
-            }
-        } catch (final IOException ex) {
-            log.error("Error while setting content: {}", ex.getMessage());
-            throw new UncheckedIOException(ex);
+        } catch (final IOException e) {
+            log.error("Error while setting content!", e);
+            throw new UncheckedIOException(e);
         }
     }
 
