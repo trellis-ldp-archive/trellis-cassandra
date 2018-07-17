@@ -88,8 +88,7 @@ public class CassandraResourceService implements ResourceService {
     /**
      * Constructor.
      *
-     * @param session a Cassandra object mapper {@link Session} for use by this
-     *            service for its lifetime
+     * @param session a Cassandra object mapper {@link Session} for use by this  service for its lifetime
      */
     @Inject
     public CassandraResourceService(final com.datastax.driver.core.Session session) {
