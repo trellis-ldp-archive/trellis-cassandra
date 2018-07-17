@@ -7,8 +7,8 @@
   </Appenders>
   <Loggers>
     <Logger name="org.apache.cassandra" level="ERROR"/>
-    <Logger name="com.datastax.driver.core.QueryLogger.NORMAL" level="TRACE"/>
-    <Logger name="com.datastax.driver.core.QueryLogger.ERROR" level="TRACE"/>
+    <Logger name="com.datastax.driver.core.QueryLogger.NORMAL" level="INFO"/>
+    <Logger name="com.datastax.driver.core.QueryLogger.ERROR" level="INFO"/>
 
     <Logger name="edu.si" level="DEBUG"/>
     <Root level="INFO">
