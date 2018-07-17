@@ -30,7 +30,7 @@ public class CassandraResource implements Resource {
     private static final RDF RDF = RDFUtils.getInstance();
 
     public static final String mutableQuadStreamQuery = "SELECT quads FROM " + Mutable.tableName
-                    + "  WHERE identifier = ? ;";
+                    + "  WHERE identifier = ? LIMIT 1 ;";
 
     public static final String immutableQuadStreamQuery = "SELECT quads FROM " + Immutable.tableName
                     + "  WHERE identifier = ? ;";
@@ -39,7 +39,7 @@ public class CassandraResource implements Resource {
                     + "mimeType, size, parent, WRITETIME(interactionModel) AS modified FROM " + Meta.tableName
                     + " WHERE identifier = ? LIMIT 1 ;";
 
-    private static PreparedStatement immutableQuadStreamStatement, mutableQuadStreamStatement, metadataStatement;
+    private PreparedStatement immutableQuadStreamStatement, mutableQuadStreamStatement, metadataStatement;
 
     private Session session;
 
@@ -58,8 +58,7 @@ public class CassandraResource implements Resource {
     public CassandraResource(final IRI identifier, final Session session) {
         this.identifier = requireNonNull(identifier);
         this.session = requireNonNull(session);
-        // don't need to synchronize because preparing twice is inefficient but not a fault
-        if (mutableQuadStreamStatement == null) prepareQueries();
+        prepareQueries();
     }
 
     private void prepareQueries() {
@@ -100,7 +99,7 @@ public class CassandraResource implements Resource {
     }
 
     private void computeMetadata() {
-        // use any memoized state for this because it all gets set together below
+        // use any memoized state for this test because it all gets set together below
         Boolean result = hasAcl;
         if (result == null) { // First check (no locking)
             synchronized (this) {
