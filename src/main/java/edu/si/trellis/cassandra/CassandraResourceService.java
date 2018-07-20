@@ -17,10 +17,10 @@ import static org.trellisldp.vocabulary.RDF.type;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterator;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -127,23 +127,23 @@ public class CassandraResourceService implements ResourceService {
     }
 
     @Override
-    public Future<Boolean> add(final IRI id, Session session, final Dataset dataset) {
+    public CompletableFuture<Boolean> add(final IRI id, Session session, final Dataset dataset) {
         Insert immutableDataInsert = insertInto(Immutable.tableName).values(DATA_COLUMNS, new Object[] { id, dataset });
         return execute(immutableDataInsert);
     }
 
     @Override
-    public Future<Boolean> create(IRI id, Session session, IRI ixnModel, Dataset dataset, IRI container, Binary binary) {
+    public CompletableFuture<Boolean> create(IRI id, Session session, IRI ixnModel, Dataset dataset, IRI container, Binary binary) {
         return write(id, ixnModel, dataset);
     }
 
     @Override
-    public Future<Boolean> replace(final IRI id, final Session session, final IRI ixnModel, final Dataset dataset, final IRI container, final Binary binary) {
+    public CompletableFuture<Boolean> replace(final IRI id, final Session session, final IRI ixnModel, final Dataset dataset, final IRI container, final Binary binary) {
         return write(id, ixnModel, dataset);
     }
 
     @Override
-    public Future<Boolean> delete(final IRI id, final Session session, final IRI ixnModel, final Dataset dataset) {
+    public CompletableFuture<Boolean> delete(final IRI id, final Session session, final IRI ixnModel, final Dataset dataset) {
         return write(id, ixnModel, dataset);
     }
 
@@ -157,7 +157,7 @@ public class CassandraResourceService implements ResourceService {
         public final String tableName;
     }
 
-    private Future<Boolean> write(final IRI id, final IRI ixnModel, final Dataset dataset) {
+    private CompletableFuture<Boolean> write(final IRI id, final IRI ixnModel, final Dataset dataset) {
 
         Insert mutableDataInsert = insertInto(Mutable.tableName).values(DATA_COLUMNS, new Object[] { id, dataset });
 
@@ -200,11 +200,11 @@ public class CassandraResourceService implements ResourceService {
                         .where(eq("identifier", id));
     }
 
-    private Future<Boolean> execute(RegularStatement... statements) {
+    private CompletableFuture<Boolean> execute(RegularStatement... statements) {
         return translate(cassandraSession.executeAsync(batch(statements)));
     }
 
-    private Future<Boolean> translate(ResultSetFuture result) {
+    private CompletableFuture<Boolean> translate(ResultSetFuture result) {
         return supplyAsync(() -> {
             try {
                 return result.get().wasApplied();
