@@ -6,7 +6,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import com.datastax.driver.core.exceptions.InvalidTypeException;
 
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.rdf.api.BlankNodeOrIRI;
 import org.apache.commons.rdf.api.Dataset;
