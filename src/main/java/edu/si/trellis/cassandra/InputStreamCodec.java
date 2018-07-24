@@ -35,18 +35,14 @@ class InputStreamCodec extends TypeCodec<InputStream> {
 
     @Override
     public InputStream deserialize(ByteBuffer bytes, ProtocolVersion protocolVersion) {
-        return fromBytes(Bytes.getArray(bytes));
+        return new ByteBufferInputStream(bytes);
     }
 
     @Override
     public InputStream parse(String value) throws InvalidTypeException {
-        return fromBytes(value.getBytes(UTF_8));
+        return new ByteArrayInputStream(value.getBytes(UTF_8));
     }
 
-    private static InputStream fromBytes(byte[] bytes) {
-        return new ByteArrayInputStream(bytes);
-    }
-    
     private static byte[] toBytes(InputStream in) {
         try {
             return IOUtils.toByteArray(in);
