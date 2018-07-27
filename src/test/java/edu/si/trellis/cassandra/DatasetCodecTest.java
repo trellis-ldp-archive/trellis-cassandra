@@ -6,14 +6,18 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import com.datastax.driver.core.exceptions.InvalidTypeException;
 
 import java.nio.ByteBuffer;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.apache.commons.rdf.api.BlankNodeOrIRI;
 import org.apache.commons.rdf.api.Dataset;
+import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.RDFTerm;
 import org.apache.commons.rdf.simple.SimpleRDF;
+import org.apache.jena.riot.RiotException;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -71,17 +75,42 @@ public class DatasetCodecTest extends Assert {
     }
 
     @Test
-    public void edgeCases() throws Exception {
+    public void edgeCase1() throws Exception {
         assertEquals(0, datasetCodec.parse(null).size());
+    }
+
+    @Test
+    public void edgeCase2() {
         assertEquals(null, datasetCodec.format(null));
+    }
+
+    @Test
+    public void edgeCase3() throws Exception {
         try (Dataset empty = rdf.createDataset()) {
             assertEquals(null, datasetCodec.format(empty));
         }
+    }
+
+    @Test
+    public void edgeCase4() throws Exception {
         try (Dataset empty = rdf.createDataset()) {
             assertEquals(null, datasetCodec.serialize(empty, null));
         }
+    }
+
+    @Test
+    public void edgeCase5() throws Exception {
         assertEquals(null, datasetCodec.serialize(null, null));
+    }
+
+    @Test
+    public void edgeCase6() throws Exception {
         assertEquals(0, datasetCodec.deserialize(null, null).size());
+    }
+
+    @Test(expected=InvalidTypeException.class)
+    public void badData() {
+        datasetCodec.serialize(new BadDataset(), null);
     }
 
     private Quad quad(BlankNodeOrIRI g, BlankNodeOrIRI s, IRI p, RDFTerm o) {
@@ -90,5 +119,53 @@ public class DatasetCodecTest extends Assert {
 
     private IRI iri(String v) {
         return rdf.createIRI(v);
+    }
+    
+    /**
+     * {@link #stream()} throws a {@code RiotException} for testing.
+     *
+     */
+    private static final class BadDataset implements Dataset {
+        @Override
+        public void add(Quad quad) { }
+
+        @Override
+        public void add(BlankNodeOrIRI graphName, BlankNodeOrIRI subject, IRI predicate, RDFTerm object) { }
+
+        @Override
+        public boolean contains(Quad quad) { return false; }
+
+        @Override
+        public boolean contains(Optional<BlankNodeOrIRI> graphName, BlankNodeOrIRI subject, IRI predicate,
+                        RDFTerm object) { return false; }
+
+        @Override
+        public Graph getGraph() { return null; }
+
+        @Override
+        public Optional<Graph> getGraph(BlankNodeOrIRI graphName) { return null; }
+
+        @Override
+        public Stream<BlankNodeOrIRI> getGraphNames() { return null; }
+
+        @Override
+        public void remove(Quad quad) { }
+
+        @Override
+        public void remove(Optional<BlankNodeOrIRI> graphName, BlankNodeOrIRI subject, IRI predicate,
+                        RDFTerm object) { }
+
+        @Override
+        public void clear() { }
+
+        @Override
+        public long size() { return 1; }
+
+        @Override
+        public Stream<? extends Quad> stream() { throw new RiotException(); }
+
+        @Override
+        public Stream<? extends Quad> stream(Optional<BlankNodeOrIRI> graphName, BlankNodeOrIRI subject,
+                        IRI predicate, RDFTerm object) { return null; }
     }
 }
