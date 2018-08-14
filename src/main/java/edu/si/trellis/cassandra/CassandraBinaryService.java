@@ -43,7 +43,7 @@ import org.trellisldp.api.RuntimeTrellisException;
  * Implements {@link BinaryService} by chunking binary data across Cassandra.
  *
  */
-public class CassandraBinaryService implements BinaryService {
+public class CassandraBinaryService extends CassandraService implements BinaryService {
     private static final Logger log = LoggerFactory.getLogger(CassandraBinaryService.class);
 
     private final Session cassandraSession;
@@ -200,15 +200,6 @@ public class CassandraBinaryService implements BinaryService {
                 throw new RuntimeTrellisException(e);
             }
         }, translator);
-    }
-
-    private <T> Optional<T> resynchronize(CompletableFuture<T> from) {
-        // TODO https://github.com/trellis-ldp/trellis/issues/148
-        try {
-            return Optional.of(from.get());
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeTrellisException(e);
-        }
     }
     
     /**

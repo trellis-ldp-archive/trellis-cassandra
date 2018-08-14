@@ -25,7 +25,7 @@ import org.trellisldp.api.RDFUtils;
 import org.trellisldp.api.Resource;
 import org.trellisldp.vocabulary.LDP;
 
-public class CassandraResource implements Resource {
+class CassandraResource implements Resource {
 
     private static final RDF RDF = RDFUtils.getInstance();
 
@@ -75,9 +75,9 @@ public class CassandraResource implements Resource {
     /**
      * @return a container for this resource
      */
-    public IRI getParent() {
+    public Optional<IRI> getParent() {
         computeMetadata();
-        return parent;
+        return Optional.ofNullable(parent);
     }
 
     @Override

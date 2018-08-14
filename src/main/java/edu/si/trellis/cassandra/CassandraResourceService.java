@@ -1,5 +1,5 @@
 package edu.si.trellis.cassandra;
-
+import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.batch;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
@@ -8,21 +8,14 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.update;
 import static edu.si.trellis.cassandra.CassandraResourceService.Mutability.Immutable;
 import static edu.si.trellis.cassandra.CassandraResourceService.Mutability.Meta;
 import static edu.si.trellis.cassandra.CassandraResourceService.Mutability.Mutable;
-import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
-import static java.util.stream.StreamSupport.stream;
-import static org.trellisldp.vocabulary.RDF.type;
-
 import java.util.Optional;
 import java.util.Set;
-import java.util.Spliterator;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
-import java.util.stream.Stream;
-
 import javax.inject.Inject;
 
 import org.apache.commons.rdf.api.Dataset;
@@ -33,6 +26,7 @@ import org.apache.commons.rdf.jena.JenaRDF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.trellisldp.api.Binary;
+import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.Session;
@@ -43,8 +37,8 @@ import org.trellisldp.vocabulary.Trellis;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.RegularStatement;
+import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.ResultSetFuture;
-import com.datastax.driver.core.Row;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.google.common.collect.ImmutableSet;
 
@@ -54,7 +48,7 @@ import com.google.common.collect.ImmutableSet;
  * @author ajs6f
  *
  */
-public class CassandraResourceService implements ResourceService {
+public class CassandraResourceService extends CassandraService implements ResourceService {
 
     private static final ImmutableSet<IRI> SUPPORTED_INTERACTION_MODELS = ImmutableSet.of(LDP.Resource, LDP.RDFSource, LDP.NonRDFSource, LDP.Container,
                     LDP.BasicContainer, LDP.DirectContainer, LDP.IndirectContainer);
@@ -66,19 +60,9 @@ public class CassandraResourceService implements ResourceService {
 
     private static final JenaRDF rdf = new JenaRDF();
 
-    private static final String SCAN_QUERY = "SELECT identifier, interactionModel FROM " + Meta.tableName + " ;";
+    private static final String GET_QUERY = "SELECT identifier FROM " + Meta.tableName + " WHERE identifier = ?;";
 
-    /**
-     * Scans the Cassandra cluster, for use by {@link #scan()}. Should normally
-     * contain a bound form of {@value #SCAN_QUERY} drawn from {@link #SCAN_QUERY}.
-     *
-     * @see #SCAN_QUERY
-     */
-    private final BoundStatement scanStatement;
-
-    private static final String CONTAINS_QUERY = "SELECT identifier FROM " + Meta.tableName + " WHERE identifier = ?;";
-
-    private final PreparedStatement containsStatement;
+    private final PreparedStatement getStatement;
 
     /**
      * Same-thread execution. TODO optimize with a threadpool?
@@ -93,32 +77,21 @@ public class CassandraResourceService implements ResourceService {
     @Inject
     public CassandraResourceService(final com.datastax.driver.core.Session session) {
         this.cassandraSession = session;
-        scanStatement = session.prepare(SCAN_QUERY).bind();
-        containsStatement = session.prepare(CONTAINS_QUERY);
+        getStatement = session.prepare(GET_QUERY);
     }
 
     @Override
-    public Optional<CassandraResource> get(final IRI id) {
-        BoundStatement boundStatement = containsStatement.bind(id);
-        boolean absent = cassandraSession.execute(boundStatement).one() == null;
-        return ofNullable(absent ? null : new CassandraResource(id, cassandraSession));
+    public CompletableFuture<? extends Resource> get(final IRI id) {
+        BoundStatement boundStatement = getStatement.bind(id);
+        ResultSetFuture result = cassandraSession.executeAsync(boundStatement);
+        return translateRead(result).thenApply(
+                        rows -> rows.isExhausted() ? MISSING_RESOURCE : new CassandraResource(id, cassandraSession));
     }
 
     @Override
     public Optional<IRI> getContainer(final IRI id) {
-        // w
-        return get(id).map(CassandraResource::getParent).map(Optional::of)
-                        .orElseGet(() -> ResourceService.super.getContainer(id));
-    }
-
-    @Override
-    public Stream<Triple> scan() {
-        final Spliterator<Row> spliterator = cassandraSession.execute(scanStatement).spliterator();
-        return stream(spliterator, false).map(row -> {
-            final IRI resource = row.get("identifier", IRI.class);
-            final IRI ixnModel = row.get("interactionModel", IRI.class);
-            return rdf.createTriple(resource, type, ixnModel);
-        });
+        return resynchronize(get(id)).flatMap(r -> r instanceof CassandraResource ? ((CassandraResource) r).getParent()
+                        : ResourceService.super.getContainer(id));
     }
 
     @Override
@@ -201,15 +174,25 @@ public class CassandraResourceService implements ResourceService {
     }
 
     private CompletableFuture<Boolean> execute(RegularStatement... statements) {
-        return translate(cassandraSession.executeAsync(batch(statements)));
+        return translateWrite(cassandraSession.executeAsync(batch(statements)));
     }
 
-    private CompletableFuture<Boolean> translate(ResultSetFuture result) {
+    private CompletableFuture<Boolean> translateWrite(ResultSetFuture result) {
         return supplyAsync(() -> {
             try {
                 return result.get().wasApplied();
             } catch (InterruptedException | ExecutionException e) {
                 // we don't know that persistence failed but we can't assume that it succeeded
+                throw new RuntimeTrellisException(new CompletionException(e));
+            }
+        }, executor);
+    }
+    
+    private CompletableFuture<ResultSet> translateRead(ResultSetFuture result) {
+        return supplyAsync(() -> {
+            try {
+                return result.get();
+            } catch (InterruptedException | ExecutionException e) {
                 throw new RuntimeTrellisException(new CompletionException(e));
             }
         }, executor);

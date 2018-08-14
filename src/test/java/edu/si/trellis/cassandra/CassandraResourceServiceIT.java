@@ -25,32 +25,14 @@ public class CassandraResourceServiceIT extends CassandraServiceIT {
         quads.add(quad);
         Future<Boolean> put = connection.service.create(id, null, ixnModel, quads, container, null);
         assertTrue(put.get());
-        Resource resource = connection.service.get(id).orElseThrow(missing());
+        Resource resource = connection.service.get(id).get();
         assertEquals(id, resource.getIdentifier());
         assertEquals(ixnModel, resource.getInteractionModel());
-        Quad firstQuad = resource.stream().findFirst().orElseThrow(missing("Failed to find quad!"));
+        Quad firstQuad = resource.stream().findFirst().orElseThrow(() -> new AssertionError("Failed to find quad!"));
         assertEquals(quad, firstQuad);
-    }
-
-    @Test
-    public void testScan() throws InterruptedException, ExecutionException {
-        IRI id = createIRI("http://example.com/id/foo2");
-        IRI container = createIRI("http://example.com/id");
-        IRI ixnModel = createIRI("http://example.com/ixnModel");
-        connection.service.create(id, null, ixnModel, rdfFactory.createDataset(), container, null).get();
-        assertEquals(1, connection.service.scan().count());
-        Triple triple = connection.service.scan().findFirst().orElseThrow(missing());
-        assertEquals(id, triple.getSubject());
-        assertEquals(type, triple.getPredicate());
-        assertEquals(ixnModel, triple.getObject());
     }
 
     private IRI createIRI(String iri) {
         return rdfFactory.createIRI(iri);
     }
-
-    private static final Supplier<Error> missing(String... msg) {
-        return msg.length == 0 ? missing("Failed to retrieve resource!") : () -> new AssertionError(msg[0]);
-    }
-
 }
