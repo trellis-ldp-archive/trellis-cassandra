@@ -1,5 +1,4 @@
 package edu.si.trellis.cassandra;
-import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.batch;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
@@ -10,19 +9,29 @@ import static edu.si.trellis.cassandra.CassandraResourceService.Mutability.Meta;
 import static edu.si.trellis.cassandra.CassandraResourceService.Mutability.Mutable;
 import static java.util.UUID.randomUUID;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
+import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
+
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.RegularStatement;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.ResultSetFuture;
+import com.datastax.driver.core.querybuilder.Insert;
+import com.google.common.collect.ImmutableSet;
+
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+
 import javax.inject.Inject;
 
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.Triple;
-import org.apache.commons.rdf.jena.JenaRDF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.trellisldp.api.Binary;
@@ -33,14 +42,6 @@ import org.trellisldp.api.Session;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Trellis;
-
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.ResultSetFuture;
-import com.datastax.driver.core.querybuilder.Insert;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * Implements persistence into a simple Apache Cassandra schema.
@@ -57,8 +58,6 @@ public class CassandraResourceService extends CassandraService implements Resour
 
     private static final String[] DATA_COLUMNS = new String[] { "identifier", "quads" };
     private final com.datastax.driver.core.Session cassandraSession;
-
-    private static final JenaRDF rdf = new JenaRDF();
 
     private static final String GET_QUERY = "SELECT identifier FROM " + Meta.tableName + " WHERE identifier = ?;";
 

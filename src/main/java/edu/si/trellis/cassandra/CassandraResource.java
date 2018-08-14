@@ -19,15 +19,11 @@ import java.util.stream.StreamSupport;
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
-import org.apache.commons.rdf.api.RDF;
 import org.trellisldp.api.Binary;
-import org.trellisldp.api.RDFUtils;
 import org.trellisldp.api.Resource;
 import org.trellisldp.vocabulary.LDP;
 
 class CassandraResource implements Resource {
-
-    private static final RDF RDF = RDFUtils.getInstance();
 
     public static final String mutableQuadStreamQuery = "SELECT quads FROM " + Mutable.tableName
                     + "  WHERE identifier = ? LIMIT 1 ;";

@@ -1,15 +1,10 @@
 package edu.si.trellis.cassandra;
 
-import static org.trellisldp.vocabulary.RDF.type;
-
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.function.Supplier;
-
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
-import org.apache.commons.rdf.api.Triple;
 import org.junit.Test;
 import org.trellisldp.api.Resource;
 
