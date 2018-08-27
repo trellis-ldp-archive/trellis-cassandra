@@ -18,8 +18,9 @@ public class CassandraResourceServiceIT extends CassandraServiceIT {
         Dataset quads = rdfFactory.createDataset();
         Quad quad = rdfFactory.createQuad(id, ixnModel, id, ixnModel);
         quads.add(quad);
-        Future<Boolean> put = connection.service.create(id, null, ixnModel, quads, container, null);
-        assertTrue(put.get());
+        Future<Void> put = connection.service.create(id, null, ixnModel, quads, container, null);
+        put.get();
+        assertTrue(put.isDone());
         Resource resource = connection.service.get(id).get();
         assertEquals(id, resource.getIdentifier());
         assertEquals(ixnModel, resource.getInteractionModel());

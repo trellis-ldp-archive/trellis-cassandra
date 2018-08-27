@@ -8,6 +8,7 @@ import static edu.si.trellis.cassandra.CassandraResourceService.Mutability.Immut
 import static edu.si.trellis.cassandra.CassandraResourceService.Mutability.Meta;
 import static edu.si.trellis.cassandra.CassandraResourceService.Mutability.Mutable;
 import static java.util.UUID.randomUUID;
+import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 
@@ -49,7 +50,7 @@ import org.trellisldp.vocabulary.Trellis;
  * @author ajs6f
  *
  */
-public class CassandraResourceService extends CassandraService implements ResourceService {
+public class CassandraResourceService implements ResourceService {
 
     private static final ImmutableSet<IRI> SUPPORTED_INTERACTION_MODELS = ImmutableSet.of(LDP.Resource, LDP.RDFSource, LDP.NonRDFSource, LDP.Container,
                     LDP.BasicContainer, LDP.DirectContainer, LDP.IndirectContainer);
@@ -71,7 +72,7 @@ public class CassandraResourceService extends CassandraService implements Resour
     /**
      * Constructor.
      *
-     * @param session a Cassandra object mapper {@link Session} for use by this  service for its lifetime
+     * @param session a Cassandra {@link com.datastax.driver.core.Session} for use by this service for its lifetime
      */
     @Inject
     public CassandraResourceService(final com.datastax.driver.core.Session session) {
@@ -99,23 +100,27 @@ public class CassandraResourceService extends CassandraService implements Resour
     }
 
     @Override
-    public CompletableFuture<Boolean> add(final IRI id, Session session, final Dataset dataset) {
+    public CompletableFuture<Void> add(final IRI id, Session session, final Dataset dataset) {
+        log.debug("Adding immutable data to {}", id);
         Insert immutableDataInsert = insertInto(Immutable.tableName).values(DATA_COLUMNS, new Object[] { id, dataset });
         return execute(immutableDataInsert);
     }
 
     @Override
-    public CompletableFuture<Boolean> create(IRI id, Session session, IRI ixnModel, Dataset dataset, IRI container, Binary binary) {
+    public CompletableFuture<Void> create(IRI id, Session session, IRI ixnModel, Dataset dataset, IRI container, Binary binary) {
+        log.debug("Creating {} with interaction model {}", id, ixnModel);
         return write(id, ixnModel, dataset);
     }
 
     @Override
-    public CompletableFuture<Boolean> replace(final IRI id, final Session session, final IRI ixnModel, final Dataset dataset, final IRI container, final Binary binary) {
+    public CompletableFuture<Void> replace(final IRI id, final Session session, final IRI ixnModel, final Dataset dataset, final IRI container, final Binary binary) {
+        log.debug("Replacing {} with interaction model {}", id, ixnModel);
         return write(id, ixnModel, dataset);
     }
 
     @Override
-    public CompletableFuture<Boolean> delete(final IRI id, final Session session, final IRI ixnModel, final Dataset dataset) {
+    public CompletableFuture<Void> delete(final IRI id, final Session session, final IRI ixnModel, final Dataset dataset) {
+        log.debug("Deleting {} with interaction model {}", id, ixnModel);
         return write(id, ixnModel, dataset);
     }
 
@@ -129,7 +134,7 @@ public class CassandraResourceService extends CassandraService implements Resour
         public final String tableName;
     }
 
-    private CompletableFuture<Boolean> write(final IRI id, final IRI ixnModel, final Dataset dataset) {
+    private CompletableFuture<Void> write(final IRI id, final IRI ixnModel, final Dataset dataset) {
 
         Insert mutableDataInsert = insertInto(Mutable.tableName).values(DATA_COLUMNS, new Object[] { id, dataset });
 
@@ -172,14 +177,14 @@ public class CassandraResourceService extends CassandraService implements Resour
                         .where(eq("identifier", id));
     }
 
-    private CompletableFuture<Boolean> execute(RegularStatement... statements) {
+    private CompletableFuture<Void> execute(RegularStatement... statements) {
         return translateWrite(cassandraSession.executeAsync(batch(statements)));
     }
 
-    private CompletableFuture<Boolean> translateWrite(ResultSetFuture result) {
-        return supplyAsync(() -> {
+    private CompletableFuture<Void> translateWrite(ResultSetFuture result) {
+        return runAsync(() -> {
             try {
-                return result.get().wasApplied();
+                result.get();
             } catch (InterruptedException | ExecutionException e) {
                 // we don't know that persistence failed but we can't assume that it succeeded
                 throw new RuntimeTrellisException(new CompletionException(e));
@@ -200,5 +205,14 @@ public class CassandraResourceService extends CassandraService implements Resour
     @Override
     public Set<IRI> supportedInteractionModels() {
         return SUPPORTED_INTERACTION_MODELS;
+    }
+
+    protected <T> Optional<T> resynchronize(CompletableFuture<T> from) {
+        // TODO https://github.com/trellis-ldp/trellis/issues/148
+        try {
+            return Optional.of(from.get());
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeTrellisException(e);
+        }
     }
 }

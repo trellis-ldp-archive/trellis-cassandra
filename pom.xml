@@ -146,13 +146,13 @@
     <dependency>
       <groupId>org.trellisldp</groupId>
       <artifactId>trellis-vocabulary</artifactId>
-      <version>0.1.0</version>
+      <version>${trellis.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.trellisldp</groupId>
       <artifactId>trellis-id</artifactId>
-      <version>0.1.0</version>
+      <version>${trellis.version}</version>
     </dependency>
 
     <dependency>
