@@ -104,22 +104,8 @@ public class CassandraBinaryService implements BinaryService {
     public CompletableFuture<InputStream> getContent(IRI identifier, Integer from, Integer to) {
         requireNonNull(from, "Byte range component 'from' may not be null!");
         requireNonNull(to, "Byte range component 'to' may not be null!");
-        return readRange(identifier, from, to);
-    }
-
-    @Override
-    public CompletableFuture<InputStream> getContent(IRI identifier) {
-        return readAll(identifier);
-    }
-
-    private CompletableFuture<InputStream> readAll(IRI identifier) {
-        Statement boundStatement = readStatement.bind(identifier.getIRIString()).setConsistencyLevel(LOCAL_ONE);
-        return retrieve(boundStatement);
-    }
-
-    private CompletableFuture<InputStream> readRange(IRI identifier, long from, long to) {
-        long firstChunk = floorDiv(from, maxChunkLength);
-        long lastChunk = floorDiv(to, maxChunkLength);
+        long firstChunk = floorDiv((long) from, maxChunkLength);
+        long lastChunk = floorDiv((long) to, maxChunkLength);
         long chunkStreamStart = from % maxChunkLength;
         long rangeSize = to - from + 1; // +1 because range is inclusive
         Statement boundStatement = readRangeStatement.bind(identifier.getIRIString(), firstChunk, lastChunk)
@@ -134,15 +120,18 @@ public class CassandraBinaryService implements BinaryService {
         }).thenApply(in -> new BoundedInputStream(in, rangeSize)); // apply limit for upper end of range
     }
 
+    @Override
+    public CompletableFuture<InputStream> getContent(IRI identifier) {
+        Statement boundStatement = readStatement.bind(identifier.getIRIString()).setConsistencyLevel(LOCAL_ONE);
+        return retrieve(boundStatement);
+    }
+
     private CompletableFuture<InputStream> retrieve(Statement boundStatement) {
         ResultSetFuture results = cassandraSession.executeAsync(boundStatement);
         return translate(results).thenApply(resultSet -> stream(resultSet.spliterator(), false)
                         .peek(r -> log.debug("Retrieving chunk: {}", r.getLong("chunk_index")))
-                        .map(r -> r.get("chunk", InputStream.class)).reduce(SequenceInputStream::new).get()); // chunks
-                                                                                                              // now in
-                                                                                                              // one
-                                                                                                              // large
-                                                                                                              // stream
+                        .map(r -> r.get("chunk", InputStream.class))
+                        .reduce(SequenceInputStream::new).get()); // chunks now in one large stream
     }
 
     @Override
