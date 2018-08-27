@@ -36,6 +36,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicLong;
 
+import javax.inject.Inject;
+
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.rdf.api.IRI;
 import org.slf4j.Logger;
@@ -93,6 +95,7 @@ public class CassandraBinaryService implements BinaryService {
         deleteStatement = session.prepare(DELETE_QUERY);
     }
 
+    @Inject
     public CassandraBinaryService(IdentifierService idService, Session session) {
         this(idService, session, DEFAULT_MAX_CHUNK_LENGTH);
     }
