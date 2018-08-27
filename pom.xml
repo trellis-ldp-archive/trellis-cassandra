@@ -14,7 +14,7 @@
     <trellis.version>0.8.0-SNAPSHOT</trellis.version>
     <cassandra.driver.version>3.3.2</cassandra.driver.version>
     <cassandra.test.version>3.11.2</cassandra.test.version>
-    <log4j.version>2.1</log4j.version>
+    <log4j.version>2.7</log4j.version>
 
     <test.keyspace>Trellis</test.keyspace>
 
