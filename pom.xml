@@ -40,6 +40,7 @@
                 <portName>cassandra.storagePort</portName>
                 <portName>cassandra.stopPort</portName>
                 <portName>cassandra.nativeTransportPort</portName>
+                <portName>cassandra.jmx.local.port</portName>
               </portNames>
             </configuration>
           </execution>
@@ -56,10 +57,6 @@
             </goals>
             <configuration>
               <systemProperties>
-                <cassandra.rpcPort>${cassandra.rpcPort}</cassandra.rpcPort>
-                <cassandra.jmxPort>${cassandra.jmxPort}</cassandra.jmxPort>
-                <cassandra.storagePort>${cassandra.storagePort}</cassandra.storagePort>
-                <cassandra.stopPort>${cassandra.stopPort}</cassandra.stopPort>
                 <cassandra.nativeTransportPort>${cassandra.nativeTransportPort}</cassandra.nativeTransportPort>
                 <test.keyspace>${test.keyspace}</test.keyspace>
               </systemProperties>
@@ -77,6 +74,9 @@
           <addTestClasspath>true</addTestClasspath>
           <!-- use a load script after resource filtering -->
           <script>${project.build.directory}/test-classes/load.cql</script>
+          <systemPropertyVariables>
+            <cassandra.jmx.local.port>${cassandra.jmx.local.port}</cassandra.jmx.local.port>
+          </systemPropertyVariables>
         </configuration>
         <executions>
           <execution>
@@ -196,11 +196,13 @@
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-slf4j-impl</artifactId>
       <version>${log4j.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-core</artifactId>
       <version>${log4j.version}</version>
+      <scope>test</scope>
     </dependency>
 
   </dependencies>
