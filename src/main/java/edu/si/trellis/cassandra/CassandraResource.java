@@ -95,7 +95,7 @@ class CassandraResource implements Resource {
     }
 
     private void computeMetadata() {
-        // use any memoized state for this test because it all gets set together below
+        // use any piece of memoized state for this test because it all gets set together below
         Boolean result = hasAcl;
         if (result == null) { // First check (no locking)
             synchronized (this) {
@@ -131,13 +131,13 @@ class CassandraResource implements Resource {
     @Override
     public Stream<? extends Quad> stream() {
         BoundStatement boundStatement = mutableQuadStreamStatement.bind(identifier);
-        Stream<Quad> mutableQuads = quadStreamQuery(boundStatement);
+        Stream<Quad> mutableQuads = quadStreamFromQuery(boundStatement);
         boundStatement = immutableQuadStreamStatement.bind(identifier);
-        Stream<Quad> immutableQuads = quadStreamQuery(boundStatement);
+        Stream<Quad> immutableQuads = quadStreamFromQuery(boundStatement);
         return Stream.concat(mutableQuads, immutableQuads);
     }
 
-    private Stream<Quad> quadStreamQuery(final BoundStatement boundStatement) {
+    private Stream<Quad> quadStreamFromQuery(final BoundStatement boundStatement) {
         final Spliterator<Row> rows = session.execute(boundStatement).spliterator();
         return StreamSupport.stream(rows, false).flatMap(row -> row.get("quads", Dataset.class).stream());
     }

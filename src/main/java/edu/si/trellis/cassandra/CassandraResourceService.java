@@ -10,6 +10,7 @@ import static edu.si.trellis.cassandra.CassandraResourceService.Mutability.Mutab
 import static java.util.UUID.randomUUID;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
+import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 
 import com.datastax.driver.core.BoundStatement;
@@ -34,12 +35,10 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.trellisldp.api.Binary;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
-import org.trellisldp.api.Session;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Trellis;
@@ -55,7 +54,7 @@ public class CassandraResourceService implements ResourceService {
     private static final ImmutableSet<IRI> SUPPORTED_INTERACTION_MODELS = ImmutableSet.of(LDP.Resource, LDP.RDFSource, LDP.NonRDFSource, LDP.Container,
                     LDP.BasicContainer, LDP.DirectContainer, LDP.IndirectContainer);
 
-    private static final Logger log = LoggerFactory.getLogger(CassandraResourceService.class);
+    private static final Logger log = getLogger(CassandraResourceService.class);
 
     private static final String[] DATA_COLUMNS = new String[] { "identifier", "quads" };
     private final com.datastax.driver.core.Session cassandraSession;
@@ -100,26 +99,26 @@ public class CassandraResourceService implements ResourceService {
     }
 
     @Override
-    public CompletableFuture<Void> add(final IRI id, Session session, final Dataset dataset) {
+    public CompletableFuture<Void> add(final IRI id, final Dataset dataset) {
         log.debug("Adding immutable data to {}", id);
         Insert immutableDataInsert = insertInto(Immutable.tableName).values(DATA_COLUMNS, new Object[] { id, dataset });
         return execute(immutableDataInsert);
     }
 
     @Override
-    public CompletableFuture<Void> create(IRI id, Session session, IRI ixnModel, Dataset dataset, IRI container, Binary binary) {
+    public CompletableFuture<Void> create(IRI id, IRI ixnModel, Dataset dataset, IRI container, Binary binary) {
         log.debug("Creating {} with interaction model {}", id, ixnModel);
         return write(id, ixnModel, dataset);
     }
 
     @Override
-    public CompletableFuture<Void> replace(final IRI id, final Session session, final IRI ixnModel, final Dataset dataset, final IRI container, final Binary binary) {
+    public CompletableFuture<Void> replace(final IRI id, final IRI ixnModel, final Dataset dataset, final IRI container, final Binary binary) {
         log.debug("Replacing {} with interaction model {}", id, ixnModel);
         return write(id, ixnModel, dataset);
     }
 
     @Override
-    public CompletableFuture<Void> delete(final IRI id, final Session session, final IRI ixnModel, final Dataset dataset) {
+    public CompletableFuture<Void> delete(final IRI id, final IRI ixnModel, final Dataset dataset) {
         log.debug("Deleting {} with interaction model {}", id, ixnModel);
         return write(id, ixnModel, dataset);
     }
