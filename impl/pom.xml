@@ -9,6 +9,7 @@
   </parent>
 
   <artifactId>impl</artifactId>
+  <name>Trellis/Cassandra Integration</name>
 
   <properties>
     <cassandra.driver.version>3.3.2</cassandra.driver.version>
@@ -55,15 +56,12 @@
             <configuration>
               <systemProperties>
                 <cassandra.nativeTransportPort>${cassandra.nativeTransportPort}</cassandra.nativeTransportPort>
+                <cassandra.contactHost>localhost</cassandra.contactHost>
                 <test.keyspace>${test.keyspace}</test.keyspace>
               </systemProperties>
             </configuration>
           </execution>
         </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>cassandra-maven-plugin</artifactId>
       </plugin>
       <plugin>
         <groupId>org.jacoco</groupId>
@@ -196,4 +194,34 @@
       </snapshots>
     </repository>
   </repositories>
+  <profiles>
+    <profile>
+      <id>self-cassandra</id>
+      <activation>
+        <property>
+          <name>!cassandra.nativeTransportPort</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>cassandra-maven-plugin</artifactId>
+            <configuration>          
+              <!-- use a load script after resource filtering -->
+              <script>${project.build.directory}/test-classes/load.cql</script>
+            </configuration>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>start</goal>
+                  <goal>stop</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>

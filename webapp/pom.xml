@@ -10,7 +10,7 @@
 
   <artifactId>webapp</artifactId>
   <packaging>war</packaging>
-  <name>trellis-cassandra-app</name>
+  <name>Trellis/Cassandra Application</name>
   <description>Trellis LDP application using Trellis-Cassandra for persistence</description>
 
   <properties>
@@ -280,10 +280,6 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>cassandra-maven-plugin</artifactId>
-      </plugin>
       <!-- <plugin> <groupId>org.codehaus.cargo</groupId> <artifactId>cargo-maven2-plugin</artifactId> <version>1.6.9</version>
         <configuration> <container> <containerId>wildfly-swarm2017x</containerId> <type>installed</type> <home>${project.build.directory}/${project.artifactId}-${project.version}-thorntail.jar</home>
         <systemProperties> <cassandra.nativeTransportPort>${cassandra.nativeTransportPort}</cassandra.nativeTransportPort>
@@ -323,7 +319,7 @@
                 <swarm.http.port>${trellis.port}</swarm.http.port>
                 <!-- <org.jboss.logging.provider>slf4j</org.jboss.logging.provider> -->
                 <contactPort>${cassandra.nativeTransportPort}</contactPort>
-                <contactAddress>localhost</contactAddress>
+                <contactAddress>${cassandra.contactHost}</contactAddress>
                 <noCache>true</noCache>
                 <revalidate>true</revalidate>
                 <cacheAge>10000</cacheAge>
@@ -350,6 +346,34 @@
   </build>
 
   <profiles>
+    <profile>
+      <id>self-cassandra</id>
+      <activation>
+        <property>
+          <name>!cassandra.nativeTransportPort</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>cassandra-maven-plugin</artifactId>
+            <configuration>
+              <!-- use a load script after resource filtering -->
+              <script>${project.build.directory}/test-classes/load.cql</script>
+            </configuration>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>start</goal>
+                  <goal>stop</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
     <profile>
       <id>hollow-jar</id>
       <!-- see http://docs.wildfly-swarm.io/2.1.0.Final/#hollow-jar_thorntail -->

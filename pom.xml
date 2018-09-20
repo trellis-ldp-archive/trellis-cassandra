@@ -23,6 +23,8 @@
     <cassandra.test.version>3.11.2</cassandra.test.version>
 
     <logback.version>1.2.3</logback.version>
+    
+    <cassandra.contactHost>localhost</cassandra.contactHost>
   </properties>
 
   <build>
@@ -35,21 +37,11 @@
           <configuration>
             <startNativeTransport>true</startNativeTransport>
             <addTestClasspath>true</addTestClasspath>
-            <!-- use a load script after resource filtering -->
-            <script>${project.build.directory}/test-classes/load.cql</script>
             <systemPropertyVariables>
               <cassandra.jmx.local.port>${cassandra.jmx.local.port}</cassandra.jmx.local.port>
             </systemPropertyVariables>
             <maxMemory>512</maxMemory>
           </configuration>
-          <executions>
-            <execution>
-              <goals>
-                <goal>start</goal>
-                <goal>stop</goal>
-              </goals>
-            </execution>
-          </executions>
           <dependencies>
             <dependency>
               <groupId>org.apache.cassandra</groupId>
@@ -61,5 +53,6 @@
       </plugins>
     </pluginManagement>
   </build>
+
 
 </project>

@@ -4,6 +4,9 @@ addons:
   sonarcloud:
     organization: trellis-ldp
 
+services:
+  - cassandra
+  
 matrix:
   fast_finish: true
 
@@ -22,5 +25,5 @@ matrix:
     - jdk: openjdk10
 
 
-script: mvn clean install
+script: mvn -Dcassandra.nativeTransportPort=9042 clean install
 
