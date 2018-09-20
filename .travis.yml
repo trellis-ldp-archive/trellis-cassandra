@@ -1,5 +1,4 @@
 language: java
-group: edge
 
 addons:
   sonarcloud:
@@ -20,6 +19,8 @@ matrix:
 
   allow_failures:
     - jdk: oraclejdk11
+    - jdk: openjdk10
+
 
 script: mvn clean install
 
