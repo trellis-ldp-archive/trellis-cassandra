@@ -1,0 +1,52 @@
+<configuration debug="false">
+
+  <jmxConfigurator/>
+
+  <property name="log_dir" value="${project.build.directory}/logs"/>
+
+  <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>${log_dir}/system.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+      <fileNamePattern>${log_dir}/system.log.%i.zip</fileNamePattern>
+      <minIndex>1</minIndex>
+      <maxIndex>20</maxIndex>
+    </rollingPolicy>
+
+    <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+      <maxFileSize>20MB</maxFileSize>
+    </triggeringPolicy>
+    <encoder>
+      <pattern>%-5level [%thread] %date{ISO8601} %F:%L - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%-5level %date{HH:mm:ss,SSS} %msg%n</pattern>
+    </encoder>
+    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+      <level>ERROR</level>
+    </filter>
+  </appender>
+
+  <root level="WARN">
+    <appender-ref ref="FILE"/>
+    <appender-ref ref="STDOUT"/>
+  </root>
+
+  <logger name="com.thinkaurelius.thrift" level="ERROR"/>
+
+  <logger name="org.apache.tamaya" level="DEBUG"/>
+
+  <logger name="com.datastax.driver.core.QueryLogger.NORMAL" level="INFO"/>
+  <logger name="com.datastax.driver.core.QueryLogger.ERROR" level="INFO"/>
+
+  <logger name="org.jboss.weld" level="DEBUG"/>
+
+  <logger name="org.wildfly" level="ERROR"/>
+
+  <logger name="org.trellisldp" level="DEBUG"/>
+
+  <logger name="edu.si" level="DEBUG"/>
+
+</configuration>

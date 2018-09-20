@@ -1,0 +1,379 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>edu.si.trellisldp.cassandra</groupId>
+    <artifactId>trellis-cassandra</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>webapp</artifactId>
+  <packaging>war</packaging>
+  <name>trellis-cassandra-app</name>
+  <description>Trellis LDP application using Trellis-Cassandra for persistence</description>
+
+  <properties>
+
+    <thorntail.version>2.1.0.Final</thorntail.version>
+    <jandex.version>2.0.5.Final</jandex.version>
+    <!-- <tamaya.version>0.4-incubating-SNAPSHOT</tamaya.version> -->
+
+    <tamaya.version>0.3-incubating</tamaya.version>
+
+    <slf4j.version>1.7.25</slf4j.version>
+
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.thorntail</groupId>
+        <artifactId>bom</artifactId>
+        <version>${thorntail.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <repositories>
+    <repository>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <id>central</id>
+      <name>Central Repository</name>
+      <url>https://repository.apache.org/content/groups/public</url>
+    </repository>
+  </repositories>
+
+  <dependencies>
+    <dependency>
+      <groupId>edu.si.trellisldp.cassandra</groupId>
+      <artifactId>impl</artifactId>
+      <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.ow2.asm</groupId>
+          <artifactId>asm</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.ow2.asm</groupId>
+          <artifactId>asm-commons</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.ow2.asm</groupId>
+          <artifactId>asm-analysis</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.ow2.asm</groupId>
+          <artifactId>asm-util</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.ow2.asm</groupId>
+          <artifactId>asm-tree</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.trellisldp</groupId>
+      <artifactId>trellis-file</artifactId>
+      <version>${trellis.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.trellisldp</groupId>
+      <artifactId>trellis-http</artifactId>
+      <version>${trellis.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.trellisldp</groupId>
+      <artifactId>trellis-id</artifactId>
+      <version>${trellis.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.trellisldp</groupId>
+      <artifactId>trellis-rdfa</artifactId>
+      <version>${trellis.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.trellisldp</groupId>
+      <artifactId>trellis-io-jena</artifactId>
+      <version>${trellis.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.trellisldp</groupId>
+      <artifactId>trellis-agent</artifactId>
+      <version>${trellis.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.trellisldp</groupId>
+      <artifactId>trellis-webac</artifactId>
+      <version>${trellis.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.tamaya.ext</groupId>
+      <artifactId>tamaya-cdi</artifactId>
+      <version>${tamaya.version}</version>
+    </dependency>
+    <!-- <dependency> -->
+    <!-- <groupId>org.apache.tamaya.ext</groupId> -->
+    <!-- <artifactId>tamaya-collections</artifactId> -->
+    <!-- <version>${tamaya.version}</version> -->
+    <!-- </dependency> -->
+    <!-- <dependency> -->
+    <!-- <groupId>org.apache.tamaya.ext</groupId> -->
+    <!-- <artifactId>tamaya-json</artifactId> -->
+    <!-- <version>${tamaya.version}</version> -->
+    <!-- </dependency> -->
+
+    <dependency>
+      <groupId>io.thorntail</groupId>
+      <artifactId>logging</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm-commons</artifactId>
+      <version>6.0</version>
+    </dependency>
+
+
+    <dependency>
+      <groupId>org.jboss</groupId>
+      <artifactId>jandex</artifactId>
+      <version>${jandex.version}</version>
+    </dependency>
+
+    <!-- logging -->
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>${logback.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jul-to-slf4j</artifactId>
+      <version>1.7.25</version>
+    </dependency>
+
+    <!-- test gear -->
+    <!-- <dependency> <groupId>org.trellisldp</groupId> <artifactId>trellis-test</artifactId> <version>${trellis.version}</version>
+      <scope>test</scope> <exclusions> <exclusion> <groupId>org.slf4j</groupId> <artifactId>slf4j-api</artifactId> </exclusion>
+      </exclusions> </dependency> -->
+    <dependency>
+      <groupId>io.thorntail</groupId>
+      <artifactId>arquillian</artifactId>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.ow2.asm</groupId>
+          <artifactId>asm</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>5.2.0</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
+    <testResources>
+      <testResource>
+        <directory>src/test/resources</directory>
+        <filtering>true</filtering>
+      </testResource>
+    </testResources>
+
+    <plugins>
+      <plugin>
+        <groupId>org.jboss.jandex</groupId>
+        <artifactId>jandex-maven-plugin</artifactId>
+        <version>1.0.5</version>
+        <executions>
+          <execution>
+            <id>make-index</id>
+            <goals>
+              <goal>jandex</goal>
+            </goals>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>jandex</artifactId>
+            <version>${jandex.version}</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>3.0.0</version>
+        <executions>
+          <execution>
+            <id>reserve-network-port</id>
+            <goals>
+              <goal>reserve-network-port</goal>
+            </goals>
+            <phase>process-sources</phase>
+            <configuration>
+              <portNames>
+                <portName>cassandra.rpcPort</portName>
+                <portName>cassandra.jmxPort</portName>
+                <portName>cassandra.storagePort</portName>
+                <portName>cassandra.stopPort</portName>
+                <portName>cassandra.nativeTransportPort</portName>
+                <portName>cassandra.jmx.local.port</portName>
+                <portName>trellis.port</portName>
+              </portNames>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.22.0</version>
+        <configuration>
+          <skipTests>true</skipTests>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>2.22.0</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+            <configuration>
+              <systemPropertyVariables>
+                <cassandra.nativeTransportPort>${cassandra.nativeTransportPort}</cassandra.nativeTransportPort>
+                <project.build.directory>${project.build.directory}</project.build.directory>
+                <trellis.port>${trellis.port}</trellis.port>
+              </systemPropertyVariables>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>cassandra-maven-plugin</artifactId>
+      </plugin>
+      <!-- <plugin> <groupId>org.codehaus.cargo</groupId> <artifactId>cargo-maven2-plugin</artifactId> <version>1.6.9</version>
+        <configuration> <container> <containerId>wildfly-swarm2017x</containerId> <type>installed</type> <home>${project.build.directory}/${project.artifactId}-${project.version}-thorntail.jar</home>
+        <systemProperties> <cassandra.nativeTransportPort>${cassandra.nativeTransportPort}</cassandra.nativeTransportPort>
+        <project.build.directory>${project.build.directory}</project.build.directory>
+        <trellis.port>${trellis.port}</trellis.port> <swarm.logging>DEBUG</swarm.logging> </systemProperties> </container>
+        <configuration>
+        <type>standalone</type> <properties> <cargo.servlet.uriencoding>UTF-8</cargo.servlet.uriencoding> <cargo.jvmargs>-Xmx1024m</cargo.jvmargs>
+        <cargo.logging>low</cargo.logging> <cargo.servlet.port>${trellis.port}</cargo.servlet.port> <cargo.swarm.project.name>${project.name}</cargo.swarm.project.name>
+        <cargo.swarm.ping.url>http://localhost:${trellis.port}</cargo.swarm.ping.url> </properties> </configuration> </configuration>
+        <executions> <execution> <id>start-server</id> <goals> <goal>start</goal> </goals> <phase>pre-integration-test</phase>
+        </execution>
+        <execution> <id>stop-server</id> <goals> <goal>stop</goal> </goals> <phase>post-integration-test</phase> </execution>
+        </executions>
+        </plugin> -->
+      <plugin>
+        <groupId>io.thorntail</groupId>
+        <artifactId>thorntail-maven-plugin</artifactId>
+        <version>${thorntail.version}</version>
+        <configuration>
+          <fractionDetectMode>force</fractionDetectMode>
+        </configuration>
+        <executions>
+          <execution>
+            <id>package</id>
+            <goals>
+              <goal>package</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>start</id>
+            <phase>pre-integration-test</phase>
+            <goals>
+              <goal>start</goal>
+            </goals>
+            <configuration>
+              <properties>
+                <swarm.http.port>${trellis.port}</swarm.http.port>
+                <!-- <org.jboss.logging.provider>slf4j</org.jboss.logging.provider> -->
+                <contactPort>${cassandra.nativeTransportPort}</contactPort>
+                <contactAddress>localhost</contactAddress>
+                <noCache>true</noCache>
+                <revalidate>true</revalidate>
+                <cacheAge>10000</cacheAge>
+              </properties>
+            </configuration>
+          </execution>
+          <execution>
+            <id>stop</id>
+            <phase>post-integration-test</phase>
+            <goals>
+              <goal>stop</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-war-plugin</artifactId>
+        <version>3.2.2</version>
+        <configuration>
+          <failOnMissingWebXml>false</failOnMissingWebXml>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>hollow-jar</id>
+      <!-- see http://docs.wildfly-swarm.io/2.1.0.Final/#hollow-jar_thorntail -->
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>io.thorntail</groupId>
+            <artifactId>thorntail-maven-plugin</artifactId>
+            <version>${thorntail.version}</version>
+            <executions>
+              <execution>
+                <id>hollow-package</id>
+                <goals>
+                  <goal>package</goal>
+                </goals>
+                <configuration>
+                  <hollow>true</hollow>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
+</project>

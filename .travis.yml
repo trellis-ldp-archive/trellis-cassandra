@@ -1,9 +1,25 @@
 language: java
-sudo: false
-install: mvn dependency:go-offline
-script: mvn verify
-jdk:
-  - oraclejdk8
-env:
-  global:
-    - JAVA_OPTS="-Xmx3072M -Xms512M -XX:+UseG1GC"
+group: edge
+
+addons:
+  sonarcloud:
+    organization: trellis-ldp
+
+matrix:
+  fast_finish: true
+
+  include:
+    # JDK 8
+    - jdk: oraclejdk8
+
+    # JDK 10
+    - jdk: openjdk10
+
+    # JDK 11
+    - jdk: oraclejdk11
+
+  allow_failures:
+    - jdk: oraclejdk11
+
+script: mvn clean install
+
