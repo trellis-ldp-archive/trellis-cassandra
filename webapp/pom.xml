@@ -306,12 +306,9 @@
             <configuration>
               <properties>
                 <swarm.http.port>${trellis.port}</swarm.http.port>
-                <!-- <org.jboss.logging.provider>slf4j</org.jboss.logging.provider> -->
+                <java.net.preferIPv4Stack>true</java.net.preferIPv4Stack>
                 <contactPort>${cassandra.nativeTransportPort}</contactPort>
                 <contactAddress>${cassandra.contactHost}</contactAddress>
-                <noCache>true</noCache>
-                <revalidate>true</revalidate>
-                <cacheAge>10000</cacheAge>
               </properties>
             </configuration>
           </execution>

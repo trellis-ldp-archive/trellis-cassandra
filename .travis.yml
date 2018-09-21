@@ -35,7 +35,7 @@ install: true
 before_script: src/test/resources/load.sh
 
 # turn off Cassandra Maven plugin to use Travis' service instead
-script: mvn -P-self-cassandra -Djava.net.preferIPv4Stack -Dcassandra.nativeTransportPort=9042 install
+script: mvn -P-self-cassandra -Dcassandra.nativeTransportPort=9042 install
 
 # in case of failure, spew reports
 after_failure:
