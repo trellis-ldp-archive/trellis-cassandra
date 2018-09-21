@@ -1,5 +1,9 @@
 language: java
 
+# required to use Travis' Cassandra service
+# https://docs.travis-ci.com/user/database-setup/#cassandra
+sudo: required
+
 addons:
   sonarcloud:
     organization: trellis-ldp
@@ -28,4 +32,8 @@ matrix:
 install: true
 # turn off Cassandra Maven plugin to use Travis' service instead
 script: mvn -P-self-cassandra -Dcassandra.contactHost=localhost -Dcassandra.nativeTransportPort=9042 install
-
+# in case of failure, spew reports
+after_failure:
+  - cat target/*-reports/*.txt
+  - cat impl/target/*-reports/*.txt
+  - cat webapp/target/*-reports/*.txt
