@@ -345,10 +345,6 @@
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>cassandra-maven-plugin</artifactId>
-            <configuration>
-              <!-- use a load script after resource filtering -->
-              <script>${project.build.directory}/test-classes/load.cql</script>
-            </configuration>
             <executions>
               <execution>
                 <goals>

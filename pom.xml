@@ -71,7 +71,9 @@
             <systemPropertyVariables>
               <cassandra.jmx.local.port>${cassandra.jmx.local.port}</cassandra.jmx.local.port>
             </systemPropertyVariables>
-            <maxMemory>512</maxMemory>
+            <!-- use a load script after resource filtering -->
+            <!-- this path is relative to the working module directory at buildtime -->
+            <script>${project.basedir}/../src/test/resources/load.cql</script>
           </configuration>
           <dependencies>
             <dependency>
