@@ -15,7 +15,7 @@
 
   <properties>
 
-    <thorntail.version>2.1.0.Final</thorntail.version>
+    <thorntail.version>2.2.0.Final</thorntail.version>
     <jandex.version>2.0.5.Final</jandex.version>
     <!-- <tamaya.version>0.4-incubating-SNAPSHOT</tamaya.version> -->
 
@@ -36,17 +36,6 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
-
-  <repositories>
-    <repository>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-      <id>central</id>
-      <name>Central Repository</name>
-      <url>https://repository.apache.org/content/groups/public</url>
-    </repository>
-  </repositories>
 
   <dependencies>
     <dependency>

@@ -23,9 +23,40 @@
     <cassandra.test.version>3.11.2</cassandra.test.version>
 
     <logback.version>1.2.3</logback.version>
-    
+
     <cassandra.contactHost>localhost</cassandra.contactHost>
   </properties>
+
+  <repositories>
+    <repository>
+      <id>apache-snapshots</id>
+      <name>Apache Central Repository</name>
+      <url>https://repository.apache.org/content/groups/public</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>sonatype-snapshots</id>
+      <name>Sonatype Snapshots Repository</name>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>jboss-public-repository</id>
+      <name>JBoss Public Repository</name>
+      <!-- for Thorntail plugin and dependencies -->
+      <url>https://repository.jboss.org/nexus/content/groups/public/</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
 
   <build>
     <pluginManagement>
