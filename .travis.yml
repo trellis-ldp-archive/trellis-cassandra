@@ -24,6 +24,8 @@ matrix:
     - jdk: oraclejdk11
     - jdk: openjdk10
 
+# resolve dependencies
+install: mvn dependency:go-offline
 # turn off Cassandra Maven plugin to use Travis' service instead
 script: mvn -P-self-cassandra -Dcassandra.contactHost=localhost -Dcassandra.nativeTransportPort=9042 verify
 
