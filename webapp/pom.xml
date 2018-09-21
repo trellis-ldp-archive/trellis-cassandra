@@ -307,8 +307,8 @@
               <properties>
                 <swarm.http.port>${trellis.port}</swarm.http.port>
                 <java.net.preferIPv4Stack>true</java.net.preferIPv4Stack>
-                <contactPort>${cassandra.nativeTransportPort}</contactPort>
-                <contactAddress>${cassandra.contactHost}</contactAddress>
+                <cassandra.contactPort>${cassandra.nativeTransportPort}</cassandra.contactPort>
+                <cassandra.contactAddress>${cassandra.contactHost}</cassandra.contactAddress>
               </properties>
             </configuration>
           </execution>

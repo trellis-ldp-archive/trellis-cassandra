@@ -29,11 +29,11 @@ public class CassandraSession implements Closeable {
     private Session session;
 
     @Inject
-    @Config
+    @Config("cassandra.contactPort")
     private String contactPort;
 
     @Inject
-    @Config
+    @Config("cassandra.contactAddress")
     private String contactAddress;
 
     private static final Logger log = getLogger(CassandraSession.class);
