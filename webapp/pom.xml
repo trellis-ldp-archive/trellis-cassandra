@@ -349,9 +349,7 @@
     <profile>
       <id>self-cassandra</id>
       <activation>
-        <property>
-          <name>!cassandra.nativeTransportPort</name>
-        </property>
+        <activeByDefault>true</activeByDefault>
       </activation>
       <build>
         <plugins>

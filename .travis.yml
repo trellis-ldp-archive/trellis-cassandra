@@ -24,6 +24,6 @@ matrix:
     - jdk: oraclejdk11
     - jdk: openjdk10
 
-
-script: mvn -Dcassandra.nativeTransportPort=9042 clean install
+# turn off Cassandra Maven plugin to use Travis' service instead
+script: mvn -P-self-cassandra -Dcassandra.contactHost=localhost -Dcassandra.nativeTransportPort=9042 verify
 

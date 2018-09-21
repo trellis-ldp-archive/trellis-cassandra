@@ -198,16 +198,14 @@
     <profile>
       <id>self-cassandra</id>
       <activation>
-        <property>
-          <name>!cassandra.nativeTransportPort</name>
-        </property>
+        <activeByDefault>true</activeByDefault>
       </activation>
       <build>
         <plugins>
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>cassandra-maven-plugin</artifactId>
-            <configuration>          
+            <configuration>
               <!-- use a load script after resource filtering -->
               <script>${project.build.directory}/test-classes/load.cql</script>
             </configuration>
