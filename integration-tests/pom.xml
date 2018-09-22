@@ -1,0 +1,122 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>edu.si.trellisldp.cassandra</groupId>
+    <artifactId>trellis-cassandra</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+  <artifactId>integration-tests</artifactId>
+  <name>Trellis/Cassandra Integration Tests</name>
+
+  <dependencies>
+    <!-- test gear -->
+    <dependency>
+      <groupId>org.trellisldp</groupId>
+      <artifactId>trellis-test</artifactId>
+      <version>${trellis.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- <dependency> -->
+    <!-- <groupId>org.jboss.resteasy</groupId> -->
+    <!-- <artifactId>resteasy-jaxrs</artifactId> -->
+    <!-- <scope>provided</scope> -->
+    <!-- </dependency> -->
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <configuration>
+          <portNames combine.children="append">
+            <portName>trellis.port</portName>
+          </portNames>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>self-trellis</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.cargo</groupId>
+            <artifactId>cargo-maven2-plugin</artifactId>
+            <version>1.6.9</version>
+            <configuration>
+              <container>
+                <containerId>wildfly-swarm2017x</containerId>
+                <type>installed</type>
+                <home>${project.basedir}/../webapp/target/webapp-${project.version}-thorntail.jar</home>
+                <systemProperties>
+                  <project.build.directory>${project.build.directory}</project.build.directory>
+                  <trellis.port>${trellis.port}</trellis.port>
+                  <swarm.logging>DEBUG</swarm.logging>
+                  <java.net.preferIPv4Stack>true</java.net.preferIPv4Stack>
+                  <cassandra.contactPort>${cassandra.nativeTransportPort}</cassandra.contactPort>
+                  <cassandra.contactNode>${cassandra.contactNode}</cassandra.contactNode>
+                </systemProperties>
+              </container>
+              <configuration>
+                <type>standalone</type>
+                <properties>
+                  <cargo.servlet.uriencoding>UTF-8</cargo.servlet.uriencoding>
+                  <cargo.jvmargs>-Xmx1024m</cargo.jvmargs>
+                  <cargo.logging>low</cargo.logging>
+                  <cargo.servlet.port>${trellis.port}</cargo.servlet.port>
+                  <cargo.swarm.project.name>${project.name}</cargo.swarm.project.name>
+                  <cargo.swarm.ping.url>http://localhost:${trellis.port}/webapp-</cargo.swarm.ping.url>
+                </properties>
+              </configuration>
+            </configuration>
+            <executions>
+              <execution>
+                <id>start-server</id>
+                <goals>
+                  <goal>start</goal>
+                </goals>
+                <phase>pre-integration-test</phase>
+              </execution>
+              <execution>
+                <id>stop-server</id>
+                <goals>
+                  <goal>stop</goal>
+                </goals>
+                <phase>post-integration-test</phase>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>self-cassandra</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>cassandra-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>start</goal>
+                  <goal>stop</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>

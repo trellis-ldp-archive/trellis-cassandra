@@ -10,8 +10,6 @@ import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.extras.codecs.jdk8.InstantCodec;
 
-import java.io.Closeable;
-
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
@@ -21,8 +19,12 @@ import javax.inject.Inject;
 import org.apache.tamaya.inject.api.Config;
 import org.slf4j.Logger;
 
+/**
+ * Provides a Cassandra {@link Session}.
+ *
+ */
 @ApplicationScoped
-public class CassandraSession implements Closeable {
+public class CassandraSession {
 
     private Cluster cluster;
 
@@ -38,14 +40,18 @@ public class CassandraSession implements Closeable {
 
     private static final Logger log = getLogger(CassandraSession.class);
 
+    /**
+     * Connect to Cassandra, lazily.
+     */
     @PostConstruct
     public void connect() {
         log.info("Using Cassandra node address: {} and port: {}", contactAddress, contactPort);
+        //if (cluster != null && !cluster.isClosed()) cluster.close();
         this.cluster = Cluster.builder().withoutJMXReporting().withoutMetrics().addContactPoint(contactAddress)
                         .withPort(parseInt(contactPort)).build();
         // this.cluster.register(QueryLogger.builder().build());
         cluster.getConfiguration().getCodecRegistry().register(iriCodec, datasetCodec, bigint(), InstantCodec.instance);
-        this.session = cluster.connect("Trellis");
+        this.session = cluster.newSession();
     }
 
     /**
@@ -57,8 +63,10 @@ public class CassandraSession implements Closeable {
         return session;
     }
 
+    /**
+     * Release resources.
+     */
     @PreDestroy
-    @Override
     public void close() {
         session.close();
         cluster.close();
