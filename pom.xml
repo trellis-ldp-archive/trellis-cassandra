@@ -9,6 +9,7 @@
   <modules>
     <module>impl</module>
     <module>webapp</module>
+    <module>integration-tests</module>
   </modules>
 
   <properties>
@@ -24,7 +25,7 @@
 
     <logback.version>1.2.3</logback.version>
 
-    <cassandra.contactHost>localhost</cassandra.contactHost>
+    <cassandra.contactNode>localhost</cassandra.contactNode>
   </properties>
 
   <repositories>
@@ -63,6 +64,30 @@
       <plugins>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
+          <artifactId>build-helper-maven-plugin</artifactId>
+          <version>3.0.0</version>
+          <configuration>
+            <portNames>
+              <portName>cassandra.rpcPort</portName>
+              <portName>cassandra.jmxPort</portName>
+              <portName>cassandra.storagePort</portName>
+              <portName>cassandra.stopPort</portName>
+              <portName>cassandra.nativeTransportPort</portName>
+              <portName>cassandra.jmx.local.port</portName>
+            </portNames>
+          </configuration>
+          <executions>
+            <execution>
+              <id>reserve-network-port</id>
+              <goals>
+                <goal>reserve-network-port</goal>
+              </goals>
+              <phase>process-test-resources</phase>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
           <artifactId>cassandra-maven-plugin</artifactId>
           <version>3.6</version>
           <configuration>
@@ -82,6 +107,46 @@
               <version>${cassandra.test.version}</version>
             </dependency>
           </dependencies>
+        </plugin>
+        <plugin>
+          <groupId>io.thorntail</groupId>
+          <artifactId>thorntail-maven-plugin</artifactId>
+          <version>${thorntail.version}</version>
+          <configuration>
+            <fractionDetectMode>force</fractionDetectMode>
+          </configuration>
+          <executions>
+            <execution>
+              <id>package</id>
+              <goals>
+                <goal>package</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>start</id>
+              <phase>pre-integration-test</phase>
+              <goals>
+                <goal>start</goal>
+              </goals>
+              <configuration>
+                <properties>
+                  <org.jboss.logging.provider>slf4j</org.jboss.logging.provider>
+                  <swarm.logging>DEBUG</swarm.logging>
+                  <swarm.http.port>${trellis.port}</swarm.http.port>
+                  <java.net.preferIPv4Stack>true</java.net.preferIPv4Stack>
+                  <cassandra.contactPort>${cassandra.nativeTransportPort}</cassandra.contactPort>
+                  <cassandra.contactNode>${cassandra.contactNode}</cassandra.contactNode>
+                </properties>
+              </configuration>
+            </execution>
+            <execution>
+              <id>stop</id>
+              <phase>post-integration-test</phase>
+              <goals>
+                <goal>stop</goal>
+              </goals>
+            </execution>
+          </executions>
         </plugin>
       </plugins>
     </pluginManagement>

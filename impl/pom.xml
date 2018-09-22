@@ -23,26 +23,6 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
-        <version>3.0.0</version>
-        <executions>
-          <execution>
-            <id>reserve-network-port</id>
-            <goals>
-              <goal>reserve-network-port</goal>
-            </goals>
-            <phase>process-test-resources</phase>
-            <configuration>
-              <portNames>
-                <portName>cassandra.rpcPort</portName>
-                <portName>cassandra.jmxPort</portName>
-                <portName>cassandra.storagePort</portName>
-                <portName>cassandra.stopPort</portName>
-                <portName>cassandra.nativeTransportPort</portName>
-                <portName>cassandra.jmx.local.port</portName>
-              </portNames>
-            </configuration>
-          </execution>
-        </executions>
       </plugin>
       <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
@@ -56,7 +36,7 @@
             <configuration>
               <systemProperties>
                 <cassandra.nativeTransportPort>${cassandra.nativeTransportPort}</cassandra.nativeTransportPort>
-                <cassandra.contactHost>localhost</cassandra.contactHost>
+                <cassandra.contactNode>${cassandra.contactNode}</cassandra.contactNode>
                 <test.keyspace>${test.keyspace}</test.keyspace>
               </systemProperties>
             </configuration>

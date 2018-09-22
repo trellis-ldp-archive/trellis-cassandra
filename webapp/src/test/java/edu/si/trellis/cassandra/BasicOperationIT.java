@@ -46,7 +46,7 @@ public class BasicOperationIT {
         req.setEntity(new StringEntity("<> a <http://example.com/example> ."));
         try (CloseableHttpResponse res = client.execute(req); InputStream url = res.getEntity().getContent()) {
             println();
-            res.getEntity().writeTo(System.out);
+            log.info("Received: {}", EntityUtils.toString(res.getEntity()));
             println();
             // waitformax();
             assertEquals(SC_CREATED, res.getStatusLine().getStatusCode());

@@ -163,9 +163,6 @@
     </dependency>
 
     <!-- test gear -->
-    <!-- <dependency> <groupId>org.trellisldp</groupId> <artifactId>trellis-test</artifactId> <version>${trellis.version}</version>
-      <scope>test</scope> <exclusions> <exclusion> <groupId>org.slf4j</groupId> <artifactId>slf4j-api</artifactId> </exclusion>
-      </exclusions> </dependency> -->
     <dependency>
       <groupId>io.thorntail</groupId>
       <artifactId>arquillian</artifactId>
@@ -223,27 +220,11 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
-        <version>3.0.0</version>
-        <executions>
-          <execution>
-            <id>reserve-network-port</id>
-            <goals>
-              <goal>reserve-network-port</goal>
-            </goals>
-            <phase>process-sources</phase>
-            <configuration>
-              <portNames>
-                <portName>cassandra.rpcPort</portName>
-                <portName>cassandra.jmxPort</portName>
-                <portName>cassandra.storagePort</portName>
-                <portName>cassandra.stopPort</portName>
-                <portName>cassandra.nativeTransportPort</portName>
-                <portName>cassandra.jmx.local.port</portName>
-                <portName>trellis.port</portName>
-              </portNames>
-            </configuration>
-          </execution>
-        </executions>
+        <configuration>
+          <portNames combine.children="append">
+            <portName>trellis.port</portName>
+          </portNames>
+        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
@@ -271,57 +252,9 @@
           </execution>
         </executions>
       </plugin>
-      <!-- <plugin> <groupId>org.codehaus.cargo</groupId> <artifactId>cargo-maven2-plugin</artifactId> <version>1.6.9</version>
-        <configuration> <container> <containerId>wildfly-swarm2017x</containerId> <type>installed</type> <home>${project.build.directory}/${project.artifactId}-${project.version}-thorntail.jar</home>
-        <systemProperties> <cassandra.nativeTransportPort>${cassandra.nativeTransportPort}</cassandra.nativeTransportPort>
-        <project.build.directory>${project.build.directory}</project.build.directory>
-        <trellis.port>${trellis.port}</trellis.port> <swarm.logging>DEBUG</swarm.logging> </systemProperties> </container>
-        <configuration>
-        <type>standalone</type> <properties> <cargo.servlet.uriencoding>UTF-8</cargo.servlet.uriencoding> <cargo.jvmargs>-Xmx1024m</cargo.jvmargs>
-        <cargo.logging>low</cargo.logging> <cargo.servlet.port>${trellis.port}</cargo.servlet.port> <cargo.swarm.project.name>${project.name}</cargo.swarm.project.name>
-        <cargo.swarm.ping.url>http://localhost:${trellis.port}</cargo.swarm.ping.url> </properties> </configuration> </configuration>
-        <executions> <execution> <id>start-server</id> <goals> <goal>start</goal> </goals> <phase>pre-integration-test</phase>
-        </execution>
-        <execution> <id>stop-server</id> <goals> <goal>stop</goal> </goals> <phase>post-integration-test</phase> </execution>
-        </executions>
-        </plugin> -->
       <plugin>
         <groupId>io.thorntail</groupId>
         <artifactId>thorntail-maven-plugin</artifactId>
-        <version>${thorntail.version}</version>
-        <configuration>
-          <fractionDetectMode>force</fractionDetectMode>
-        </configuration>
-        <executions>
-          <execution>
-            <id>package</id>
-            <goals>
-              <goal>package</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>start</id>
-            <phase>pre-integration-test</phase>
-            <goals>
-              <goal>start</goal>
-            </goals>
-            <configuration>
-              <properties>
-                <swarm.http.port>${trellis.port}</swarm.http.port>
-                <java.net.preferIPv4Stack>true</java.net.preferIPv4Stack>
-                <cassandra.contactPort>${cassandra.nativeTransportPort}</cassandra.contactPort>
-                <cassandra.contactAddress>${cassandra.contactHost}</cassandra.contactAddress>
-              </properties>
-            </configuration>
-          </execution>
-          <execution>
-            <id>stop</id>
-            <phase>post-integration-test</phase>
-            <goals>
-              <goal>stop</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
       <plugin>
         <artifactId>maven-war-plugin</artifactId>

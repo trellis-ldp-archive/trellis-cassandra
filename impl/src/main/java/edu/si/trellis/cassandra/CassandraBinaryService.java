@@ -67,19 +67,19 @@ public class CassandraBinaryService implements BinaryService {
     // TODO Move digest calculation to the C* node.
     private static final Set<String> algorithms = ImmutableSet.of(MD5, MD2, SHA, SHA_1, SHA_256, SHA_384, SHA_512);
 
-    private static final String INSERT_QUERY = "INSERT INTO Binarydata (identifier, chunk_index, chunk) VALUES (:identifier, :chunk_index, :chunk)";
+    private static final String INSERT_QUERY = "INSERT INTO Trellis.Binarydata (identifier, chunk_index, chunk) VALUES (:identifier, :chunk_index, :chunk)";
 
     private final PreparedStatement insertStatement;
 
-    private static final String READ_QUERY = "SELECT chunk, chunk_index FROM Binarydata WHERE identifier = ?;";
+    private static final String READ_QUERY = "SELECT chunk, chunk_index FROM Trellis.Binarydata WHERE identifier = ?;";
 
     private final PreparedStatement readStatement;
 
-    private static final String READ_RANGE_QUERY = "SELECT chunk, chunk_index FROM Binarydata WHERE identifier = ? and chunk_index >= :start and chunk_index <= :end;";
+    private static final String READ_RANGE_QUERY = "SELECT chunk, chunk_index FROM Trellis.Binarydata WHERE identifier = ? and chunk_index >= :start and chunk_index <= :end;";
 
     private final PreparedStatement readRangeStatement;
 
-    private static final String DELETE_QUERY = "DELETE FROM Binarydata WHERE identifier = ?;";
+    private static final String DELETE_QUERY = "DELETE FROM Trellis.Binarydata WHERE identifier = ?;";
 
     private final PreparedStatement deleteStatement;
 

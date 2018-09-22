@@ -1,7 +1,6 @@
 package edu.si.trellis.cassandra;
 
 import static edu.si.trellis.cassandra.CassandraResourceService.Mutability.Immutable;
-import static edu.si.trellis.cassandra.CassandraResourceService.Mutability.Meta;
 import static edu.si.trellis.cassandra.CassandraResourceService.Mutability.Mutable;
 import static java.util.Objects.requireNonNull;
 
@@ -25,14 +24,14 @@ import org.trellisldp.vocabulary.LDP;
 
 class CassandraResource implements Resource {
 
-    public static final String mutableQuadStreamQuery = "SELECT quads FROM " + Mutable.tableName
+    public static final String mutableQuadStreamQuery = "SELECT quads FROM trellis." + Mutable.tableName
                     + "  WHERE identifier = ? LIMIT 1 ;";
 
-    public static final String immutableQuadStreamQuery = "SELECT quads FROM " + Immutable.tableName
+    public static final String immutableQuadStreamQuery = "SELECT quads FROM trellis." + Immutable.tableName
                     + "  WHERE identifier = ? ;";
 
     public static final String metadataQuery = "SELECT identifier, interactionModel, hasAcl, binaryIdentifier, "
-                    + "mimeType, size, parent, WRITETIME(interactionModel) AS modified FROM " + Meta.tableName
+                    + "mimeType, size, parent, WRITETIME(interactionModel) AS modified FROM trellis." + Mutable.tableName
                     + " WHERE identifier = ? LIMIT 1 ;";
 
     private PreparedStatement immutableQuadStreamStatement, mutableQuadStreamStatement, metadataStatement;

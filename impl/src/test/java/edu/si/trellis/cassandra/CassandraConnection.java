@@ -48,9 +48,8 @@ class CassandraConnection extends ExternalResource {
         codecRegistry().register(inputStreamCodec, iriCodec, datasetCodec, InstantCodec.instance);
         QueryLogger queryLogger = QueryLogger.builder().build();
         cluster.register(queryLogger);
-        session = cluster.connect(keyspace);
+        session = cluster.newSession();
         service = new CassandraResourceService(session);
-        // UUIDGenerator idService = new UUIDGenerator();
         binaryService = new CassandraBinaryService(null, session, 1 * 1024 * 1024);
         if (cleanBefore) cleanOut();
     }
