@@ -154,12 +154,10 @@
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <version>${logback.version}</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>jul-to-slf4j</artifactId>
-      <version>1.7.25</version>
     </dependency>
 
     <!-- test gear -->
@@ -298,13 +296,15 @@
     </profile>
     <profile>
       <id>hollow-jar</id>
-      <!-- see http://docs.wildfly-swarm.io/2.1.0.Final/#hollow-jar_thorntail -->
+      <!-- see http://docs.wildfly-swarm.io/2.2.0.Final/#hollow-jar_thorntail -->
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
       <build>
         <plugins>
           <plugin>
             <groupId>io.thorntail</groupId>
             <artifactId>thorntail-maven-plugin</artifactId>
-            <version>${thorntail.version}</version>
             <executions>
               <execution>
                 <id>hollow-package</id>
