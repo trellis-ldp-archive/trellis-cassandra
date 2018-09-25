@@ -9,6 +9,10 @@
   <artifactId>integration-tests</artifactId>
   <name>Trellis/Cassandra Integration Tests</name>
 
+  <properties>
+    <cassandra.contactNode>localhost</cassandra.contactNode>
+  </properties>
+
   <dependencies>
     <!-- test gear -->
     <dependency>
@@ -58,8 +62,6 @@
                 <systemProperties>
                   <project.build.directory>${project.build.directory}</project.build.directory>
                   <trellis.port>${trellis.port}</trellis.port>
-                  <swarm.logging>DEBUG</swarm.logging>
-                  <java.net.preferIPv4Stack>true</java.net.preferIPv4Stack>
                   <cassandra.contactPort>${cassandra.nativeTransportPort}</cassandra.contactPort>
                   <cassandra.contactNode>${cassandra.contactNode}</cassandra.contactNode>
                 </systemProperties>
@@ -69,10 +71,9 @@
                 <properties>
                   <cargo.servlet.uriencoding>UTF-8</cargo.servlet.uriencoding>
                   <cargo.jvmargs>-Xmx1024m</cargo.jvmargs>
-                  <cargo.logging>low</cargo.logging>
                   <cargo.servlet.port>${trellis.port}</cargo.servlet.port>
                   <cargo.swarm.project.name>${project.name}</cargo.swarm.project.name>
-                  <cargo.swarm.ping.url>http://localhost:${trellis.port}/webapp-</cargo.swarm.ping.url>
+                  <cargo.swarm.ping.url>http://localhost:${trellis.port}/</cargo.swarm.ping.url>
                 </properties>
               </configuration>
             </configuration>
@@ -108,8 +109,15 @@
             <artifactId>cassandra-maven-plugin</artifactId>
             <executions>
               <execution>
+                <id>start</id>
+                <phase>package</phase>
                 <goals>
                   <goal>start</goal>
+                </goals>
+              </execution>
+              <execution>
+                <id>stop</id>
+                <goals>
                   <goal>stop</goal>
                 </goals>
               </execution>

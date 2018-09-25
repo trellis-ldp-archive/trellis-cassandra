@@ -1,4 +1,4 @@
-<configuration scan="true">
+<configuration debug="false" scan="true">
   <jmxConfigurator />
   <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
     <file>${cassandra.logdir}/system.log</file>

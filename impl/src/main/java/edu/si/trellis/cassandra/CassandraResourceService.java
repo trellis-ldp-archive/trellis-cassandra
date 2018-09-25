@@ -1,13 +1,11 @@
 package edu.si.trellis.cassandra;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.set;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.update;
 import static edu.si.trellis.cassandra.CassandraResourceService.Mutability.Immutable;
 import static edu.si.trellis.cassandra.CassandraResourceService.Mutability.Mutable;
 import static java.util.UUID.randomUUID;
-import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
@@ -17,11 +15,11 @@ import static org.trellisldp.vocabulary.Trellis.PreferServerManaged;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.RegularStatement;
-import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.querybuilder.Insert;
+import com.datastax.driver.core.Statement;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.util.concurrent.ListenableFuture;
 
 import java.util.Optional;
 import java.util.Set;
@@ -57,13 +55,15 @@ public class CassandraResourceService implements ResourceService {
 
     private static final Logger log = getLogger(CassandraResourceService.class);
 
-    private static final String[] DATA_COLUMNS = new String[] { "identifier", "quads", "interactionModel", "mimeType",
-            "parent" };
     private final Session session;
 
-    private static final String GET_QUERY = "SELECT identifier FROM trellis." + Mutable.tableName + " WHERE identifier = ?;";
-
+    private static final String GET_QUERY = "SELECT identifier FROM trellis." + Mutable.tableName
+                    + " WHERE identifier = ?;";
     private final PreparedStatement getStatement;
+    
+    private static final String IMMUTABLE_INSERT_QUERY = "INSERT INTO trellis." + Immutable.tableName
+                    + " (identifier,quads) VALUES (?,?)";
+    private final PreparedStatement immutableInsertStatement;
 
     /**
      * Same-thread execution. TODO use a pool?
@@ -80,14 +80,19 @@ public class CassandraResourceService implements ResourceService {
         this.session = session;
         log.info("Preparing retrieval query: {}", GET_QUERY);
         getStatement = session.prepare(GET_QUERY);
+        log.info("Preparing immmutable data insert query: {}", IMMUTABLE_INSERT_QUERY);
+        immutableInsertStatement = session.prepare(IMMUTABLE_INSERT_QUERY);
     }
 
     @Override
     public CompletableFuture<? extends Resource> get(final IRI id) {
         BoundStatement boundStatement = getStatement.bind(id);
+        log.debug("Executing CQL statement: {} with identifier: {}", getStatement.getQueryString(), id);
         ResultSetFuture result = session.executeAsync(boundStatement);
-        return translateRead(result)
-                        .thenApply(rows -> rows.isExhausted() ? MISSING_RESOURCE : new CassandraResource(id, session));
+        return translate(result).thenApply(rows -> {
+            log.debug("Resource {} was {}found", id, rows.isExhausted() ? "not " : "");
+            return rows.isExhausted() ? MISSING_RESOURCE : new CassandraResource(id, session);
+        });
     }
 
     @Override
@@ -104,7 +109,8 @@ public class CassandraResourceService implements ResourceService {
     @Override
     public CompletableFuture<Void> add(final IRI id, final Dataset dataset) {
         log.debug("Adding immutable data to {}", id);
-        Insert immutableDataInsert = insertInto(Immutable.tableName).values(DATA_COLUMNS, new Object[] { id, dataset });
+        BoundStatement immutableDataInsert = immutableInsertStatement.bind(id, dataset);
+        log.debug("using CQL query: {}", immutableDataInsert);
         return execute(immutableDataInsert);
     }
 
@@ -141,6 +147,7 @@ public class CassandraResourceService implements ResourceService {
         RegularStatement updateStatement = dataset.getGraph(PreferServerManaged).map(serverManaged -> {
             // if this has a binary/bitstream, pick up the extra metadata therefor
             if (NonRDFSource.equals(ixnModel)) {
+                log.debug("Detected resource has NonRDFSource type: {}", ixnModel);
                 IRI binaryIdentifier = serverManaged.stream(id, DC.hasPart, null).map(Triple::getObject)
                                 .map(IRI.class::cast).findFirst().orElseThrow(() -> new RuntimeTrellisException(
                                                 "Binary persisted with no bitstream IRI!"));
@@ -157,6 +164,7 @@ public class CassandraResourceService implements ResourceService {
                                 .and(set("binaryIdentifier", binaryIdentifier)).where(eq("identifier", id));
             }
             // or else it's not a binary
+            log.debug("Resource is RDF Source.");
             return null;
             // so just create RDFSource update statement
         }).orElse(update("trellis", Mutable.tableName).with(set("interactionModel", ixnModel))
@@ -164,27 +172,19 @@ public class CassandraResourceService implements ResourceService {
         return execute(updateStatement);
     }
 
-    private CompletableFuture<Void> execute(RegularStatement statement) {
-        return translateWrite(session.executeAsync(statement));
+    private CompletableFuture<Void> execute(Statement statement) {
+        log.debug("Executing CQL statement: {}", statement);
+        return translate(session.executeAsync(statement)).thenApply(r -> null);
     }
 
-    private CompletableFuture<Void> translateWrite(ResultSetFuture result) {
-        return runAsync(() -> {
-            try {
-                result.get();
-            } catch (InterruptedException | ExecutionException e) {
-                // we don't know that persistence failed but we can't assume that it succeeded
-                throw new RuntimeTrellisException(new CompletionException(e));
-            }
-        }, executor);
-    }
-
-    private CompletableFuture<ResultSet> translateRead(ResultSetFuture result) {
+    private <T> CompletableFuture<T> translate(ListenableFuture<T> result) {
         return supplyAsync(() -> {
             try {
                 return result.get();
             } catch (InterruptedException | ExecutionException e) {
-                throw new RuntimeTrellisException(new CompletionException(e));
+                // we don't know that persistence failed but we can't assume that it succeeded
+                log.error("Error in persistence!", e.getCause());
+                throw new CompletionException(e.getCause());
             }
         }, executor);
     }
