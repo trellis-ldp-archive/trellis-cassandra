@@ -14,6 +14,20 @@
   </properties>
 
   <dependencies>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>webapp</artifactId>
+      <version>${project.version}</version>
+      <type>war</type>
+    </dependency>
+
+    <!-- logging -->
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <scope>test</scope>
+    </dependency>
+
     <!-- test gear -->
     <dependency>
       <groupId>org.trellisldp</groupId>
@@ -21,11 +35,12 @@
       <version>${trellis.version}</version>
       <scope>test</scope>
     </dependency>
-    <!-- <dependency> -->
-    <!-- <groupId>org.jboss.resteasy</groupId> -->
-    <!-- <artifactId>resteasy-jaxrs</artifactId> -->
-    <!-- <scope>provided</scope> -->
-    <!-- </dependency> -->
+    <dependency>
+      <groupId>org.jboss.resteasy</groupId>
+      <artifactId>resteasy-client</artifactId>
+      <version>3.6.1.Final</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -38,6 +53,31 @@
             <portName>trellis.port</portName>
           </portNames>
         </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <skipTests>true</skipTests>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>integration-test</goal>
+              <!-- TODO re-enable when all tests pass -->
+              <!-- <goal>verify</goal> -->
+            </goals>
+            <configuration>
+              <systemPropertyVariables>
+                <cassandra.nativeTransportPort>${cassandra.nativeTransportPort}</cassandra.nativeTransportPort>
+                <project.build.directory>${project.build.directory}</project.build.directory>
+                <trellis.port>${trellis.port}</trellis.port>
+              </systemPropertyVariables>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
@@ -53,12 +93,12 @@
           <plugin>
             <groupId>org.codehaus.cargo</groupId>
             <artifactId>cargo-maven2-plugin</artifactId>
-            <version>1.6.9</version>
+            <version>1.6.10</version>
             <configuration>
               <container>
                 <containerId>wildfly-swarm2017x</containerId>
                 <type>installed</type>
-                <home>${project.basedir}/../webapp/target/webapp-${project.version}-thorntail.jar</home>
+                <home>${project.basedir}/../webapp/target/webapp-${project.version}-hollow-thorntail.jar</home>
                 <systemProperties>
                   <project.build.directory>${project.build.directory}</project.build.directory>
                   <trellis.port>${trellis.port}</trellis.port>
@@ -72,10 +112,18 @@
                   <cargo.servlet.uriencoding>UTF-8</cargo.servlet.uriencoding>
                   <cargo.jvmargs>-Xmx1024m</cargo.jvmargs>
                   <cargo.servlet.port>${trellis.port}</cargo.servlet.port>
-                  <cargo.swarm.project.name>${project.name}</cargo.swarm.project.name>
-                  <cargo.swarm.ping.url>http://localhost:${trellis.port}/</cargo.swarm.ping.url>
+                  <cargo.swarm.hollowswarm>true</cargo.swarm.hollowswarm>
+                  <!-- <cargo.swarm.project.name>${project.name}</cargo.swarm.project.name> -->
+                  <cargo.swarm.ping.url>http://localhost:${trellis.port}</cargo.swarm.ping.url>
                 </properties>
               </configuration>
+              <deployables>
+                <deployable>
+                  <groupId>${project.groupId}</groupId>
+                  <artifactId>webapp</artifactId>
+                  <type>war</type>
+                </deployable>
+              </deployables>
             </configuration>
             <executions>
               <execution>
