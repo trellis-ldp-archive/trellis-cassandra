@@ -14,8 +14,8 @@
   <description>Trellis LDP application using Trellis-Cassandra for persistence</description>
 
   <properties>
+    <cassandra.contactNode>localhost</cassandra.contactNode>
 
-    <thorntail.version>2.2.0.Final</thorntail.version>
     <jandex.version>2.0.5.Final</jandex.version>
     <!-- <tamaya.version>0.4-incubating-SNAPSHOT</tamaya.version> -->
 
@@ -279,8 +279,15 @@
             <artifactId>cassandra-maven-plugin</artifactId>
             <executions>
               <execution>
+                <id>start</id>
+                <phase>package</phase>
                 <goals>
                   <goal>start</goal>
+                </goals>
+              </execution>
+              <execution>
+                <id>stop</id>
+                <goals>
                   <goal>stop</goal>
                 </goals>
               </execution>

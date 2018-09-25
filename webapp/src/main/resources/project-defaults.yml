@@ -1,4 +1,6 @@
 swarm:
+  ajp:
+    enable: false
   http:
     port: ${trellis.port}
   logging:
@@ -9,7 +11,13 @@ swarm:
         level: WARN
       org.wildfly:
         level: WARN
-      org.jboss:
-        level: ERROR
       org.jboss.weld:
         level: WARN
+  undertow:
+    servlet-containers:
+      default:
+        stack-trace-on-error: all
+java:
+  net:
+    preferIPv4Stack: true
+

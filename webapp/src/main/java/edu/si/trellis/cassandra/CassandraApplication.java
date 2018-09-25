@@ -18,7 +18,7 @@ import org.trellisldp.http.TrellisHttpResource;
  * Basic JAX-RS {@link Application} to deploy Trellis with a Cassandra persistence implementation.
  *
  */
-@ApplicationPath("/*")
+@ApplicationPath("/")
 @ApplicationScoped
 public class CassandraApplication extends Application {
 

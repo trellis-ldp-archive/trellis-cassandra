@@ -23,9 +23,10 @@
     <trellis.version>0.8.0-SNAPSHOT</trellis.version>
     <cassandra.test.version>3.11.2</cassandra.test.version>
 
+    <thorntail.version>2.2.0.Final</thorntail.version>
+
     <logback.version>1.2.3</logback.version>
 
-    <cassandra.contactNode>localhost</cassandra.contactNode>
   </properties>
 
   <repositories>
@@ -114,6 +115,12 @@
           <version>${thorntail.version}</version>
           <configuration>
             <fractionDetectMode>force</fractionDetectMode>
+            <properties>
+              <swarm.http.port>${trellis.port}</swarm.http.port>
+              <cassandra.contactPort>${cassandra.nativeTransportPort}</cassandra.contactPort>
+              <cassandra.contactNode>${cassandra.contactNode}</cassandra.contactNode>
+              <logback.configurationFile>${project.build.directory}/test-classes/logback-test.xml</logback.configurationFile>
+            </properties>
           </configuration>
           <executions>
             <execution>
@@ -128,16 +135,6 @@
               <goals>
                 <goal>start</goal>
               </goals>
-              <configuration>
-                <properties>
-                  <org.jboss.logging.provider>slf4j</org.jboss.logging.provider>
-                  <swarm.logging>DEBUG</swarm.logging>
-                  <swarm.http.port>${trellis.port}</swarm.http.port>
-                  <java.net.preferIPv4Stack>true</java.net.preferIPv4Stack>
-                  <cassandra.contactPort>${cassandra.nativeTransportPort}</cassandra.contactPort>
-                  <cassandra.contactNode>${cassandra.contactNode}</cassandra.contactNode>
-                </properties>
-              </configuration>
             </execution>
             <execution>
               <id>stop</id>
