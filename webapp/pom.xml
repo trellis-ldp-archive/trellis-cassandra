@@ -426,6 +426,80 @@
         </plugins>
       </build>
     </profile>
+    <profile>
+      <id>docker</id>
+      <!-- Builds a Docker image around the Thorntail hollow runtime jar and webapp war file.
+        The git-commit-id-plugin is used to obtain git commit id and url from the local
+        repository. The values are added to the project build context and later used as
+        Docker build arguments. In the Dockerfile the values are recorded as image labels.
+        The git information will be used to support traceability in performance testing. -->
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>io.thorntail</groupId>
+            <artifactId>thorntail-maven-plugin</artifactId>
+            <version>${thorntail.version}</version>
+            <executions>
+              <execution>
+                <id>hollow-package</id>
+                <goals>
+                  <goal>package</goal>
+                </goals>
+                <configuration>
+                  <hollow>true</hollow>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>pl.project13.maven</groupId>
+            <artifactId>git-commit-id-plugin</artifactId>
+            <version>${git-commit-id-plugin.version}</version>
+            <executions>
+              <execution>
+                <id>get-the-git-infos</id>
+                <goals>
+                  <goal>revision</goal>
+                </goals>
+                <phase>validate</phase>
+              </execution>
+            </executions>
+            <configuration>
+              <dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>com.spotify</groupId>
+            <artifactId>dockerfile-maven-plugin</artifactId>
+            <version>${dockerfile-maven-version}</version>
+            <executions>
+              <execution>
+                <id>default</id>
+                <goals>
+                  <goal>build</goal>
+                  <!--goal>push</goal-->
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <repository>trellisldp/trellis-cassandra</repository>
+              <tag>${project.version}</tag>
+              <buildArgs>
+                <GIT_ORIGIN_REMOTE_URL>${git.remote.origin.url}</GIT_ORIGIN_REMOTE_URL>
+                <GIT_COMMIT_ID_DESCRIBE>${git.commit.id.describe}</GIT_COMMIT_ID_DESCRIBE>
+              </buildArgs>
+            </configuration>
+            <dependencies>
+              <dependency>
+                <groupId>javax.activation</groupId>
+                <artifactId>activation</artifactId>
+                <version>1.1.1</version>
+              </dependency>
+            </dependencies>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
 
 </project>
