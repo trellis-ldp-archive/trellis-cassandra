@@ -23,6 +23,8 @@
 
     <slf4j.version>1.7.25</slf4j.version>
 
+    <git-commit-id-plugin.version>2.2.5</git-commit-id-plugin.version>
+    <dockerfile-maven-version>1.4.4</dockerfile-maven-version>
   </properties>
 
   <dependencyManagement>
@@ -355,7 +357,7 @@
       </build>
     </profile>
     <profile>
-      <id>hollow-jar</id>
+      <id>docker</id>
       <!-- see http://docs.wildfly-swarm.io/2.1.0.Final/#hollow-jar_thorntail -->
       <build>
         <plugins>
@@ -374,6 +376,52 @@
                 </configuration>
               </execution>
             </executions>
+          </plugin>
+          <plugin>
+            <groupId>pl.project13.maven</groupId>
+            <artifactId>git-commit-id-plugin</artifactId>
+            <version>${git-commit-id-plugin.version}</version>
+            <executions>
+              <execution>
+                <id>get-the-git-infos</id>
+                <goals>
+                  <goal>revision</goal>
+                </goals>
+                <phase>validate</phase>
+              </execution>
+            </executions>
+            <configuration>
+              <dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>com.spotify</groupId>
+            <artifactId>dockerfile-maven-plugin</artifactId>
+            <version>${dockerfile-maven-version}</version>
+            <executions>
+              <execution>
+                <id>default</id>
+                <goals>
+                  <goal>build</goal>
+                  <!--goal>push</goal-->
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <repository>trellisldp/trellis-cassandra</repository>
+              <tag>${project.version}</tag>
+              <buildArgs>
+                <GIT_ORIGIN_REMOTE_URL>${git.remote.origin.url}</GIT_ORIGIN_REMOTE_URL>
+                <GIT_COMMIT_ID_DESCRIBE>${git.commit.id.describe}</GIT_COMMIT_ID_DESCRIBE>
+              </buildArgs>
+            </configuration>
+            <dependencies>
+              <dependency>
+                <groupId>javax.activation</groupId>
+                <artifactId>activation</artifactId>
+                <version>1.1.1</version>
+              </dependency>
+            </dependencies>
           </plugin>
         </plugins>
       </build>
