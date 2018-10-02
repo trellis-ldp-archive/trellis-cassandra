@@ -145,7 +145,7 @@
             <properties>
               <swarm.http.port>${trellis.port}</swarm.http.port>
               <cassandra.contactPort>${cassandra.nativeTransportPort}</cassandra.contactPort>
-              <cassandra.contactNode>${cassandra.contactNode}</cassandra.contactNode>
+              <cassandra.contactAddress>${cassandra.contactAddress}</cassandra.contactAddress>
               <logback.configurationFile>${project.build.directory}/test-classes/logback-test.xml</logback.configurationFile>
             </properties>
           </configuration>

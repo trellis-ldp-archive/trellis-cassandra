@@ -35,7 +35,7 @@
             <configuration>
               <systemProperties>
                 <cassandra.nativeTransportPort>${cassandra.nativeTransportPort}</cassandra.nativeTransportPort>
-                <cassandra.contactNode>${cassandra.contactNode}</cassandra.contactNode>
+                <cassandra.contactAddress>${cassandra.contactAddress}</cassandra.contactAddress>
                 <test.keyspace>${test.keyspace}</test.keyspace>
               </systemProperties>
             </configuration>

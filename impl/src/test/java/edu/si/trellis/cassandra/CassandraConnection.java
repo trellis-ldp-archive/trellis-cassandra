@@ -29,13 +29,13 @@ class CassandraConnection extends ExternalResource {
     public CassandraResourceService service;
     public CassandraBinaryService binaryService;
     private final int port;
-    private final String contactLocation;
+    private final String contactAddress;
 
     private final boolean cleanBefore, cleanAfter;
 
-    public CassandraConnection(final String contactLocation, final int port, final String keyspace,
+    public CassandraConnection(final String contactAddress, final int port, final String keyspace,
                     final boolean cleanBefore, final boolean cleanAfter) {
-        this.contactLocation = contactLocation;
+        this.contactAddress = contactAddress;
         this.port = port;
         this.keyspace = keyspace;
         this.cleanBefore = cleanBefore;
@@ -44,7 +44,7 @@ class CassandraConnection extends ExternalResource {
 
     @Override
     protected void before() {
-        cluster = builder().withoutMetrics().addContactPoint(contactLocation).withPort(port).build();
+        cluster = builder().withoutMetrics().addContactPoint(contactAddress).withPort(port).build();
         codecRegistry().register(inputStreamCodec, iriCodec, datasetCodec, InstantCodec.instance);
         QueryLogger queryLogger = QueryLogger.builder().build();
         cluster.register(queryLogger);
