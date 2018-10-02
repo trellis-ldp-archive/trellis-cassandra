@@ -4,7 +4,7 @@ CREATE KEYSPACE IF NOT EXISTS trellis WITH replication = {'class':'SimpleStrateg
 USE trellis;
 
 CREATE TABLE IF NOT EXISTS mutabledata (identifier text PRIMARY KEY, quads text, interactionModel text,
-    hasAcl boolean, binaryIdentifier text, mimeType text, size bigint, parent text);
+    hasAcl boolean, binaryIdentifier text, mimeType text, size bigint, container text);
 
 CREATE TABLE IF NOT EXISTS immutabledata (identifier text PRIMARY KEY, quads text);
 

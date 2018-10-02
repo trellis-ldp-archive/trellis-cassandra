@@ -62,17 +62,17 @@
 
   <dependencyManagement>
     <dependencies>
-        <!-- logging -->
-    <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
-      <version>${logback.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>jul-to-slf4j</artifactId>
-      <version>1.7.25</version>
-    </dependency>
+      <!-- logging -->
+      <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-classic</artifactId>
+        <version>${logback.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>jul-to-slf4j</artifactId>
+        <version>1.7.25</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -86,6 +86,9 @@
         <plugin>
           <artifactId>maven-failsafe-plugin</artifactId>
           <version>2.22.0</version>
+          <configuration>
+            <trimStackTrace>false</trimStackTrace>
+          </configuration>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>

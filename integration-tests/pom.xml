@@ -122,6 +122,8 @@
                   <groupId>${project.groupId}</groupId>
                   <artifactId>webapp</artifactId>
                   <type>war</type>
+                  <pingUrlPath>/</pingUrlPath>
+                  <pingTimeout>60000</pingTimeout>
                 </deployable>
               </deployables>
             </configuration>
