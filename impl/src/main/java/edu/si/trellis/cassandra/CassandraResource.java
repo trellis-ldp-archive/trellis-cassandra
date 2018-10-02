@@ -1,20 +1,25 @@
 package edu.si.trellis.cassandra;
 
+import static com.google.common.collect.Streams.concat;
 import static edu.si.trellis.cassandra.CassandraResourceService.Mutability.Immutable;
 import static edu.si.trellis.cassandra.CassandraResourceService.Mutability.Mutable;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Stream.concat;
 import static java.util.stream.Stream.empty;
 import static org.slf4j.LoggerFactory.getLogger;
+import static org.trellisldp.api.RDFUtils.toQuad;
+import static org.trellisldp.vocabulary.LDP.*;
 import static org.trellisldp.vocabulary.Trellis.PreferServerManaged;
 
 import com.datastax.driver.core.*;
 import com.datastax.driver.core.Session;
 import com.google.common.base.Throwables;
+import com.google.common.collect.Streams;
 
 import java.time.Instant;
 import java.util.Optional;
 import java.util.Spliterator;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -27,19 +32,20 @@ class CassandraResource implements Resource {
 
     private static final Logger log = getLogger(CassandraResource.class);
 
-    private static final RDF factory = RDFUtils.getInstance();
-
-    public static final String mutableQuadStreamQuery = "SELECT quads FROM trellis." + Mutable.tableName
+    private static final String mutableQuadStreamQuery = "SELECT quads FROM trellis." + Mutable.tableName
                     + "  WHERE identifier = ? LIMIT 1 ;";
 
-    public static final String immutableQuadStreamQuery = "SELECT quads FROM trellis." + Immutable.tableName
+    private static final String immutableQuadStreamQuery = "SELECT quads FROM trellis." + Immutable.tableName
                     + "  WHERE identifier = ? ;";
 
-    public static final String metadataQuery = "SELECT identifier, interactionModel, hasAcl, binaryIdentifier, "
+    private static final String metadataQuery = "SELECT identifier, interactionModel, hasAcl, binaryIdentifier, "
                     + "mimeType, size, container, WRITETIME(interactionModel) AS modified FROM trellis."
                     + Mutable.tableName + " WHERE identifier = ? LIMIT 1 ;";
 
-    private BoundStatement mutableQuadStreamStatement, immutableQuadStreamStatement, metadataStatement;
+    private static final String basicContainmentQuery = "SELECT contained FROM trellis.basiccontainment WHERE identifier = ? ;";
+
+    private BoundStatement mutableQuadStreamStatement, immutableQuadStreamStatement, metadataStatement,
+                    basicContainmentStatement;
 
     private Session session;
 
@@ -63,10 +69,11 @@ class CassandraResource implements Resource {
 
     private synchronized void prepareQueries() {
         log.trace("Preparing " + getClass().getSimpleName() + " queries.");
-        mutableQuadStreamStatement = session.prepare(mutableQuadStreamQuery).bind(getIdentifier());
-        immutableQuadStreamStatement = session.prepare(immutableQuadStreamQuery).bind(getIdentifier());
-        metadataStatement = session.prepare(metadataQuery).bind(getIdentifier());
-        log.trace("Prepared " + getClass().getSimpleName() + " queries.");         
+        this.mutableQuadStreamStatement = session.prepare(mutableQuadStreamQuery).bind(getIdentifier());
+        this.immutableQuadStreamStatement = session.prepare(immutableQuadStreamQuery).bind(getIdentifier());
+        this.metadataStatement = session.prepare(metadataQuery).bind(getIdentifier());
+        this.basicContainmentStatement = session.prepare(basicContainmentQuery).bind(getIdentifier());
+        log.trace("Prepared " + getClass().getSimpleName() + " queries.");
     }
 
     @Override
@@ -142,20 +149,27 @@ class CassandraResource implements Resource {
     @Override
     public Stream<? extends Quad> stream() {
         log.trace("Retrieving quad stream for resource {}", getIdentifier());
+
         Stream<Quad> mutableQuads = quadStreamFromQuery(mutableQuadStreamStatement);
         Stream<Quad> immutableQuads = quadStreamFromQuery(immutableQuadStreamStatement);
-        log.debug("Looking for container for resource {}", getIdentifier());
-        Stream<Quad> containmentQuad = getContainer().map(this::containmentQuad).map(Stream::of).orElse(empty());
-        return concat(concat(mutableQuads, immutableQuads), containmentQuad);
+        Stream<Quad> containmentQuadsInContainment = containmentTriples().map(toQuad(PreferContainment));
+        Stream<Quad> containmentQuadsInMembership = containmentTriples().map(toQuad(PreferMembership));
+        return concat(mutableQuads, containmentQuadsInContainment, containmentQuadsInMembership, immutableQuads);
     }
 
-    private Quad containmentQuad(IRI container) {
-        log.debug("Found container for resource {}", getIdentifier());
-        return factory.createQuad(PreferServerManaged, getIdentifier(), LDP.contains, container);
+    private Stream<Triple> containmentTriples() {
+        final Spliterator<Row> rows = session.execute(basicContainmentStatement).spliterator();
+        Stream<IRI> contained = StreamSupport.stream(rows, false).map(get("contained", IRI.class));
+        return contained.map(o -> RDFUtils.getInstance().createTriple(getIdentifier(), LDP.contains, o));
     }
 
     private Stream<Quad> quadStreamFromQuery(final BoundStatement boundStatement) {
         final Spliterator<Row> rows = session.execute(boundStatement).spliterator();
-        return StreamSupport.stream(rows, false).flatMap(row -> row.get("quads", Dataset.class).stream());
+        Stream<Dataset> datasets = StreamSupport.stream(rows, false).map(get("quads", Dataset.class));
+        return datasets.flatMap(Dataset::stream);
     }
-}
+    
+    private static <T> Function<Row, T> get(String k, Class<T> klass) {
+        return row -> row.get(k, klass);
+    }
+ }
