@@ -14,7 +14,7 @@
   <description>Trellis LDP application using Trellis-Cassandra for persistence</description>
 
   <properties>
-    <cassandra.contactNode>localhost</cassandra.contactNode>
+    <cassandra.contactAddress>localhost</cassandra.contactAddress>
 
     <jandex.version>2.0.5.Final</jandex.version>
     <!-- <tamaya.version>0.4-incubating-SNAPSHOT</tamaya.version> -->
@@ -231,14 +231,12 @@
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.22.0</version>
         <configuration>
           <skipTests>true</skipTests>
         </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>2.22.0</version>
         <executions>
           <execution>
             <goals>

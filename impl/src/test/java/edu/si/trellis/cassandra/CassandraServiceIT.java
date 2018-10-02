@@ -7,9 +7,9 @@ import org.junit.ClassRule;
 
 public class CassandraServiceIT extends Assert {
 
-    private static String contactHost = System.getProperty("cassandra.contactHost","127.0.0.1");
+    private static String contactAddress = System.getProperty("cassandra.contactAddress","127.0.0.1");
 
-    protected static int port = Integer.getInteger("cassandra.nativeTransportPort");
+    protected static int port = Integer.getInteger("cassandra.nativeTransportPort", 9042);
     
     protected static boolean cleanBefore = Boolean.getBoolean("cleanBeforeTests");
     protected static boolean cleanAfter = Boolean.getBoolean("cleanAfterTests");
@@ -20,6 +20,6 @@ public class CassandraServiceIT extends Assert {
      * Connects to test cluster.
      */
     @ClassRule
-    public static final CassandraConnection connection = new CassandraConnection(contactHost, port, "Trellis",
+    public static final CassandraConnection connection = new CassandraConnection(contactAddress, port, "Trellis",
             cleanBefore, cleanAfter);
 }
