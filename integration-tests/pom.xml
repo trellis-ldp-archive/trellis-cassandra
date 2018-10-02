@@ -104,6 +104,7 @@
                   <trellis.port>${trellis.port}</trellis.port>
                   <cassandra.contactPort>${cassandra.nativeTransportPort}</cassandra.contactPort>
                   <cassandra.contactNode>${cassandra.contactNode}</cassandra.contactNode>
+                  <java.net.preferIPv4Stack>true</java.net.preferIPv4Stack>
                 </systemProperties>
               </container>
               <configuration>
