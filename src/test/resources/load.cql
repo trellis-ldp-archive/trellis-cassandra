@@ -3,6 +3,8 @@ CREATE KEYSPACE IF NOT EXISTS trellis WITH replication = {'class':'SimpleStrateg
 
 USE trellis;
 
+-- Main data tables, including containment
+
 CREATE TABLE IF NOT EXISTS mutabledata (identifier text PRIMARY KEY, quads text, interactionModel text,
     hasAcl boolean, binaryIdentifier text, mimeType text, size bigint, container text);
 
@@ -10,3 +12,7 @@ CREATE TABLE IF NOT EXISTS immutabledata (identifier text PRIMARY KEY, quads tex
 
 CREATE TABLE IF NOT EXISTS binarydata (identifier text, chunk_index bigint, chunk blob,
     PRIMARY KEY (identifier, chunk_index)) WITH CLUSTERING ORDER BY (chunk_index ASC);
+
+-- Indexes for containment
+
+CREATE TABLE IF NOT EXISTS basiccontainment (identifier text PRIMARY KEY, contained text);
