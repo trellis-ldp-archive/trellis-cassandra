@@ -310,6 +310,20 @@
             <artifactId>thorntail-maven-plugin</artifactId>
             <executions>
               <execution>
+                <id>package</id>
+                <goals/>
+              </execution>
+              <execution>
+                <id>start</id>
+                <phase>pre-integration-test</phase>
+                <goals/>
+              </execution>
+              <execution>
+                <id>stop</id>
+                <phase>post-integration-test</phase>
+                <goals/>
+              </execution>
+              <execution>
                 <id>hollow-package</id>
                 <goals>
                   <goal>package</goal>
@@ -319,6 +333,34 @@
                 </configuration>
               </execution>
             </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>skipWebappTests</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>io.thorntail</groupId>
+            <artifactId>thorntail-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>hollow-package</id>
+                <goals>
+                  <goal>package</goal>
+                </goals>
+                <configuration>
+                  <hollow>true</hollow>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <configuration>
+              <skipITs>true</skipITs>
+            </configuration>
           </plugin>
         </plugins>
       </build>
@@ -335,7 +377,6 @@
           <plugin>
             <groupId>io.thorntail</groupId>
             <artifactId>thorntail-maven-plugin</artifactId>
-            <version>${thorntail.version}</version>
             <executions>
               <execution>
                 <id>hollow-package</id>
@@ -374,7 +415,7 @@
                 <id>default</id>
                 <goals>
                   <goal>build</goal>
-                  <!--goal>push</goal-->
+                  <!--goal>push</goal -->
                 </goals>
               </execution>
             </executions>
