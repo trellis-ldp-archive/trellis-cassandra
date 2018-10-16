@@ -1,5 +1,5 @@
 # trellis-cassandra
-[Trellis LDP](https://github.com/trellis-ldp/trellis) with Apache Cassandra
+The delicious vanilla of [Trellis LDP](https://github.com/trellis-ldp/trellis) laced with tasty chocolate [Apache Cassandra](https://cassandra.apache.org/) ribbons.
 
 Use
 ```
