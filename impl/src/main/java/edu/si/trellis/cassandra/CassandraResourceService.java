@@ -27,6 +27,7 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.querybuilder.Delete.Where;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Update;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -175,22 +176,25 @@ public class CassandraResourceService implements ResourceService {
         log.debug("Deleting {} with interaction model {}", id, ixnModel);
         // clean out basic containment index
         // first, this resource can no longer be contained
-        CompletableFuture<Void> containerDelete = get(id).thenApply(Resource::getContainer)
-                        .thenCompose(maybeContainer -> maybeContainer.map(container -> {
-                            Where updateContainer = QueryBuilder.delete().from("trellis", "basiccontainment")
-                                            .where(eq("identifier", container)).and(eq("contained", id));
-                            log.debug("Using CQL: {}", updateContainer);
-                            return execute(updateContainer);
-                        }).orElse(completedFuture(null)));
+        CompletableFuture<Void> containerIndexDelete = get(id).thenApply(Resource::getContainer)
+                        .thenCompose(maybeContainer -> maybeContainer
+                                        .map(container -> execute(QueryBuilder.delete()
+                                                        .from("trellis", "basiccontainment")
+                                                        .where(eq("identifier", container)).and(eq("contained", id))))
+                                        .orElse(completedFuture(null)));
         // second, this resource can no longer contain other resources
         Where containedDeleteStatement = QueryBuilder.delete().from("trellis", "basiccontainment")
                         .where(eq("identifier", id));
         log.debug("Using CQL: {}", containedDeleteStatement);
-        CompletableFuture<Void> containedDelete = execute(containedDeleteStatement);
-
+        CompletableFuture<Void> containedIndexDelete = execute(containedDeleteStatement);
+        CompletableFuture<Void> containerUpdate = get(id).thenApply(Resource::getContainer)
+                        .thenCompose(maybeContainer -> maybeContainer
+                                        .map(container -> execute(update("trellis", Mutable.tableName)
+                                                        .with(set("modified", now()))
+                                                        .where(eq("identifier", container))))
+                                        .orElse(completedFuture(null)));
         CompletableFuture<Void> selfDelete = write(id, DeletedResource, null, null);
-        return allOf(selfDelete, containedDelete, containerDelete);
-
+        return allOf(selfDelete, containedIndexDelete, containerIndexDelete, containerUpdate);
     }
 
     enum Mutability {
@@ -238,7 +242,9 @@ public class CassandraResourceService implements ResourceService {
             Insert bcIndexInsert = insertInto("trellis", "basiccontainment").value("identifier", container)
                             .value("contained", id);
             CompletableFuture<Void> bcContainmentResult = execute(bcIndexInsert);
-            return allOf(bcContainmentResult, execute(updateStatement));
+            Update.Where containerUpdate = update("trellis", Mutable.tableName).with(set("modified", now()))
+                            .where(eq("identifier", container));
+            return allOf(bcContainmentResult, execute(updateStatement), execute(containerUpdate));
         }
         return execute(updateStatement);
     }
