@@ -12,7 +12,7 @@
   <name>Trellis/Cassandra Integration</name>
 
   <properties>
-    <cassandra.driver.version>3.3.2</cassandra.driver.version>
+    <cassandra.driver.version>3.6.0</cassandra.driver.version>
 
     <test.keyspace>Trellis</test.keyspace>
 
@@ -124,13 +124,7 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>23.0</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.geronimo.specs</groupId>
-      <artifactId>geronimo-atinject_1.0_spec</artifactId>
-      <version>1.0</version>
+      <version>26.0-jre</version>
     </dependency>
 
     <!-- test gear -->

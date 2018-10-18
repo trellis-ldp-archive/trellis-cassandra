@@ -6,6 +6,20 @@
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
+  <prerequisites>
+    <maven>3.2.2</maven>
+  </prerequisites>
+
+  <scm>
+    <url>git@github.com:ajs6f/trellis-cassandra.git</url>
+  </scm>
+  <issueManagement>
+    <url>https://github.com/ajs6f/trellis-cassandra/issues</url>
+  </issueManagement>
+  <ciManagement>
+    <url>https://travis-ci.org/ajs6f/trellis-cassandra/</url>
+  </ciManagement>
+
   <modules>
     <module>impl</module>
     <module>webapp</module>
@@ -175,6 +189,5 @@
       </plugins>
     </pluginManagement>
   </build>
-
 
 </project>
