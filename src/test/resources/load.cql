@@ -5,10 +5,12 @@ USE trellis;
 
 -- Main data tables, including containment
 
-CREATE TABLE IF NOT EXISTS mutabledata (identifier text PRIMARY KEY, quads text, interactionModel text,
-    hasAcl boolean, binaryIdentifier text, mimeType text, size bigint, container text, modified timestamp);
+CREATE TABLE IF NOT EXISTS mutabledata (identifier text, quads text, interactionModel text,
+    hasAcl boolean, binaryIdentifier text, mimeType text, size bigint, container text, modified timestamp,
+    PRIMARY KEY ((identifier), modified)) WITH CLUSTERING ORDER BY (modified DESC);
 
-CREATE TABLE IF NOT EXISTS immutabledata (identifier text PRIMARY KEY, quads text, modified timestamp);
+CREATE TABLE IF NOT EXISTS immutabledata (identifier text, quads text, modified timestamp,
+    PRIMARY KEY ((identifier), modified)) WITH CLUSTERING ORDER BY (modified DESC);
 
 CREATE TABLE IF NOT EXISTS binarydata (identifier text, chunk_index bigint, chunk blob,
     PRIMARY KEY (identifier, chunk_index)) WITH CLUSTERING ORDER BY (chunk_index ASC);
