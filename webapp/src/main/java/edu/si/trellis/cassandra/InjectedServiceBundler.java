@@ -1,18 +1,11 @@
 package edu.si.trellis.cassandra;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
-import org.trellisldp.api.AgentService;
-import org.trellisldp.api.AuditService;
-import org.trellisldp.api.BinaryService;
-import org.trellisldp.api.EventService;
-import org.trellisldp.api.IOService;
-import org.trellisldp.api.MementoService;
-import org.trellisldp.api.NamespaceService;
-import org.trellisldp.api.ResourceService;
-import org.trellisldp.api.ServiceBundler;
+import org.trellisldp.api.*;
 import org.trellisldp.io.JenaIOService;
 
 /**
@@ -42,10 +35,18 @@ public class InjectedServiceBundler implements ServiceBundler {
 
     @Produces
     @ApplicationScoped
-    private final IOService ioService = new JenaIOService(namespaceService, null, null, "", "");
+    private IOService ioService;
 
     @Inject
     private EventService eventService;
+
+    @Inject
+    private CacheService<String, String> cacheService;
+
+    @PostConstruct
+    public void init() {
+        this.ioService = new JenaIOService(namespaceService, null, cacheService, "", "");
+    }
 
     @Override
     public AgentService getAgentService() {

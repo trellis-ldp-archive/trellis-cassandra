@@ -1,14 +1,14 @@
 package edu.si.trellis.cassandra;
 
+import static java.lang.Integer.getInteger;
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static javax.ws.rs.client.ClientBuilder.newBuilder;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.Collections;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.core.EntityTag;
 
 import org.junit.jupiter.api.Disabled;
 import org.slf4j.Logger;
@@ -19,15 +19,13 @@ public class LdpRdfIT implements LdpRdfTests {
 
     private static final Logger log = getLogger(LdpRdfIT.class);
 
-    private static Client client = ClientBuilder.newBuilder().connectTimeout(2, TimeUnit.MINUTES).build();
+    private static Client client = newBuilder().connectTimeout(2, MINUTES).build();
 
     static {
         log.debug("Using JAX-RS client class: {}", client.getClass());
     }
 
-    private static final int port = Integer.parseInt(System.getProperty("trellis.port"));
-
-    private static final String trellisUri = "http://localhost:" + port;
+    private static final String trellisUri = "http://localhost:" + getInteger("trellis.port");
 
     @Override
     public synchronized Client getClient() {
@@ -39,9 +37,7 @@ public class LdpRdfIT implements LdpRdfTests {
         return trellisUri;
     }
 
-    private String resourceLocation, annotationLocation, containerLocation;
-    
-    private EntityTag etag1, etag2;
+    private String resourceLocation;
     
     @Override
     public void setResourceLocation(String location) {
@@ -51,46 +47,6 @@ public class LdpRdfIT implements LdpRdfTests {
     @Override
     public String getResourceLocation() {
         return resourceLocation;
-    }
-
-    @Override
-    public void setAnnotationLocation(String location) {
-        this.annotationLocation = location;
-    }
-
-    @Override
-    public String getAnnotationLocation() {
-        return annotationLocation;
-    }
-
-    @Override
-    public void setContainerLocation(String location) {
-        this.containerLocation = location;
-    }
-
-    @Override
-    public String getContainerLocation() {
-        return containerLocation;
-    }
-
-    @Override
-    public EntityTag getFirstETag() {
-        return etag1;
-    }
-
-    @Override
-    public EntityTag getSecondETag() {
-        return etag2;
-    }
-
-    @Override
-    public void setFirstETag(EntityTag etag) {
-        this.etag1 = etag;
-    }
-
-    @Override
-    public void setSecondETag(EntityTag etag) {
-        this.etag2 = etag;
     }
 
     @Override
