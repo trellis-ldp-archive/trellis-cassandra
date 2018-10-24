@@ -90,11 +90,6 @@
     </dependency>
     <dependency>
       <groupId>org.trellisldp</groupId>
-      <artifactId>trellis-id</artifactId>
-      <version>${trellis.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.trellisldp</groupId>
       <artifactId>trellis-rdfa</artifactId>
       <version>${trellis.version}</version>
     </dependency>

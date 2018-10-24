@@ -22,6 +22,7 @@ import static org.trellisldp.vocabulary.Trellis.DeletedResource;
 import static org.trellisldp.vocabulary.Trellis.PreferServerManaged;
 
 import com.datastax.driver.core.*;
+import com.datastax.driver.core.ColumnDefinitions.Definition;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.querybuilder.Delete.Where;
 import com.datastax.driver.core.querybuilder.Insert;
@@ -105,6 +106,16 @@ public class CassandraResourceService implements ResourceService {
             throw new RuntimeTrellisException(e);
         }
     }
+
+    private Function<? super ResultSet, Object[]> buildArray = rows -> {
+        Row row = rows.one();
+        int rowSize = row.getColumnDefinitions().size();
+        Object[] array = new Object[rowSize];;
+        for (int i = 0; i < rowSize; i++)
+            array[++i] = row.getObject(i);
+        return array;
+    };
+    
 
     private Function<? super ResultSet, ? extends Resource> buildResource(IRI id) {
         return rows -> {
@@ -196,8 +207,7 @@ public class CassandraResourceService implements ResourceService {
         CompletableFuture<Void> containerUpdate = get(id).thenApply(Resource::getContainer)
                         .thenCompose(maybeContainer -> maybeContainer.map(container -> {
                             read(select().from("trellis", Mutable.tableName).limit(1)
-                                            .where(eq("indentifier", container))).thenApply(buildResource(container))
-                            .thenApply(fn);
+                                            .where(eq("indentifier", container))).thenApply(buildArray);
                             return execute(insertInto("trellis", Mutable.tableName).value("modified", now())
                                             .value("identifier", container));
                         }).orElse(completedFuture(null)));
