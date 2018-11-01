@@ -2,7 +2,8 @@ package edu.si.trellis.cassandra;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.set;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.update;
 import static edu.si.trellis.cassandra.CassandraResourceService.Mutability.Immutable;
 import static edu.si.trellis.cassandra.CassandraResourceService.Mutability.Mutable;
 import static java.time.Instant.now;
@@ -11,9 +12,9 @@ import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.trellisldp.api.RDFUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
+import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.vocabulary.LDP.BasicContainer;
 import static org.trellisldp.vocabulary.LDP.Container;
 import static org.trellisldp.vocabulary.LDP.NonRDFSource;
@@ -22,12 +23,10 @@ import static org.trellisldp.vocabulary.Trellis.DeletedResource;
 import static org.trellisldp.vocabulary.Trellis.PreferServerManaged;
 
 import com.datastax.driver.core.*;
-import com.datastax.driver.core.ColumnDefinitions.Definition;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.querybuilder.Delete.Where;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Update;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -43,6 +42,7 @@ import javax.inject.Inject;
 import org.apache.commons.rdf.api.*;
 import org.slf4j.Logger;
 import org.trellisldp.api.*;
+import org.trellisldp.api.Resource.SpecialResources;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
 
@@ -57,7 +57,7 @@ public class CassandraResourceService implements ResourceService {
     @SuppressWarnings("boxing")
     private static final Long ZERO_LENGTH = 0L;
 
-    private static final Dataset EMPTY = RDFUtils.getInstance().createDataset();
+    private static final Dataset EMPTY = TrellisUtils.getInstance().createDataset();
 
     private static final ImmutableSet<IRI> SUPPORTED_INTERACTION_MODELS = ImmutableSet.of(LDP.Resource, RDFSource,
                     NonRDFSource, Container, BasicContainer);
@@ -98,7 +98,7 @@ public class CassandraResourceService implements ResourceService {
      */
     @PostConstruct
     public void initializeRoot() {
-        RDF rdf = RDFUtils.getInstance();
+        RDF rdf = TrellisUtils.getInstance();
         IRI rootIri = rdf.createIRI(TRELLIS_DATA_PREFIX);
         try {
             create(rootIri, LDP.BasicContainer, rdf.createDataset(), null, null).get(3, TimeUnit.MINUTES);
@@ -115,7 +115,6 @@ public class CassandraResourceService implements ResourceService {
             array[++i] = row.getObject(i);
         return array;
     };
-    
 
     private Function<? super ResultSet, ? extends Resource> buildResource(IRI id) {
         return rows -> {
@@ -140,8 +139,10 @@ public class CassandraResourceService implements ResourceService {
             log.debug("Found container = {} for resource {}", container, id);
             Instant modified = metadata.get("modified", Instant.class);
             log.debug("Found modified = {} for resource {}", modified, id);
-
-            return new CassandraResource(id, ixnModel, hasAcl, binaryId, mimeType, size, container, modified, session);
+            Instant writestamp = metadata.get("writestamp", Instant.class);
+            log.debug("Found writestamp = {} for resource {}", writestamp, id);
+            return new CassandraResource(id, ixnModel, hasAcl, binaryId, mimeType, size, container, modified,
+                            writestamp, session);
         };
     }
 
@@ -203,16 +204,20 @@ public class CassandraResourceService implements ResourceService {
                         .where(eq("identifier", id));
         log.debug("Using CQL: {}", containedDeleteStatement);
         CompletableFuture<Void> containedIndexDelete = execute(containedDeleteStatement);
-        // update the modified time of any container
-        CompletableFuture<Void> containerUpdate = get(id).thenApply(Resource::getContainer)
-                        .thenCompose(maybeContainer -> maybeContainer.map(container -> {
-                            read(select().from("trellis", Mutable.tableName).limit(1)
-                                            .where(eq("indentifier", container))).thenApply(buildArray);
-                            return execute(insertInto("trellis", Mutable.tableName).value("modified", now())
-                                            .value("identifier", container));
-                        }).orElse(completedFuture(null)));
         CompletableFuture<Void> selfDelete = write(id, DeletedResource, null, null);
-        return allOf(selfDelete, containedIndexDelete, containerIndexDelete, containerUpdate);
+        return allOf(selfDelete, containedIndexDelete, containerIndexDelete);
+    }
+
+    /* (non-Javadoc)
+     * TODO avoid read-modify-write?
+     */
+    @Override
+    public CompletableFuture<Void> touch(IRI id) {
+        return get(id).thenApply(res -> (res instanceof CassandraResource) ? (CassandraResource) res : null)
+                        .thenApply(CassandraResource::getTimestamp)
+                        .thenCompose(writestamp -> execute(update("trellis", Mutable.tableName)
+                                        .where(eq("identifier", id)).and(eq("writestamp", writestamp))
+                                        .with(set("modified", now()))));
     }
 
     enum Mutability {
@@ -244,24 +249,23 @@ public class CassandraResourceService implements ResourceService {
                                 binaryIdentifier, size, mimeType);
                 return insertInto("trellis", Mutable.tableName).value("interactionModel", ixnModel).value("size", size)
                                 .value("mimeType", mimeType).value("container", container)
-                                .value("binaryIdentifier", binaryIdentifier).value("modified", now())
-                                .value("identifier", id);
+                                .value("binaryIdentifier", binaryIdentifier).value("writestamp", now())
+                                .value("modified", now()).value("identifier", id);
             }
             // or else it's not a binary
             log.debug("Resource is an RDF Source.");
             return null;
             // so just create RDFSource update statement
         }).orElse(insertInto("trellis", Mutable.tableName).value("interactionModel", ixnModel).value("quads", dataset)
-                        .value("container", container).value("modified", now()).value("identifier", id));
+                        .value("container", container).value("writestamp", now()).value("modified", now())
+                        .value("identifier", id));
         // basic containment indexing
         if (container != null) {
             // the relationship between container and identifier is swapped
             Insert bcIndexInsert = insertInto("trellis", "basiccontainment").value("identifier", container)
                             .value("contained", id);
             CompletableFuture<Void> bcContainmentResult = execute(bcIndexInsert);
-            Insert containerUpdate = insertInto("trellis", Mutable.tableName).value("modified", now())
-                            .value("identifier", container);
-            return allOf(bcContainmentResult, execute(updateStatement), execute(containerUpdate));
+            return allOf(bcContainmentResult, execute(updateStatement));
         }
         return execute(updateStatement);
     }

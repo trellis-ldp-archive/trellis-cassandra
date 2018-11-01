@@ -45,40 +45,40 @@ public class BasicContainmentIT implements LdpBasicContainerTests {
         log.debug("Container location is: {}", container);
         return container;
     }
-
-    @Override
-    public void testGetEmptyContainer() {
-        // TODO Auto-generated method stub
-        LdpBasicContainerTests.super.testGetEmptyContainer();
-    }
-
-    @Override
-    public void testGetInverseEmptyContainer() {
-        // TODO Auto-generated method stub
-        LdpBasicContainerTests.super.testGetInverseEmptyContainer();
-    }
-
-    @Override
-    public void testGetContainer() {
-        // TODO Auto-generated method stub
-        LdpBasicContainerTests.super.testGetContainer();
-    }
-
-    @Override
-    public void testCreateContainerViaPut() {
-        // TODO Auto-generated method stub
-        LdpBasicContainerTests.super.testCreateContainerViaPut();
-    }
-
-    @Override
-    public void testCreateContainerWithSlug() {
-        // TODO Auto-generated method stub
-        LdpBasicContainerTests.super.testCreateContainerWithSlug();
-    }
-
-    @Override
-    public void testDeleteContainer() {
-        // TODO Auto-generated method stub
-        LdpBasicContainerTests.super.testDeleteContainer();
-    }
+//
+//    @Override
+//    public void testGetEmptyContainer() {
+//        // TODO Auto-generated method stub
+//        LdpBasicContainerTests.super.testGetEmptyContainer();
+//    }
+//
+//    @Override
+//    public void testGetInverseEmptyContainer() {
+//        // TODO Auto-generated method stub
+//        LdpBasicContainerTests.super.testGetInverseEmptyContainer();
+//    }
+//
+//    @Override
+//    public void testGetContainer() {
+//        // TODO Auto-generated method stub
+//        LdpBasicContainerTests.super.testGetContainer();
+//    }
+//
+//    @Override
+//    public void testCreateContainerViaPut() {
+//        // TODO Auto-generated method stub
+//        LdpBasicContainerTests.super.testCreateContainerViaPut();
+//    }
+//
+//    @Override
+//    public void testCreateContainerWithSlug() {
+//        // TODO Auto-generated method stub
+//        LdpBasicContainerTests.super.testCreateContainerWithSlug();
+//    }
+//
+//    @Override
+//    public void testDeleteContainer() {
+//        // TODO Auto-generated method stub
+//        LdpBasicContainerTests.super.testDeleteContainer();
+//    }
 }

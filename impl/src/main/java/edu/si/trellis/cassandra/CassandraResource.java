@@ -4,7 +4,7 @@ import static com.google.common.collect.Streams.concat;
 import static edu.si.trellis.cassandra.CassandraResourceService.Mutability.Immutable;
 import static edu.si.trellis.cassandra.CassandraResourceService.Mutability.Mutable;
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.trellisldp.api.RDFUtils.toQuad;
+import static org.trellisldp.api.TrellisUtils.toQuad;
 import static org.trellisldp.vocabulary.LDP.PreferContainment;
 import static org.trellisldp.vocabulary.LDP.PreferMembership;
 
@@ -25,7 +25,7 @@ import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
 import org.trellisldp.api.Binary;
-import org.trellisldp.api.RDFUtils;
+import org.trellisldp.api.TrellisUtils;
 import org.trellisldp.api.Resource;
 import org.trellisldp.vocabulary.LDP;
 
@@ -55,10 +55,10 @@ class CassandraResource implements Resource {
 
     private final boolean hasAcl;
 
-    private final Instant modified;
+    private final Instant modified, timestamp;
 
     public CassandraResource(IRI id, IRI ixnModel, boolean hasAcl, IRI binaryIdentifier, String mimeType, long size,
-                    IRI container, Instant modified, Session session) {
+                    IRI container, Instant modified, Instant timestamp, Session session) {
         this.identifier = id;
         this.interactionModel = ixnModel;
         this.hasAcl = hasAcl;
@@ -67,6 +67,7 @@ class CassandraResource implements Resource {
         this.size = size;
         this.container = container;
         this.modified = modified;
+        this.timestamp = timestamp;
         this.session = session;
 
         prepareQueries();
@@ -103,6 +104,15 @@ class CassandraResource implements Resource {
         return modified;
     }
 
+    /**
+     * Unlike the value of {@link #getModified()}, this value is immutable after a resource is persisted.
+     * 
+     * @return the timestamp for this resource
+     */
+    public Instant getTimestamp() {
+        return timestamp;
+    }
+
     @Override
     public Boolean hasAcl() {
         return hasAcl;
@@ -130,7 +140,7 @@ class CassandraResource implements Resource {
     private Stream<Triple> basicContainmentTriples() {
         final Spliterator<Row> rows = session.execute(basicContainmentStatement).spliterator();
         Stream<IRI> contained = StreamSupport.stream(rows, false).map(get("contained", IRI.class));
-        return contained.map(cont -> RDFUtils.getInstance().createTriple(getIdentifier(), LDP.contains, cont))
+        return contained.map(cont -> TrellisUtils.getInstance().createTriple(getIdentifier(), LDP.contains, cont))
                         .peek(t -> log.trace("Built containment triple: {}", t));
     }
 

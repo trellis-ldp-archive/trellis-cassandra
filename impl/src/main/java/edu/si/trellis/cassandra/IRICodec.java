@@ -18,7 +18,7 @@ import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
-import org.trellisldp.api.RDFUtils;
+import org.trellisldp.api.TrellisUtils;
 
 /**
  * (De)serializes Commons RDF {@link IRI}s (out of)into Cassandra fields.
@@ -37,7 +37,7 @@ class IRICodec extends TypeCodec<IRI> {
 
     protected static final long cacheMaximumSize = 10 ^ 6;
 
-    protected static final RDF rdf = RDFUtils.getInstance();
+    protected static final RDF rdf = TrellisUtils.getInstance();
 
     private final LoadingCache<String, IRI> cache = newBuilder().concurrencyLevel(cacheConcurrencyLevel)
                     .maximumSize(cacheMaximumSize).build(from(this::deserialize));
