@@ -6,7 +6,6 @@ import static java.lang.Math.floorDiv;
 import static java.util.Base64.getEncoder;
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static java.util.stream.StreamSupport.stream;
 import static org.apache.commons.codec.digest.DigestUtils.getDigest;
 import static org.apache.commons.codec.digest.DigestUtils.updateDigest;
@@ -23,7 +22,6 @@ import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.util.concurrent.ListenableFuture;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,28 +30,26 @@ import java.security.MessageDigest;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicLong;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.rdf.api.IRI;
 import org.slf4j.Logger;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IdentifierService;
-import org.trellisldp.api.RuntimeTrellisException;
 
 /**
  * Implements {@link BinaryService} by chunking binary data across Cassandra.
  *
  */
-public class CassandraBinaryService implements BinaryService {
+public class CassandraBinaryService extends CassandraService implements BinaryService {
 
     private static final Logger log = getLogger(CassandraBinaryService.class);
-
-    private final Session cassandraSession;
 
     private static final int DEFAULT_MAX_CHUNK_LENGTH = 1 * 1024 * 1024;
 
@@ -67,37 +63,35 @@ public class CassandraBinaryService implements BinaryService {
     // TODO Move digest calculation to the C* node.
     private static final Set<String> algorithms = ImmutableSet.of(MD5, MD2, SHA, SHA_1, SHA_256, SHA_384, SHA_512);
 
-    private static final String INSERT_QUERY = "INSERT INTO Trellis.Binarydata (identifier, chunk_index, chunk) VALUES (:identifier, :chunk_index, :chunk)";
-
-    private final PreparedStatement insertStatement;
-
-    private static final String READ_QUERY = "SELECT chunk, chunk_index FROM Trellis.Binarydata WHERE identifier = ?;";
-
-    private final PreparedStatement readStatement;
-
-    private static final String READ_RANGE_QUERY = "SELECT chunk, chunk_index FROM Trellis.Binarydata WHERE identifier = ? and chunk_index >= :start and chunk_index <= :end;";
-
-    private final PreparedStatement readRangeStatement;
-
-    private static final String DELETE_QUERY = "DELETE FROM Trellis.Binarydata WHERE identifier = ?;";
-
-    private final PreparedStatement deleteStatement;
-
     private final IdentifierService idService;
 
-    public CassandraBinaryService(IdentifierService idService, Session session, int chunkLength) {
+    private static final String INSERT_QUERY = "INSERT INTO Binarydata (identifier, chunk_index, chunk) VALUES (:identifier, :chunk_index, :chunk)";
+
+    private static final String READ_QUERY = "SELECT chunk, chunk_index FROM Binarydata WHERE identifier = ?;";
+
+    private static final String READ_RANGE_QUERY = "SELECT chunk, chunk_index FROM Binarydata WHERE identifier = ? and chunk_index >= :start and chunk_index <= :end;";
+
+    private static final String DELETE_QUERY = "DELETE FROM Binarydata WHERE identifier = ?;";
+
+    private PreparedStatement deleteStatement, readRangeStatement, readStatement, insertStatement;
+
+    public CassandraBinaryService(IdentifierService idService, Provider<Session> session, int chunkLength) {
+        super(session);
         this.idService = idService;
-        this.cassandraSession = session;
         this.maxChunkLength = chunkLength;
-        insertStatement = session.prepare(INSERT_QUERY);
-        readStatement = session.prepare(READ_QUERY);
-        readRangeStatement = session.prepare(READ_RANGE_QUERY);
-        deleteStatement = session.prepare(DELETE_QUERY);
     }
 
     @Inject
-    public CassandraBinaryService(IdentifierService idService, Session session) {
+    public CassandraBinaryService(IdentifierService idService, Provider<Session> session) {
         this(idService, session, DEFAULT_MAX_CHUNK_LENGTH);
+    }
+
+    @PostConstruct
+    void initializeStatements() {
+        this.insertStatement = session().prepare(INSERT_QUERY);
+        this.readStatement = session().prepare(READ_QUERY);
+        this.readRangeStatement = session().prepare(READ_RANGE_QUERY);
+        this.deleteStatement = session().prepare(DELETE_QUERY);
     }
 
     @Override
@@ -127,11 +121,14 @@ public class CassandraBinaryService implements BinaryService {
     }
 
     private CompletableFuture<InputStream> retrieve(Statement boundStatement) {
-        ResultSetFuture results = cassandraSession.executeAsync(boundStatement);
+        ResultSetFuture results = session().executeAsync(boundStatement);
         return translate(results).thenApply(resultSet -> stream(resultSet.spliterator(), false)
                         .peek(r -> log.debug("Retrieving chunk: {}", r.getLong("chunk_index")))
-                        .map(r -> r.get("chunk", InputStream.class))
-                        .reduce(SequenceInputStream::new).get()); // chunks now in one large stream
+                        .map(r -> r.get("chunk", InputStream.class)).reduce(SequenceInputStream::new).get()); // chunks
+                                                                                                              // now in
+                                                                                                              // one
+                                                                                                              // large
+                                                                                                              // stream
     }
 
     @Override
@@ -143,17 +140,17 @@ public class CassandraBinaryService implements BinaryService {
         try (CountingInputStream chunk = new CountingInputStream(new BoundedInputStream(stream, maxChunkLength))) {
             Statement boundStatement = insertStatement.bind(iri, chunkIndex.getAndIncrement(), chunk)
                             .setConsistencyLevel(LOCAL_QUORUM);
-            return translate(cassandraSession.executeAsync(boundStatement)).thenApply(r -> chunk.getByteCount())
+            return translate(session().executeAsync(boundStatement)).thenApply(r -> chunk.getByteCount())
                             .thenComposeAsync(bytesStored -> bytesStored == maxChunkLength
                                             ? setChunk(iri, stream, chunkIndex)
-                                            : completedFuture(DONE), translator);
+                                            : completedFuture(DONE), mappingThread);
         }
     }
 
     @Override
     public CompletableFuture<Void> purgeContent(IRI identifier) {
         Statement boundStatement = deleteStatement.bind(identifier.getIRIString());
-        return translate(cassandraSession.executeAsync(boundStatement)).thenAccept(x -> {});
+        return translate(session().executeAsync(boundStatement)).thenAccept(x -> {});
     }
 
     @Override
@@ -165,7 +162,7 @@ public class CassandraBinaryService implements BinaryService {
             } catch (final IOException e) {
                 throw new UncheckedIOException(e);
             }
-        }, translator);
+        }, mappingThread);
     }
 
     @Override
@@ -178,17 +175,10 @@ public class CassandraBinaryService implements BinaryService {
         return idService.getSupplier().get();
     }
 
-    private Executor translator = Runnable::run;
-
-    private <T> CompletableFuture<T> translate(ListenableFuture<T> from) {
-        return supplyAsync(() -> {
-            try {
-                return from.get();
-            } catch (InterruptedException | ExecutionException e) {
-                throw new RuntimeTrellisException(e);
-            }
-        }, translator);
-    }
+    /**
+     * TODO threadpool?
+     */
+    private Executor mappingThread = Runnable::run;
 
     /**
      * An {@link InputStream} that counts the bytes read from it and does not propagate {@link #close()}.

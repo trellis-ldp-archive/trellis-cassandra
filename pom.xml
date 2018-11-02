@@ -149,6 +149,22 @@
               <version>${cassandra.test.version}</version>
             </dependency>
           </dependencies>
+          <executions>
+            <execution>
+              <id>start</id>
+              <!-- we shift C* to start very early to avoid the webapp starting before C*
+                <phase>package</phase> -->
+              <goals>
+                <goal>start</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>stop</id>
+              <goals>
+                <goal>stop</goal>
+              </goals>
+            </execution>
+          </executions>
         </plugin>
         <plugin>
           <groupId>io.thorntail</groupId>

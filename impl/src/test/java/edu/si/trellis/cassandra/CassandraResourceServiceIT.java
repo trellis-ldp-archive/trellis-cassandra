@@ -6,6 +6,7 @@ import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.junit.Test;
+import org.trellisldp.api.Binary;
 import org.trellisldp.api.Resource;
 
 public class CassandraResourceServiceIT extends CassandraServiceIT {
@@ -18,10 +19,10 @@ public class CassandraResourceServiceIT extends CassandraServiceIT {
         Dataset quads = rdfFactory.createDataset();
         Quad quad = rdfFactory.createQuad(id, ixnModel, id, ixnModel);
         quads.add(quad);
-        Future<Void> put = connection.service.create(id, ixnModel, quads, container, null);
+        Future<Void> put = connection.resourceService.create(id, ixnModel, quads, container, null);
         put.get();
         assertTrue(put.isDone());
-        Resource resource = connection.service.get(id).get();
+        Resource resource = connection.resourceService.get(id).get();
         assertEquals(id, resource.getIdentifier());
         assertEquals(ixnModel, resource.getInteractionModel());
         Quad firstQuad = resource.stream().findFirst().orElseThrow(() -> new AssertionError("Failed to find quad!"));

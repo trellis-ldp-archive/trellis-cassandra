@@ -1,22 +1,27 @@
 package edu.si.trellis.cassandra;
 
 import static com.datastax.driver.core.TypeCodec.bigint;
+import static com.google.common.util.concurrent.Uninterruptibles.awaitUninterruptibly;
 import static edu.si.trellis.cassandra.DatasetCodec.datasetCodec;
 import static edu.si.trellis.cassandra.IRICodec.iriCodec;
 import static java.lang.Integer.parseInt;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import com.datastax.driver.core.*;
-import com.datastax.driver.core.exceptions.NoHostAvailableException;
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.QueryLogger;
+import com.datastax.driver.core.Session;
 import com.datastax.driver.extras.codecs.jdk8.InstantCodec;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.Uninterruptibles;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketTimeoutException;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -26,6 +31,7 @@ import javax.inject.Inject;
 
 import org.apache.tamaya.inject.api.Config;
 import org.slf4j.Logger;
+import org.trellisldp.api.RuntimeTrellisException;
 
 /**
  * Provides a Cassandra {@link Session}.
@@ -45,15 +51,17 @@ public class CassandraSession {
     @Inject
     @Config(value = { "cassandra.contactAddress", "CASSANDRA_CONTACT_ADDRESS" }, defaultValue = "localhost")
     private String contactAddress;
-
-    private Future<Session> futureSession;
-
-    private final ExecutorService connectionMaker = Executors.newSingleThreadExecutor();
+    private final CountDownLatch sessionInitialized = new CountDownLatch(1);
 
     private static final Logger log = getLogger(CassandraSession.class);
 
     /**
-     * Connect to Cassandra, eagerly.
+     * Poll timeout in ms for waiting for Cassandra connection.
+     */
+    private static final int POLL_TIMEOUT = 1000;
+
+    /**
+     * Connect to Cassandra, lazily.
      */
     @PostConstruct
     public void connect() {
@@ -62,25 +70,32 @@ public class CassandraSession {
                         .withPort(parseInt(contactPort)).build();
         if (log.isDebugEnabled()) cluster.register(QueryLogger.builder().build());
         cluster.getConfiguration().getCodecRegistry().register(iriCodec, datasetCodec, bigint(), InstantCodec.instance);
-        this.session = cluster.connect("trellis");
-        // this.futureSession = connectionMaker.submit(() -> {
-        // while (true) {
-        // try {
-        // if (cluster != null && !cluster.isClosed()) cluster.close();
-        // this.cluster = Cluster.builder().withoutJMXReporting().withoutMetrics().addContactPoint(contactNode)
-        // .withPort(parseInt(contactPort)).build();
-        // // this.cluster.register(QueryLogger.builder().build());
-        // cluster.getConfiguration().getCodecRegistry().register(iriCodec, datasetCodec, bigint(),
-        // InstantCodec.instance);
-        //
-        // Session session = cluster.connect("trellis");
-        // return session;
-        // } catch (NoHostAvailableException e) {
-        // log.error("Waiting on Cassandra…", e);
-        // Uninterruptibles.sleepUninterruptibly(5, SECONDS);
-        // }
-        // }
-        // });
+        Timer connector = new Timer("Cassandra Connection Maker");
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                if (portIsOpen(contactAddress, contactPort)) {
+                    session = cluster.connect("trellis");
+                    log.debug("Set keyspace to trellis");
+                    cancel();
+                    sessionInitialized.countDown();
+                }
+            }
+        };
+        connector.schedule(task, 0, POLL_TIMEOUT);
+
+    }
+
+    private static boolean portIsOpen(String ip, String port) {
+        try {
+            Socket socket = new Socket();
+            socket.connect(new InetSocketAddress(ip, parseInt(port)), POLL_TIMEOUT);
+            socket.close();
+            return true;
+        } catch (IOException e) {
+            log.debug("Waiting for connection to {}:{}", ip, port);
+            return false;
+        }
     }
 
     /**
@@ -89,8 +104,8 @@ public class CassandraSession {
     @Produces
     @ApplicationScoped
     public Session getSession() {
+        awaitUninterruptibly(sessionInitialized);
         return session;
-        // return this.session = Futures.getUnchecked(futureSession);
     }
 
     /**
