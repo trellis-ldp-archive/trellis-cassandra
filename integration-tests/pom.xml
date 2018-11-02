@@ -66,8 +66,7 @@
           <execution>
             <goals>
               <goal>integration-test</goal>
-              <!-- TODO re-enable when all tests pass -->
-              <!-- <goal>verify</goal> -->
+              <goal>verify</goal>
             </goals>
             <configuration>
               <systemPropertyVariables>
@@ -79,103 +78,66 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>cassandra-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.cargo</groupId>
+        <artifactId>cargo-maven2-plugin</artifactId>
+        <version>1.6.10</version>
+        <configuration>
+          <container>
+            <containerId>wildfly-swarm2017x</containerId>
+            <type>installed</type>
+            <home>${project.basedir}/../webapp/target/webapp-${project.version}-hollow-thorntail.jar</home>
+            <systemProperties>
+              <project.build.directory>${project.build.directory}</project.build.directory>
+              <trellis.port>${trellis.port}</trellis.port>
+              <cassandra.contactPort>${cassandra.nativeTransportPort}</cassandra.contactPort>
+              <cassandra.contactNode>${cassandra.contactNode}</cassandra.contactNode>
+              <java.net.preferIPv4Stack>true</java.net.preferIPv4Stack>
+            </systemProperties>
+          </container>
+          <configuration>
+            <type>standalone</type>
+            <properties>
+              <cargo.servlet.uriencoding>UTF-8</cargo.servlet.uriencoding>
+              <cargo.jvmargs>-Xmx1024m</cargo.jvmargs>
+              <cargo.servlet.port>${trellis.port}</cargo.servlet.port>
+              <cargo.swarm.hollowswarm>true</cargo.swarm.hollowswarm>
+              <!-- <cargo.swarm.project.name>${project.name}</cargo.swarm.project.name> -->
+              <cargo.swarm.ping.url>http://localhost:${trellis.port}</cargo.swarm.ping.url>
+              <cargo.process.spawn>true</cargo.process.spawn>
+            </properties>
+          </configuration>
+          <deployables>
+            <deployable>
+              <groupId>${project.groupId}</groupId>
+              <artifactId>webapp</artifactId>
+              <type>war</type>
+              <pingUrlPath>/</pingUrlPath>
+              <pingTimeout>60000</pingTimeout>
+            </deployable>
+          </deployables>
+        </configuration>
+        <executions>
+          <execution>
+            <id>start-server</id>
+            <goals>
+              <goal>start</goal>
+            </goals>
+            <phase>pre-integration-test</phase>
+          </execution>
+          <execution>
+            <id>stop-server</id>
+            <goals>
+              <goal>stop</goal>
+            </goals>
+            <phase>post-integration-test</phase>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
-
-  <profiles>
-    <profile>
-      <id>self-trellis</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.cargo</groupId>
-            <artifactId>cargo-maven2-plugin</artifactId>
-            <version>1.6.10</version>
-            <configuration>
-              <container>
-                <containerId>wildfly-swarm2017x</containerId>
-                <type>installed</type>
-                <home>${project.basedir}/../webapp/target/webapp-${project.version}-hollow-thorntail.jar</home>
-                <systemProperties>
-                  <project.build.directory>${project.build.directory}</project.build.directory>
-                  <trellis.port>${trellis.port}</trellis.port>
-                  <cassandra.contactPort>${cassandra.nativeTransportPort}</cassandra.contactPort>
-                  <cassandra.contactNode>${cassandra.contactNode}</cassandra.contactNode>
-                  <java.net.preferIPv4Stack>true</java.net.preferIPv4Stack>
-                </systemProperties>
-              </container>
-              <configuration>
-                <type>standalone</type>
-                <properties>
-                  <cargo.servlet.uriencoding>UTF-8</cargo.servlet.uriencoding>
-                  <cargo.jvmargs>-Xmx1024m</cargo.jvmargs>
-                  <cargo.servlet.port>${trellis.port}</cargo.servlet.port>
-                  <cargo.swarm.hollowswarm>true</cargo.swarm.hollowswarm>
-                  <!-- <cargo.swarm.project.name>${project.name}</cargo.swarm.project.name> -->
-                  <cargo.swarm.ping.url>http://localhost:${trellis.port}</cargo.swarm.ping.url>
-                </properties>
-              </configuration>
-              <deployables>
-                <deployable>
-                  <groupId>${project.groupId}</groupId>
-                  <artifactId>webapp</artifactId>
-                  <type>war</type>
-                  <pingUrlPath>/</pingUrlPath>
-                  <pingTimeout>60000</pingTimeout>
-                </deployable>
-              </deployables>
-            </configuration>
-            <executions>
-              <execution>
-                <id>start-server</id>
-                <goals>
-                  <goal>start</goal>
-                </goals>
-                <phase>pre-integration-test</phase>
-              </execution>
-              <execution>
-                <id>stop-server</id>
-                <goals>
-                  <goal>stop</goal>
-                </goals>
-                <phase>post-integration-test</phase>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
-      <id>self-cassandra</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>cassandra-maven-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>start</id>
-                <phase>package</phase>
-                <goals>
-                  <goal>start</goal>
-                </goals>
-              </execution>
-              <execution>
-                <id>stop</id>
-                <goals>
-                  <goal>stop</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 </project>

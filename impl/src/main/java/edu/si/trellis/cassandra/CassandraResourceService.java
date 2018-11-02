@@ -10,7 +10,6 @@ import static java.time.Instant.now;
 import static java.util.UUID.randomUUID;
 import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
@@ -28,7 +27,6 @@ import com.datastax.driver.core.querybuilder.Delete.Where;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.util.concurrent.ListenableFuture;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -38,11 +36,11 @@ import java.util.function.Function;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 import org.apache.commons.rdf.api.*;
 import org.slf4j.Logger;
 import org.trellisldp.api.*;
-import org.trellisldp.api.Resource.SpecialResources;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
 
@@ -52,7 +50,7 @@ import org.trellisldp.vocabulary.LDP;
  * @author ajs6f
  *
  */
-public class CassandraResourceService implements ResourceService {
+public class CassandraResourceService extends CassandraService implements ResourceService {
 
     @SuppressWarnings("boxing")
     private static final Long ZERO_LENGTH = 0L;
@@ -64,40 +62,30 @@ public class CassandraResourceService implements ResourceService {
 
     private static final Logger log = getLogger(CassandraResourceService.class);
 
-    private final Session session;
-
-    private static final String GET_QUERY = "SELECT * FROM trellis." + Mutable.tableName
-                    + " WHERE identifier = ? LIMIT 1;";
-    private final PreparedStatement getStatement;
-
-    private static final String IMMUTABLE_INSERT_QUERY = "INSERT INTO trellis." + Immutable.tableName
+    private static final String GET_QUERY = "SELECT * FROM " + Mutable.tableName + " WHERE identifier = ? LIMIT 1;";
+    private static final String IMMUTABLE_INSERT_QUERY = "INSERT INTO " + Immutable.tableName
                     + " (identifier, quads, modified) VALUES (?,?,?)";
-    private final PreparedStatement immutableInsertStatement;
-
-    /**
-     * Same-thread execution. TODO use a pool?
-     */
-    private final Executor executor = Runnable::run;
+    private PreparedStatement getStatement, immutableInsertStatement;
 
     /**
      * Constructor.
      *
-     * @param session a Cassandra {@link Session} for use by this service for its lifetime
+     * @param session() a Cassandra {@link session()} for use by this service for its lifetime
      */
     @Inject
-    public CassandraResourceService(final Session session) {
-        this.session = session;
-        log.info("Preparing retrieval query: {}", GET_QUERY);
-        getStatement = session.prepare(GET_QUERY);
-        log.info("Preparing immmutable data insert query: {}", IMMUTABLE_INSERT_QUERY);
-        immutableInsertStatement = session.prepare(IMMUTABLE_INSERT_QUERY);
+    public CassandraResourceService(final Provider<Session> session) {
+        super(session);
     }
 
     /**
      * Build a root container.
      */
     @PostConstruct
-    public void initializeRoot() {
+    void initializeRoot() {
+        log.info("Preparing retrieval query: {}", GET_QUERY);
+        this.getStatement = session().prepare(GET_QUERY);
+        log.info("Preparing immmutable data insert query: {}", IMMUTABLE_INSERT_QUERY);
+        this.immutableInsertStatement = session().prepare(IMMUTABLE_INSERT_QUERY);
         RDF rdf = TrellisUtils.getInstance();
         IRI rootIri = rdf.createIRI(TRELLIS_DATA_PREFIX);
         try {
@@ -118,7 +106,6 @@ public class CassandraResourceService implements ResourceService {
 
     private Function<? super ResultSet, ? extends Resource> buildResource(IRI id) {
         return rows -> {
-
             log.debug("Resource {} was {}found", id, rows.isExhausted() ? "not " : "");
             if (rows.isExhausted()) return MISSING_RESOURCE;
             final Row metadata = rows.one();
@@ -142,7 +129,7 @@ public class CassandraResourceService implements ResourceService {
             Instant writestamp = metadata.get("writestamp", Instant.class);
             log.debug("Found writestamp = {} for resource {}", writestamp, id);
             return new CassandraResource(id, ixnModel, hasAcl, binaryId, mimeType, size, container, modified,
-                            writestamp, session);
+                            writestamp, session());
         };
     }
 
@@ -150,7 +137,7 @@ public class CassandraResourceService implements ResourceService {
     public CompletableFuture<? extends Resource> get(final IRI id) {
         BoundStatement boundStatement = getStatement.bind(id);
         log.debug("Executing CQL statement: {} with identifier: {}", getStatement.getQueryString(), id);
-        ResultSetFuture result = session.executeAsync(boundStatement);
+        ResultSetFuture result = session().executeAsync(boundStatement);
 
         return translate(result).thenApply(buildResource(id));
     }
@@ -195,29 +182,26 @@ public class CassandraResourceService implements ResourceService {
         // first, this resource can no longer be contained
         CompletableFuture<Void> containerIndexDelete = get(id).thenApply(Resource::getContainer)
                         .thenCompose(maybeContainer -> maybeContainer
-                                        .map(container -> execute(QueryBuilder.delete()
-                                                        .from("trellis", "basiccontainment")
+                                        .map(container -> execute(QueryBuilder.delete().from("basiccontainment")
                                                         .where(eq("identifier", container)).and(eq("contained", id))))
                                         .orElse(completedFuture(null)));
         // second, this resource can no longer contain other resources
-        Where containedDeleteStatement = QueryBuilder.delete().from("trellis", "basiccontainment")
-                        .where(eq("identifier", id));
+        Where containedDeleteStatement = QueryBuilder.delete().from("basiccontainment").where(eq("identifier", id));
         log.debug("Using CQL: {}", containedDeleteStatement);
         CompletableFuture<Void> containedIndexDelete = execute(containedDeleteStatement);
         CompletableFuture<Void> selfDelete = write(id, DeletedResource, null, null);
         return allOf(selfDelete, containedIndexDelete, containerIndexDelete);
     }
 
-    /* (non-Javadoc)
-     * TODO avoid read-modify-write?
+    /*
+     * (non-Javadoc) TODO avoid read-modify-write?
      */
     @Override
     public CompletableFuture<Void> touch(IRI id) {
         return get(id).thenApply(res -> (res instanceof CassandraResource) ? (CassandraResource) res : null)
                         .thenApply(CassandraResource::getTimestamp)
-                        .thenCompose(writestamp -> execute(update("trellis", Mutable.tableName)
-                                        .where(eq("identifier", id)).and(eq("writestamp", writestamp))
-                                        .with(set("modified", now()))));
+                        .thenCompose(writestamp -> execute(update(Mutable.tableName).where(eq("identifier", id))
+                                        .and(eq("writestamp", writestamp)).with(set("modified", now()))));
     }
 
     enum Mutability {
@@ -247,7 +231,7 @@ public class CassandraResourceService implements ResourceService {
                                 .orElse("application/octet-stream");
                 log.debug("Persisting a NonRDFSource at {} with bitstream at {} of size {} and mimeType {}.", id,
                                 binaryIdentifier, size, mimeType);
-                return insertInto("trellis", Mutable.tableName).value("interactionModel", ixnModel).value("size", size)
+                return insertInto(Mutable.tableName).value("interactionModel", ixnModel).value("size", size)
                                 .value("mimeType", mimeType).value("container", container)
                                 .value("binaryIdentifier", binaryIdentifier).value("writestamp", now())
                                 .value("modified", now()).value("identifier", id);
@@ -256,51 +240,20 @@ public class CassandraResourceService implements ResourceService {
             log.debug("Resource is an RDF Source.");
             return null;
             // so just create RDFSource update statement
-        }).orElse(insertInto("trellis", Mutable.tableName).value("interactionModel", ixnModel).value("quads", dataset)
+        }).orElse(insertInto(Mutable.tableName).value("interactionModel", ixnModel).value("quads", dataset)
                         .value("container", container).value("writestamp", now()).value("modified", now())
                         .value("identifier", id));
         // basic containment indexing
         if (container != null) {
             // the relationship between container and identifier is swapped
-            Insert bcIndexInsert = insertInto("trellis", "basiccontainment").value("identifier", container)
-                            .value("contained", id);
-            CompletableFuture<Void> bcContainmentResult = execute(bcIndexInsert);
-            return allOf(bcContainmentResult, execute(updateStatement));
+            Insert bcIndexInsert = insertInto("basiccontainment").value("identifier", container).value("contained", id);
+            return allOf(execute(bcIndexInsert), execute(updateStatement));
         }
         return execute(updateStatement);
-    }
-
-    private CompletableFuture<Void> execute(Statement statement) {
-        log.debug("Executing CQL statement: {}", statement);
-        return read(statement).thenApply(r -> null);
-    }
-
-    private CompletableFuture<ResultSet> read(Statement statement) {
-        return translate(session.executeAsync(statement));
-    }
-
-    private <T> CompletableFuture<T> translate(ListenableFuture<T> result) {
-        return supplyAsync(() -> {
-            try {
-                return result.get();
-            } catch (InterruptedException | ExecutionException e) {
-                // we don't know that persistence failed but we can't assume that it succeeded
-                log.error("Error in persistence!", e.getCause());
-                throw new CompletionException(e.getCause());
-            }
-        }, executor);
     }
 
     @Override
     public Set<IRI> supportedInteractionModels() {
         return SUPPORTED_INTERACTION_MODELS;
-    }
-
-    protected <T> Optional<T> resynchronize(CompletableFuture<T> from) {
-        try {
-            return Optional.of(from.get());
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeTrellisException(e);
-        }
     }
 }

@@ -4,6 +4,7 @@ import static com.datastax.driver.core.Cluster.builder;
 import static edu.si.trellis.cassandra.DatasetCodec.datasetCodec;
 import static edu.si.trellis.cassandra.IRICodec.iriCodec;
 import static edu.si.trellis.cassandra.InputStreamCodec.inputStreamCodec;
+import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import org.junit.rules.ExternalResource;
@@ -14,6 +15,8 @@ import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.QueryLogger;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.extras.codecs.jdk8.InstantCodec;
+
+import java.util.concurrent.ExecutorService;
 
 class CassandraConnection extends ExternalResource {
 
@@ -26,7 +29,7 @@ class CassandraConnection extends ExternalResource {
 
     protected Cluster cluster;
     protected Session session;
-    public CassandraResourceService service;
+    public CassandraResourceService resourceService;
     public CassandraBinaryService binaryService;
     private final int port;
     private final String contactAddress;
@@ -49,14 +52,22 @@ class CassandraConnection extends ExternalResource {
         QueryLogger queryLogger = QueryLogger.builder().build();
         cluster.register(queryLogger);
         session = cluster.newSession();
-        service = new CassandraResourceService(session);
-        binaryService = new CassandraBinaryService(null, session, 1 * 1024 * 1024);
+        ExecutorService setKeyspaceThread = newSingleThreadExecutor();
+        session.initAsync().addListener(() -> {
+            session.execute("USE trellis;");
+            setKeyspaceThread.shutdown();
+        }, setKeyspaceThread);
+        resourceService = new CassandraResourceService(() -> session);
+        resourceService.initializeRoot();
+        binaryService = new CassandraBinaryService(null, () -> session, 1 * 1024 * 1024);
+        binaryService.initializeStatements();
         if (cleanBefore) cleanOut();
     }
 
     private void cleanOut() {
         log.info("Cleaning out test keyspace {}", keyspace);
-        for (String q : CLEANOUT_QUERIES) session.execute(q);
+        for (String q : CLEANOUT_QUERIES)
+            session.execute(q);
     }
 
     private CodecRegistry codecRegistry() {
