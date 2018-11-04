@@ -28,13 +28,7 @@ import org.trellisldp.vocabulary.LDP;
 //@Disabled
 public class LdpRdfIT implements LdpRdfTests {
 
-    private static final Logger log = getLogger(LdpRdfIT.class);
-
     private static Client client = newBuilder().connectTimeout(2, MINUTES).build();
-
-    static {
-        log.debug("Using JAX-RS client class: {}", client.getClass());
-    }
 
     private static final String trellisUri = "http://localhost:" + getInteger("trellis.port") + "/";
 

@@ -28,12 +28,13 @@ matrix:
     - jdk: oraclejdk11
     - jdk: openjdk10
 
-# do not resolve dependencies because webapp depends on impl
+# do not resolve dependencies because of inter-module dependencies
 install: true
 
 # load our schema
 before_script: src/test/resources/load.sh
 
+# build
 # turn off Cassandra Maven plugin to use Travis' service instead
 script: mvn -Dcassandra.skip -Dcassandra.nativeTransportPort=9042 install
 

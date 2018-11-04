@@ -13,10 +13,6 @@ swarm:
         level: WARN
       org.jboss.weld:
         level: WARN
-  undertow:
-    servlet-containers:
-      default:
-        stack-trace-on-error: all
 java:
   net:
     preferIPv4Stack: true
