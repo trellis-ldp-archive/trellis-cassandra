@@ -24,19 +24,19 @@ abstract class CassandraService {
 
     private static final Logger log = getLogger(CassandraService.class);
 
-    protected Provider<Session> session;
+    protected Session session;
 
     /**
      * Same-thread execution. TODO use a pool?
      */
     private final Executor executor = Runnable::run;
 
-    public CassandraService(Provider<Session> session) {
+    public CassandraService(Session session) {
         this.session = session;
     }
 
     protected Session session() {
-        return session.get();
+        return session;
     }
 
     protected CompletableFuture<Void> execute(Statement statement) {

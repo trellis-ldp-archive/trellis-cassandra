@@ -57,9 +57,9 @@ class CassandraConnection extends ExternalResource {
             session.execute("USE trellis;");
             setKeyspaceThread.shutdown();
         }, setKeyspaceThread);
-        resourceService = new CassandraResourceService(() -> session);
-        resourceService.initializeRoot();
-        binaryService = new CassandraBinaryService(null, () -> session, 1 * 1024 * 1024);
+        resourceService = new CassandraResourceService(session);
+        resourceService.initializeQueriesAndRoot();
+        binaryService = new CassandraBinaryService(null, session, 1 * 1024 * 1024);
         binaryService.initializeStatements();
         if (cleanBefore) cleanOut();
     }

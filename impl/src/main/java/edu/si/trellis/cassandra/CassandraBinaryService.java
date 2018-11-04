@@ -75,14 +75,14 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
 
     private PreparedStatement deleteStatement, readRangeStatement, readStatement, insertStatement;
 
-    public CassandraBinaryService(IdentifierService idService, Provider<Session> session, int chunkLength) {
+    public CassandraBinaryService(IdentifierService idService, Session session, int chunkLength) {
         super(session);
         this.idService = idService;
         this.maxChunkLength = chunkLength;
     }
 
     @Inject
-    public CassandraBinaryService(IdentifierService idService, Provider<Session> session) {
+    public CassandraBinaryService(IdentifierService idService, Session session) {
         this(idService, session, DEFAULT_MAX_CHUNK_LENGTH);
     }
 
