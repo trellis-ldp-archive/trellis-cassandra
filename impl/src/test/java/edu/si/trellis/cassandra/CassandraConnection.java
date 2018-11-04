@@ -51,12 +51,7 @@ class CassandraConnection extends ExternalResource {
         codecRegistry().register(inputStreamCodec, iriCodec, datasetCodec, InstantCodec.instance);
         QueryLogger queryLogger = QueryLogger.builder().build();
         cluster.register(queryLogger);
-        session = cluster.newSession();
-        ExecutorService setKeyspaceThread = newSingleThreadExecutor();
-        session.initAsync().addListener(() -> {
-            session.execute("USE trellis;");
-            setKeyspaceThread.shutdown();
-        }, setKeyspaceThread);
+        session = cluster.connect("trellis");
         resourceService = new CassandraResourceService(session);
         resourceService.initializeQueriesAndRoot();
         binaryService = new CassandraBinaryService(null, session, 1 * 1024 * 1024);
