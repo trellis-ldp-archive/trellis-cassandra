@@ -4,6 +4,7 @@ import static com.datastax.driver.core.TypeCodec.bigint;
 import static com.google.common.util.concurrent.Uninterruptibles.awaitUninterruptibly;
 import static edu.si.trellis.cassandra.DatasetCodec.datasetCodec;
 import static edu.si.trellis.cassandra.IRICodec.iriCodec;
+import static edu.si.trellis.cassandra.InputStreamCodec.inputStreamCodec;
 import static java.lang.Integer.parseInt;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -13,15 +14,11 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.extras.codecs.jdk8.InstantCodec;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.SocketTimeoutException;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -31,7 +28,6 @@ import javax.inject.Inject;
 
 import org.apache.tamaya.inject.api.Config;
 import org.slf4j.Logger;
-import org.trellisldp.api.RuntimeTrellisException;
 
 /**
  * Provides a Cassandra {@link Session}.
@@ -69,7 +65,7 @@ public class CassandraSession {
         this.cluster = Cluster.builder().withoutJMXReporting().withoutMetrics().addContactPoint(contactAddress)
                         .withPort(parseInt(contactPort)).build();
         if (log.isDebugEnabled()) cluster.register(QueryLogger.builder().build());
-        cluster.getConfiguration().getCodecRegistry().register(iriCodec, datasetCodec, bigint(), InstantCodec.instance);
+        cluster.getConfiguration().getCodecRegistry().register(inputStreamCodec ,iriCodec, datasetCodec, bigint(), InstantCodec.instance);
         Timer connector = new Timer("Cassandra Connection Maker");
         TimerTask task = new TimerTask() {
             @Override
