@@ -6,8 +6,9 @@ USE trellis;
 -- Main data tables
 
 CREATE TABLE IF NOT EXISTS mutabledata (identifier text, quads text, interactionModel text,
-    hasAcl boolean, binaryIdentifier text, mimeType text, size bigint, container text, creation timestamp,
-    modified timestamp, PRIMARY KEY ((identifier), creation)) WITH CLUSTERING ORDER BY (creation DESC);
+    hasAcl boolean, binaryIdentifier text, mimeType text, size bigint, container text, created timestamp,
+    modified timestamp, binaryCreated timestamp, PRIMARY KEY ((identifier), created))
+    WITH CLUSTERING ORDER BY (created DESC);
 
 CREATE TABLE IF NOT EXISTS immutabledata (identifier text, quads text, modified timestamp,
     PRIMARY KEY ((identifier), modified)) WITH CLUSTERING ORDER BY (modified DESC);
@@ -18,7 +19,7 @@ CREATE TABLE IF NOT EXISTS binarydata (identifier text, chunk_index bigint, chun
 -- Index for basic containment
 
 CREATE MATERIALIZED VIEW IF NOT EXISTS basiccontainment AS
-       SELECT identifier, container, creation FROM mutabledata
-       WHERE identifier IS NOT NULL AND container IS NOT NULL AND creation IS NOT NULL
-       PRIMARY KEY ((container), identifier, creation);
+       SELECT identifier, container, created FROM mutabledata
+       WHERE identifier IS NOT NULL AND container IS NOT NULL AND created IS NOT NULL
+       PRIMARY KEY ((container), identifier, created);
 

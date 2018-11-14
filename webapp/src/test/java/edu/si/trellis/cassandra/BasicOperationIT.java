@@ -48,8 +48,6 @@ public class BasicOperationIT {
         req.setEntity(new StringEntity("<> a <http://example.com/example> ."));
         try (CloseableHttpResponse res = client.execute(req); InputStream url = res.getEntity().getContent()) {
             assertEquals(SC_CREATED, res.getStatusLine().getStatusCode());
-            String responseBody = EntityUtils.toString(res.getEntity());
-            log.debug("Response body from root: {}", responseBody);
             id = res.getFirstHeader("Location").getValue();
         }
         log.info("Using location {} for resource location.", id);

@@ -98,8 +98,8 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
     public CompletableFuture<InputStream> getContent(IRI identifier, Integer from, Integer to) {
         requireNonNull(from, "Byte range component 'from' may not be null!");
         requireNonNull(to, "Byte range component 'to' may not be null!");
-        long firstChunk = floorDiv((long) from, maxChunkLength);
-        long lastChunk = floorDiv((long) to, maxChunkLength);
+        Long firstChunk = floorDiv((long) from, maxChunkLength);
+        Long lastChunk = floorDiv((long) to, maxChunkLength);
         long chunkStreamStart = from % maxChunkLength;
         long rangeSize = to - from + 1; // +1 because range is inclusive
         Statement boundStatement = readRangeStatement.bind(identifier.getIRIString(), firstChunk, lastChunk)
@@ -136,11 +136,15 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
         return setChunk(iri, stream, new AtomicLong()).thenAccept(x -> {});
     }
 
+    @SuppressWarnings("resource")
     private CompletableFuture<Long> setChunk(IRI iri, InputStream stream, AtomicLong chunkIndex) {
-        try (CountingInputStream chunk = new CountingInputStream(new BoundedInputStream(stream, maxChunkLength))) {
+        try (CountingInputStream countingChunk = new CountingInputStream(new BoundedInputStream(stream, maxChunkLength))) {
+            @SuppressWarnings("cast")
+            // cast to match this object with InputStreamCodec
+            InputStream chunk = (InputStream)countingChunk;
             Statement boundStatement = insertStatement.bind(iri, chunkIndex.getAndIncrement(), chunk)
                             .setConsistencyLevel(LOCAL_QUORUM);
-            return translate(session().executeAsync(boundStatement)).thenApply(r -> chunk.getByteCount())
+            return translate(session().executeAsync(boundStatement)).thenApply(r -> countingChunk.getByteCount())
                             .thenComposeAsync(bytesStored -> bytesStored == maxChunkLength
                                             ? setChunk(iri, stream, chunkIndex)
                                             : completedFuture(DONE), mappingThread);
@@ -179,18 +183,4 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
      * TODO threadpool?
      */
     private Executor mappingThread = Runnable::run;
-
-    /**
-     * An {@link InputStream} that counts the bytes read from it and does not propagate {@link #close()}.
-     *
-     */
-    private static class CountingInputStream extends org.apache.commons.io.input.CountingInputStream {
-
-        public CountingInputStream(InputStream in) {
-            super(in);
-        }
-
-        @Override
-        public void close() { /* NO OP */ }
-    }
 }

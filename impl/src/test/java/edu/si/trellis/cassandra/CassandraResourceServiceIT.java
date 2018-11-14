@@ -1,12 +1,15 @@
 package edu.si.trellis.cassandra;
 
+import static org.trellisldp.api.Metadata.builder;
+
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.junit.Test;
-import org.trellisldp.api.Binary;
+import org.trellisldp.api.Metadata;
 import org.trellisldp.api.Resource;
 
 public class CassandraResourceServiceIT extends CassandraServiceIT {
@@ -19,7 +22,8 @@ public class CassandraResourceServiceIT extends CassandraServiceIT {
         Dataset quads = rdfFactory.createDataset();
         Quad quad = rdfFactory.createQuad(id, ixnModel, id, ixnModel);
         quads.add(quad);
-        Future<Void> put = connection.resourceService.create(id, ixnModel, quads, container, null);
+        Metadata meta = builder(id).interactionModel(ixnModel).container(container).build();
+        Future<Void> put = connection.resourceService.create(meta, quads);
         put.get();
         assertTrue(put.isDone());
         Resource resource = connection.resourceService.get(id).get();

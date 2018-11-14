@@ -3,11 +3,9 @@ package edu.si.trellis.cassandra;
 import static com.google.common.collect.Streams.concat;
 import static java.util.stream.Stream.empty;
 import static org.slf4j.LoggerFactory.getLogger;
+import static org.trellisldp.api.BinaryMetadata.builder;
 import static org.trellisldp.api.TrellisUtils.toQuad;
-import static org.trellisldp.vocabulary.LDP.Container;
-import static org.trellisldp.vocabulary.LDP.PreferContainment;
-import static org.trellisldp.vocabulary.LDP.PreferMembership;
-import static org.trellisldp.vocabulary.LDP.getSuperclassOf;
+import static org.trellisldp.vocabulary.LDP.*;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
@@ -23,7 +21,7 @@ import java.util.stream.StreamSupport;
 
 import org.apache.commons.rdf.api.*;
 import org.slf4j.Logger;
-import org.trellisldp.api.Binary;
+import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.TrellisUtils;
 import org.trellisldp.vocabulary.LDP;
@@ -32,35 +30,30 @@ class CassandraResource implements Resource {
 
     private static final Logger log = getLogger(CassandraResource.class);
 
-    private final IRI identifier;
-
-    private final IRI binaryIdentifier, container, interactionModel;
-
-    private final String mimeType;
-
-    private final long size;
+    private final IRI identifier, container, interactionModel;
 
     private final boolean hasAcl, isContainer;
 
-    private final Instant modified, creation;
+    private final Instant modified, created;
 
     private final ResourceQueries queries;
 
-    public CassandraResource(IRI id, IRI ixnModel, boolean hasAcl, IRI binaryIdentifier, String mimeType, long size,
-                    IRI container, Instant modified, Instant creation, ResourceQueries queries) {
+    private final BinaryMetadata binary;
+
+    public CassandraResource(IRI id, IRI ixnModel, boolean hasAcl, IRI binaryIdentifier, String mimeType, Long size,
+                    IRI container, Instant modified, Instant created, ResourceQueries queries) {
         this.identifier = id;
         this.interactionModel = ixnModel;
-        this.isContainer = getInteractionModel() == null ? false
-                        : Container.equals(getInteractionModel())
-                                        || Container.equals(getSuperclassOf(getInteractionModel()));
+        this.isContainer = Container.equals(getInteractionModel())
+                        || Container.equals(getSuperclassOf(getInteractionModel()));
         this.hasAcl = hasAcl;
-        this.binaryIdentifier = binaryIdentifier;
-        this.mimeType = mimeType;
-        this.size = size;
         this.container = container;
         log.trace("Resource is {}a container.", !isContainer ? "not " : "");
         this.modified = modified;
-        this.creation = creation;
+        boolean isBinary = NonRDFSource.equals(getInteractionModel());
+        this.binary = isBinary ? builder(binaryIdentifier).mimeType(mimeType).size(size).build() : null;
+        log.trace("Resource is {}a NonRDFSource.", !isBinary ? "not " : "");
+        this.created = created;
         this.queries = queries;
     }
 
@@ -90,10 +83,10 @@ class CassandraResource implements Resource {
     /**
      * Unlike the value of {@link #getModified()}, this value is immutable after a resource is persisted.
      * 
-     * @return the creation for this resource
+     * @return the created date for this resource
      */
-    public Instant getCreation() {
-        return creation;
+    public Instant getCreated() {
+        return created;
     }
 
     @Override
@@ -102,19 +95,17 @@ class CassandraResource implements Resource {
     }
 
     @Override
-    public Optional<Binary> getBinary() {
-        return Optional.ofNullable(isBinary() ? new Binary(binaryIdentifier, modified, mimeType, size) : null);
-    }
-
-    private boolean isBinary() {
-        return LDP.NonRDFSource.equals(getInteractionModel());
+    public Optional<BinaryMetadata> getBinaryMetadata() {
+        return Optional.ofNullable(binary);
     }
 
     @Override
     public Stream<? extends Quad> stream() {
         log.trace("Retrieving quad stream for resource {}", getIdentifier());
-        Stream<Quad> mutableQuads = quadStreamFromQuery(queries.mutableQuadStreamStatement().bind(getIdentifier()));
+        Stream<Quad> mutableQuads = quadStreamFromQuery(
+                        queries.mutableQuadStreamStatement().bind(getIdentifier(), getCreated()));
         Stream<Quad> immutableQuads = quadStreamFromQuery(queries.immutableQuadStreamStatement().bind(getIdentifier()));
+
         Stream<Quad> containmentQuadsInContainment = isContainer
                         ? basicContainmentTriples().map(toQuad(PreferContainment))
                         : empty();
@@ -127,8 +118,7 @@ class CassandraResource implements Resource {
     private Stream<Triple> basicContainmentTriples() {
         RDF rdfFactory = TrellisUtils.getInstance();
         final Spliterator<Row> rows = queries.session()
-                        .execute(queries.basicContainmentStatement().bind(getIdentifier()))
-                        .spliterator();
+                        .execute(queries.basicContainmentStatement().bind(getIdentifier())).spliterator();
         Stream<IRI> contained = StreamSupport.stream(rows, false).map(getFieldAs("contained", IRI.class));
         return contained.map(cont -> rdfFactory.createTriple(getIdentifier(), LDP.contains, cont))
                         .peek(t -> log.trace("Built containment triple: {}", t));

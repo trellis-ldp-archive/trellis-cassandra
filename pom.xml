@@ -172,6 +172,7 @@
           <version>${thorntail.version}</version>
           <configuration>
             <fractionDetectMode>force</fractionDetectMode>
+            <useUberJar>true</useUberJar>
             <properties>
               <swarm.http.port>${trellis.port}</swarm.http.port>
               <cassandra.contactPort>${cassandra.nativeTransportPort}</cassandra.contactPort>

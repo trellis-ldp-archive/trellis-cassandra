@@ -16,9 +16,6 @@ import org.trellisldp.io.JenaIOService;
 public class InjectedServiceBundler implements ServiceBundler {
 
     @Inject
-    private MementoService mementoService;
-
-    @Inject
     private AuditService auditService;
 
     @Inject
@@ -44,7 +41,7 @@ public class InjectedServiceBundler implements ServiceBundler {
     private CacheService<String, String> cacheService;
 
     @PostConstruct
-    public void init() {
+    void init() {
         this.ioService = new JenaIOService(namespaceService, null, cacheService, "", "");
     }
 
@@ -75,7 +72,7 @@ public class InjectedServiceBundler implements ServiceBundler {
 
     @Override
     public MementoService getMementoService() {
-        return mementoService;
+        return resourceService;
     }
 
     @Override

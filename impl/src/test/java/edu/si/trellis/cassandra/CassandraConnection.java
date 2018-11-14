@@ -4,11 +4,7 @@ import static com.datastax.driver.core.Cluster.builder;
 import static edu.si.trellis.cassandra.DatasetCodec.datasetCodec;
 import static edu.si.trellis.cassandra.IRICodec.iriCodec;
 import static edu.si.trellis.cassandra.InputStreamCodec.inputStreamCodec;
-import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.slf4j.LoggerFactory.getLogger;
-
-import org.junit.rules.ExternalResource;
-import org.slf4j.Logger;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.CodecRegistry;
@@ -16,7 +12,8 @@ import com.datastax.driver.core.QueryLogger;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.extras.codecs.jdk8.InstantCodec;
 
-import java.util.concurrent.ExecutorService;
+import org.junit.rules.ExternalResource;
+import org.slf4j.Logger;
 
 class CassandraConnection extends ExternalResource {
 
