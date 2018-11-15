@@ -6,10 +6,6 @@
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <prerequisites>
-    <maven>3.2.2</maven>
-  </prerequisites>
-
   <scm>
     <url>git@github.com:ajs6f/trellis-cassandra.git</url>
   </scm>
@@ -149,9 +145,9 @@
               <version>${cassandra.test.version}</version>
             </dependency>
             <!-- Note: version 3.6 of cassandra-maven-plugin has a transitive dependency
-                 on an older version of com.github.jbellis/jamm, which doesn't work
-                 in JDK 11 environments. For now, force the use of latest version of
-                 this library. -->
+              on an older version of com.github.jbellis/jamm, which doesn't work
+              in JDK 11 environments. For now, force the use of latest version of
+              this library. -->
             <dependency>
               <groupId>com.github.jbellis</groupId>
               <artifactId>jamm</artifactId>
@@ -214,6 +210,42 @@
         </plugin>
       </plugins>
     </pluginManagement>
+    <plugins>
+      <plugin>
+        <artifactId>maven-enforcer-plugin</artifactId>
+<!--         <version>3.0.0-M2</version> -->
+        <executions>
+          <execution>
+            <id>enforce-maven</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireMavenVersion>
+                  <version>3.2.2</version>
+                </requireMavenVersion>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>de.qaware.maven</groupId>
+        <artifactId>go-offline-maven-plugin</artifactId>
+        <version>1.0.0</version>
+        <configuration>
+          <dynamicDependencies>
+            <DynamicDependency>
+              <groupId>org.apache.maven.surefire</groupId>
+              <artifactId>surefire-junit4</artifactId>
+              <version>2.20.1</version>
+              <repositoryType>PLUGIN</repositoryType>
+            </DynamicDependency>
+          </dynamicDependencies>
+        </configuration>
+      </plugin>
+    </plugins>
   </build>
 
 </project>
