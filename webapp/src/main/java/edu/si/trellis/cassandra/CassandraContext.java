@@ -76,6 +76,7 @@ public class CassandraContext {
     @PostConstruct
     public void connect() {
         log.info("Using Cassandra node address: {} and port: {}", contactAddress, contactPort);
+        log.debug("Looking for connection...");
         this.cluster = Cluster.builder().withoutJMXReporting().withoutMetrics().addContactPoint(contactAddress)
                         .withPort(parseInt(contactPort)).build();
         if (log.isDebugEnabled()) cluster.register(QueryLogger.builder().build());
@@ -104,7 +105,7 @@ public class CassandraContext {
             socket.close();
             return true;
         } catch (IOException e) {
-            log.debug("Waiting for connection to {}:{}...", ip, port);
+            log.debug("Still looking for connection to {}:{}...", ip, port);
             return false;
         }
     }
