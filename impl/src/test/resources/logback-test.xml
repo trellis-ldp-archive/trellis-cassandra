@@ -25,12 +25,12 @@
     </encoder>
   </appender>
         
-  <root level="INFO">
+  <root level="WARN">
     <appender-ref ref="STDOUT" />
   </root>
   
-  <logger name="org.apache.cassandra" level="WARN"/>
-  <logger name="com.thinkaurelius.thrift" level="ERROR"/>
-  <logger name="edu.si" level="TRACE"/>
-  <logger name="com.datastax.driver.core.QueryLogger" level="DEBUG"/>
+<!--   <logger name="org.apache.cassandra" level="WARN"/> -->
+<!--   <logger name="com.thinkaurelius.thrift" level="ERROR"/> -->
+<!--   <logger name="edu.si" level="TRACE"/> -->
+<!--   <logger name="com.datastax.driver.core.QueryLogger" level="DEBUG"/> -->
 </configuration>

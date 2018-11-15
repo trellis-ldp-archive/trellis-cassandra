@@ -25,16 +25,16 @@
 
   <logger name="com.thinkaurelius.thrift" level="ERROR"/>
 
-  <logger name="org.apache.tamaya" level="INFO"/>
+<!--   <logger name="org.apache.tamaya" level="INFO"/> -->
 
-  <logger name="com.datastax.driver.core.QueryLogger" level="TRACE"/>
+<!--   <logger name="com.datastax.driver.core.QueryLogger" level="TRACE"/> -->
 
-  <logger name="org.jboss.weld" level="INFO"/>
+  <logger name="org.jboss.weld" level="WARN"/>
 
   <logger name="org.wildfly" level="WARN"/>
 
-  <logger name="org.trellisldp" level="DEBUG"/>
+<!--   <logger name="org.trellisldp" level="DEBUG"/> -->
 
-  <logger name="edu.si" level="DEBUG"/>
+<!--   <logger name="edu.si" level="DEBUG"/> -->
 
 </configuration>
