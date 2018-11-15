@@ -5,8 +5,12 @@ swarm:
     port: ${trellis.port}
   logging:
     root-logger:
-      level: WARN
-    loggers:      
+      level: DEBUG
+    loggers:
+      org.hibernate:
+        level: ERROR 
+      org.xnio:
+        level: ERROR 
       org.jboss:
         level: WARN
       org.wildfly:

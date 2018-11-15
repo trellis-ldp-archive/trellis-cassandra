@@ -1,4 +1,4 @@
-<configuration debug="false">
+<configuration debug="true">
 
   <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator"/>
 
@@ -25,8 +25,8 @@
 
   <logger name="com.thinkaurelius.thrift" level="ERROR"/>
 
-<!--   <logger name="org.apache.tamaya" level="WARN"/> -->
-  <!-- <logger name="com.datastax.driver.core.QueryLogger" level="TRACE"/> -->
+  <logger name="org.apache.tamaya" level="WARN"/>
+<!--   <logger name="com.datastax.driver.core.QueryLogger" level="TRACE"/> -->
 
   <logger name="org.jboss.weld" level="WARN"/>
 

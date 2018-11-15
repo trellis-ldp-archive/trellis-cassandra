@@ -1,7 +1,6 @@
 package edu.si.trellis.cassandra;
 
 import static com.datastax.driver.core.TypeCodec.bigint;
-import static com.google.common.util.concurrent.Uninterruptibles.awaitUninterruptibly;
 import static edu.si.trellis.cassandra.DatasetCodec.datasetCodec;
 import static edu.si.trellis.cassandra.IRICodec.iriCodec;
 import static edu.si.trellis.cassandra.InputStreamCodec.inputStreamCodec;
@@ -116,7 +115,11 @@ public class CassandraContext {
     @Produces
     @ApplicationScoped
     public Session getSession() {
-        awaitUninterruptibly(sessionInitialized);
+        try {
+            sessionInitialized.await();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         return session;
     }
 
