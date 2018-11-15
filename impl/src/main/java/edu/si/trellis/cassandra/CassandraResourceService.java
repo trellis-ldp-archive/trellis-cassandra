@@ -3,6 +3,7 @@ package edu.si.trellis.cassandra;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
 import static java.time.Instant.now;
 import static java.time.temporal.ChronoUnit.DAYS;
+import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.Spliterator.DISTINCT;
 import static java.util.Spliterator.NONNULL;
 import static java.util.UUID.randomUUID;
@@ -66,7 +67,7 @@ public class CassandraResourceService extends CassandraService implements Resour
     static final String BASIC_CONTAINMENT_TABLENAME = "basiccontainment";
 
     private static final String GET_QUERY = "SELECT * FROM " + MUTABLE_TABLENAME + " WHERE identifier = ? AND "
-                    + "created <= ? LIMIT 1;";
+                    + "createdSeconds <= ? LIMIT 1 ALLOW FILTERING;";
 
     private static final String DELETE_QUERY = "DELETE FROM " + MUTABLE_TABLENAME + " WHERE identifier = ? ";
 
@@ -203,7 +204,8 @@ public class CassandraResourceService extends CassandraService implements Resour
     public CompletableFuture<SortedSet<Instant>> mementos(IRI id) {
         Where query = select("modified").from(MUTABLE_TABLENAME).where(eq("identifier", id));
         return read(query).thenApply(results -> stream(results::spliterator, NONNULL + DISTINCT, false)
-                        .map(getFieldAs("modified", Instant.class)).collect(toCollection(TreeSet::new)));
+                        .map(getFieldAs("modified", Instant.class)).map(time -> time.truncatedTo(SECONDS))
+                        .collect(toCollection(TreeSet::new)));
     }
 
     private static <T> Function<Row, T> getFieldAs(String k, Class<T> klass) {
@@ -218,6 +220,7 @@ public class CassandraResourceService extends CassandraService implements Resour
         String mimeType = binary.flatMap(BinaryMetadata::getMimeType).orElse(null);
         return execute(insertInto(MUTABLE_TABLENAME).value("interactionModel", meta.getInteractionModel())
                         .value("size", size).value("mimeType", mimeType)
+                        .value("createdSeconds", now.truncatedTo(SECONDS))
                         .value("container", meta.getContainer().orElse(null)).value("quads", data)
                         .value("binaryIdentifier", binaryIdentifier).value("created", now).value("modified", now)
                         .value("identifier", meta.getIdentifier()));
@@ -231,7 +234,7 @@ public class CassandraResourceService extends CassandraService implements Resour
     static class ResourceQueries {
 
         private static final String mutableQuadStreamQuery = "SELECT quads FROM " + MUTABLE_TABLENAME
-                        + "  WHERE identifier = ? AND created <= ? LIMIT 1 ;";
+                        + "  WHERE identifier = ? AND createdSeconds <= ? LIMIT 1 ALLOW FILTERING;";
 
         private static final String immutableQuadStreamQuery = "SELECT quads FROM " + IMMUTABLE_TABLENAME
                         + "  WHERE identifier = ? ;";

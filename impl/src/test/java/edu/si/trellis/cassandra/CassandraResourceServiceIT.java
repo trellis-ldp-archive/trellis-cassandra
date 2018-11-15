@@ -29,6 +29,9 @@ public class CassandraResourceServiceIT extends CassandraServiceIT {
         Resource resource = connection.resourceService.get(id).get();
         assertEquals(id, resource.getIdentifier());
         assertEquals(ixnModel, resource.getInteractionModel());
+        assertEquals(container,
+                        resource.getContainer().orElseThrow(() -> new AssertionError("Failed to find any container!")));
+        
         Quad firstQuad = resource.stream().findFirst().orElseThrow(() -> new AssertionError("Failed to find quad!"));
         assertEquals(quad, firstQuad);
     }
