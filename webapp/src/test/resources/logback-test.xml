@@ -33,7 +33,7 @@
 
   <logger name="com.thinkaurelius.thrift" level="ERROR"/>
 
-<!--   <logger name="org.apache.tamaya" level="INFO"/> -->
+  <logger name="org.apache.tamaya" level="ERROR"/>
 
 <!--   <logger name="com.datastax.driver.core.QueryLogger" level="TRACE"/> -->
 

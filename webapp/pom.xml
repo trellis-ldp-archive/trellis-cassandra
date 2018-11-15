@@ -20,7 +20,7 @@
 
     <thorntail.version>2.2.1.Final</thorntail.version>
 
-    <tamaya.version>0.3-incubating</tamaya.version>
+    <tamaya.version>0.4-incubating-SNAPSHOT</tamaya.version>
 
     <slf4j.version>1.7.25</slf4j.version>
 
@@ -77,12 +77,22 @@
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-api</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.apache.tamaya</groupId>
+          <artifactId>tamaya-api</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
       <groupId>org.trellisldp</groupId>
       <artifactId>trellis-http</artifactId>
       <version>${trellis.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.tamaya</groupId>
+          <artifactId>tamaya-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.trellisldp</groupId>
@@ -93,6 +103,12 @@
       <groupId>org.trellisldp</groupId>
       <artifactId>trellis-rdfa</artifactId>
       <version>${trellis.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.tamaya</groupId>
+          <artifactId>tamaya-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.trellisldp</groupId>
@@ -102,6 +118,10 @@
         <exclusion>
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.tamaya</groupId>
+          <artifactId>tamaya-api</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -114,23 +134,45 @@
       <groupId>org.trellisldp</groupId>
       <artifactId>trellis-webac</artifactId>
       <version>${trellis.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.tamaya</groupId>
+          <artifactId>tamaya-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
       <groupId>org.apache.tamaya.ext</groupId>
       <artifactId>tamaya-cdi</artifactId>
       <version>${tamaya.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.geronimo.specs</groupId>
+          <artifactId>geronimo-annotation_1.2_spec</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
-    <!-- <dependency> -->
-    <!-- <groupId>org.apache.tamaya.ext</groupId> -->
-    <!-- <artifactId>tamaya-collections</artifactId> -->
-    <!-- <version>${tamaya.version}</version> -->
-    <!-- </dependency> -->
-    <!-- <dependency> -->
-    <!-- <groupId>org.apache.tamaya.ext</groupId> -->
-    <!-- <artifactId>tamaya-json</artifactId> -->
-    <!-- <version>${tamaya.version}</version> -->
-    <!-- </dependency> -->
+    <dependency>
+      <groupId>org.apache.tamaya</groupId>
+      <artifactId>tamaya-api</artifactId>
+      <version>${tamaya.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tamaya.ext</groupId>
+      <artifactId>tamaya-json</artifactId>
+      <version>${tamaya.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.tamaya</groupId>
+          <artifactId>tamaya-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.geronimo.specs</groupId>
+          <artifactId>geronimo-annotation_1.2_spec</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
 
     <dependency>
       <groupId>org.ow2.asm</groupId>
