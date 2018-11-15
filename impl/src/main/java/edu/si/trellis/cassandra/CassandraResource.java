@@ -1,6 +1,7 @@
 package edu.si.trellis.cassandra;
 
 import static com.google.common.collect.Streams.concat;
+import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.stream.Stream.empty;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.BinaryMetadata.builder;

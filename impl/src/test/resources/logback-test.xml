@@ -31,5 +31,6 @@
   
   <logger name="org.apache.cassandra" level="WARN"/>
   <logger name="com.thinkaurelius.thrift" level="ERROR"/>
+  <logger name="edu.si" level="TRACE"/>
   <logger name="com.datastax.driver.core.QueryLogger" level="DEBUG"/>
 </configuration>

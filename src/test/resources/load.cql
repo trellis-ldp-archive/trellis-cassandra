@@ -7,7 +7,7 @@ USE trellis;
 
 CREATE TABLE IF NOT EXISTS mutabledata (identifier text, quads text, interactionModel text,
     hasAcl boolean, binaryIdentifier text, mimeType text, size bigint, container text, created timestamp,
-    modified timestamp, binaryCreated timestamp, PRIMARY KEY ((identifier), created))
+    modified timestamp, createdSeconds timestamp, PRIMARY KEY ((identifier), created))
     WITH CLUSTERING ORDER BY (created DESC);
 
 CREATE TABLE IF NOT EXISTS immutabledata (identifier text, quads text, modified timestamp,
