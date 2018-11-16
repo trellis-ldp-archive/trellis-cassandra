@@ -92,11 +92,17 @@
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>2.22.1</version>
+          <configuration>
+            <!-- https://issues.apache.org/jira/browse/SUREFIRE-1588 -->
+            <useSystemClassLoader>false</useSystemClassLoader>
+          </configuration>
         </plugin>
         <plugin>
           <artifactId>maven-failsafe-plugin</artifactId>
           <version>2.22.1</version>
           <configuration>
+            <!-- https://issues.apache.org/jira/browse/SUREFIRE-1588 -->
+            <useSystemClassLoader>false</useSystemClassLoader>
             <trimStackTrace>false</trimStackTrace>
           </configuration>
         </plugin>
@@ -213,7 +219,7 @@
     <plugins>
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
-<!--         <version>3.0.0-M2</version> -->
+        <!-- <version>3.0.0-M2</version> -->
         <executions>
           <execution>
             <id>enforce-maven</id>
