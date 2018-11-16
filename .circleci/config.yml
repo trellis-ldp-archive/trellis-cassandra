@@ -29,10 +29,11 @@ jobs:
         path: ~/junit
     - store_artifacts:
         path: ~/junit 
-    - run:
-        name: Spew test results
-        command: |
-          find . -type f -path '**/surefire-reports/*.txt' -exec sh -c "cat {} 2>&1" \;  
-          find . -type f -path '**/failsafe-report/*.txt' -exec sh -c "cat {} 2>&1" \;
-        when: always
     - run: ls ~/junit | xargs cat
+#    - run:
+#        name: Spew test results
+#        command: |
+#          find . -type f -path '**/surefire-reports/*.txt' -exec sh -c "cat {} 2>&1" \;  
+#          find . -type f -path '**/failsafe-report/*.txt' -exec sh -c "cat {} 2>&1" \;
+#        when: always
+
