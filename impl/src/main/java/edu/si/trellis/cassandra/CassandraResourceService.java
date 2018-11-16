@@ -34,8 +34,6 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 
 import javax.annotation.PostConstruct;
@@ -43,7 +41,6 @@ import javax.inject.Inject;
 
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
-import org.apache.commons.rdf.api.RDF;
 import org.slf4j.Logger;
 import org.trellisldp.api.*;
 import org.trellisldp.api.Metadata;
@@ -93,19 +90,18 @@ public class CassandraResourceService extends CassandraService implements Resour
      */
     @PostConstruct
     void initializeQueriesAndRoot() {
-        log.info("Preparing retrieval query: {}", GET_QUERY);
+        log.debug("Preparing retrieval query: {}", GET_QUERY);
         this.getStatement = session().prepare(GET_QUERY);
-        log.info("Preparing deletion query: {}", DELETE_QUERY);
+        log.debug("Preparing deletion query: {}", DELETE_QUERY);
         this.deleteStatement = session().prepare(DELETE_QUERY);
-        log.info("Preparing immmutable data insert query: {}", IMMUTABLE_INSERT_QUERY);
+        log.debug("Preparing immmutable data insert query: {}", IMMUTABLE_INSERT_QUERY);
         this.immutableInsertStatement = session().prepare(IMMUTABLE_INSERT_QUERY);
 
-        RDF rdf = TrellisUtils.getInstance();
-        IRI rootIri = rdf.createIRI(TRELLIS_DATA_PREFIX);
+        IRI rootIri = TrellisUtils.getInstance().createIRI(TRELLIS_DATA_PREFIX);
         Metadata rootResource = builder(rootIri).interactionModel(BasicContainer).build();
         try {
-            create(rootResource, rdf.createDataset()).get(3, TimeUnit.MINUTES);
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            create(rootResource, null).get();
+        } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeTrellisException(e);
         }
     }
@@ -213,17 +209,29 @@ public class CassandraResourceService extends CassandraService implements Resour
     }
 
     private CompletableFuture<Void> write(Metadata meta, Dataset data) {
+        IRI id = meta.getIdentifier();
+        IRI ixnModel = meta.getInteractionModel();
         Instant now = now();
+
         Optional<BinaryMetadata> binary = meta.getBinary();
         IRI binaryIdentifier = binary.map(BinaryMetadata::getIdentifier).orElse(null);
         Long size = binary.flatMap(BinaryMetadata::getSize).orElse(null);
         String mimeType = binary.flatMap(BinaryMetadata::getMimeType).orElse(null);
-        return execute(insertInto(MUTABLE_TABLENAME).value("interactionModel", meta.getInteractionModel())
-                        .value("size", size).value("mimeType", mimeType)
+        IRI container = meta.getContainer().orElse(null);
+
+        //@formatter:off
+        return execute(insertInto(MUTABLE_TABLENAME)
+                        .value("interactionModel", ixnModel)
+                        .value("size", size)
+                        .value("mimeType", mimeType)
                         .value("createdSeconds", now.truncatedTo(SECONDS))
-                        .value("container", meta.getContainer().orElse(null)).value("quads", data)
-                        .value("binaryIdentifier", binaryIdentifier).value("created", now).value("modified", now)
-                        .value("identifier", meta.getIdentifier()));
+                        .value("container", container)
+                        .value("quads", data)
+                        .value("modified", now)
+                        .value("binaryIdentifier", binaryIdentifier)
+                        .value("created", now)
+                        .value("identifier", id));
+        //@formatter:on
     }
 
     @Override

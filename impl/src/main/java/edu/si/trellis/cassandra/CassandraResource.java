@@ -1,8 +1,6 @@
 package edu.si.trellis.cassandra;
 
-import static com.google.common.collect.Streams.concat;
-import static java.time.temporal.ChronoUnit.SECONDS;
-import static java.util.stream.Stream.empty;
+import static java.util.stream.Stream.concat;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.BinaryMetadata.builder;
 import static org.trellisldp.api.TrellisUtils.toQuad;
@@ -41,7 +39,7 @@ class CassandraResource implements Resource {
 
     private final BinaryMetadata binary;
 
-    public CassandraResource(IRI id, IRI ixnModel, boolean hasAcl, IRI binaryIdentifier, String mimeType, Long size,
+    public CassandraResource(IRI id, IRI ixnModel, boolean hasAcl, IRI binaryIdentifier, String mimeType, long size,
                     IRI container, Instant modified, Instant created, ResourceQueries queries) {
         this.identifier = id;
         this.interactionModel = ixnModel;
@@ -101,19 +99,18 @@ class CassandraResource implements Resource {
     }
 
     @Override
-    public Stream<? extends Quad> stream() {
+    public Stream<Quad> stream() {
         log.trace("Retrieving quad stream for resource {}", getIdentifier());
-        Stream<Quad> mutableQuads = quadStreamFromQuery(
-                        queries.mutableQuadStreamStatement().bind(getIdentifier(), getCreated()));
+        BoundStatement mutableQuadStreamQuery = queries.mutableQuadStreamStatement().bind(getIdentifier(), getCreated());
+        Stream<Quad> mutableQuads = quadStreamFromQuery(mutableQuadStreamQuery);
         Stream<Quad> immutableQuads = quadStreamFromQuery(queries.immutableQuadStreamStatement().bind(getIdentifier()));
-
-        Stream<Quad> containmentQuadsInContainment = isContainer
-                        ? basicContainmentTriples().map(toQuad(PreferContainment))
-                        : empty();
-        Stream<Quad> containmentQuadsInMembership = isContainer
-                        ? basicContainmentTriples().map(toQuad(PreferMembership))
-                        : empty();
-        return concat(mutableQuads, containmentQuadsInContainment, containmentQuadsInMembership, immutableQuads);
+        Stream<Quad> quads = concat(mutableQuads, immutableQuads);
+        if (isContainer) {
+            Stream<Quad> containmentQuadsInContainment = basicContainmentTriples().map(toQuad(PreferContainment));
+            Stream<Quad> containmentQuadsInMembership = basicContainmentTriples().map(toQuad(PreferMembership));
+            quads = concat(quads, concat(containmentQuadsInContainment, containmentQuadsInMembership));
+        }
+        return quads;
     }
 
     private Stream<Triple> basicContainmentTriples() {
