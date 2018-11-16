@@ -3,7 +3,7 @@ jobs:
   build:
     docker:
     - image: circleci/openjdk:8-jdk
-    - image: circleci/cassandra:3.10
+    - image: docker-library/cassandra:3.11
     working_directory: ~/repo
     environment:
       MAVEN_OPTS: -Xmx3200m
