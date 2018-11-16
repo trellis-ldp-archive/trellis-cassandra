@@ -18,7 +18,7 @@ jobs:
         paths:
         - ~/.m2
         key: v1-dependencies-{{ checksum "pom.xml" }}
-    - run: mvn install
+    - run: mvn -X install
     - run:
         name: Save test results
         command: |
@@ -30,10 +30,5 @@ jobs:
     - store_artifacts:
         path: ~/junit 
     - run: ls ~/junit | xargs cat
-#    - run:
-#        name: Spew test results
-#        command: |
-#          find . -type f -path '**/surefire-reports/*.txt' -exec sh -c "cat {} 2>&1" \;  
-#          find . -type f -path '**/failsafe-report/*.txt' -exec sh -c "cat {} 2>&1" \;
-#        when: always
+
 
