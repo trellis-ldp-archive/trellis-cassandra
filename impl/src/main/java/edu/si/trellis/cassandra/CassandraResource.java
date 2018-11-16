@@ -22,6 +22,7 @@ import org.apache.commons.rdf.api.*;
 import org.slf4j.Logger;
 import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.Resource;
+import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.TrellisUtils;
 import org.trellisldp.vocabulary.LDP;
 
@@ -80,7 +81,9 @@ class CassandraResource implements Resource {
     }
 
     /**
-     * Unlike the value of {@link #getModified()}, this value is immutable after a resource is persisted.
+     * Unlike the value of {@link #getModified()}, this value is immutable after a resource record is persisted. The
+     * value of {@link #getModified()}, on the other hand, can change for containers if a child is added or removed, via
+     * {@link ResourceService#touch}.
      * 
      * @return the created date for this resource
      */
@@ -101,7 +104,8 @@ class CassandraResource implements Resource {
     @Override
     public Stream<Quad> stream() {
         log.trace("Retrieving quad stream for resource {}", getIdentifier());
-        BoundStatement mutableQuadStreamQuery = queries.mutableQuadStreamStatement().bind(getIdentifier(), getCreated());
+        BoundStatement mutableQuadStreamQuery = queries.mutableQuadStreamStatement().bind(getIdentifier(),
+                        getCreated());
         Stream<Quad> mutableQuads = quadStreamFromQuery(mutableQuadStreamQuery);
         Stream<Quad> immutableQuads = quadStreamFromQuery(queries.immutableQuadStreamStatement().bind(getIdentifier()));
         Stream<Quad> quads = concat(mutableQuads, immutableQuads);

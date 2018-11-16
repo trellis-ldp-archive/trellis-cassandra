@@ -122,7 +122,7 @@ public class CassandraResourceService extends CassandraService implements Resour
             log.debug("Found binaryIdentifier = {} for resource {}", binaryId, id);
             String mimeType = metadata.getString("mimetype");
             log.debug("Found mimeType = {} for resource {}", mimeType, id);
-            Long size = metadata.getLong("size");
+            long size = metadata.getLong("size");
             log.debug("Found size = {} for resource {}", size, id);
             IRI container = metadata.get("container", IRI.class);
             log.debug("Found container = {} for resource {}", container, id);
