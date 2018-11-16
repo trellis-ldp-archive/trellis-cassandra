@@ -2,19 +2,13 @@ package edu.si.trellis.cassandra;
 
 import static com.datastax.driver.core.ConsistencyLevel.LOCAL_ONE;
 import static com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM;
-import static java.lang.Math.floorDiv;
 import static java.util.Base64.getEncoder;
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.StreamSupport.stream;
 import static org.apache.commons.codec.digest.DigestUtils.getDigest;
 import static org.apache.commons.codec.digest.DigestUtils.updateDigest;
-import static org.apache.commons.codec.digest.MessageDigestAlgorithms.MD2;
-import static org.apache.commons.codec.digest.MessageDigestAlgorithms.MD5;
-import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_1;
-import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_256;
-import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_384;
-import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_512;
+import static org.apache.commons.codec.digest.MessageDigestAlgorithms.*;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import com.datastax.driver.core.PreparedStatement;
@@ -31,11 +25,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
-import javax.inject.Provider;
 
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.rdf.api.IRI;
@@ -98,10 +91,10 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
     public CompletableFuture<InputStream> getContent(IRI identifier, Integer from, Integer to) {
         requireNonNull(from, "Byte range component 'from' may not be null!");
         requireNonNull(to, "Byte range component 'to' may not be null!");
-        Long firstChunk = floorDiv((long) from, maxChunkLength);
-        Long lastChunk = floorDiv((long) to, maxChunkLength);
-        long chunkStreamStart = from % maxChunkLength;
-        long rangeSize = to - from + 1; // +1 because range is inclusive
+        int firstChunk = from / maxChunkLength;
+        int lastChunk = to / maxChunkLength;
+        int chunkStreamStart = from % maxChunkLength;
+        int rangeSize = to - from + 1; // +1 because range is inclusive
         Statement boundStatement = readRangeStatement.bind(identifier.getIRIString(), firstChunk, lastChunk)
                         .setConsistencyLevel(LOCAL_ONE);
         return retrieve(boundStatement).thenApply(in -> { // skip to fulfill lower end of range
@@ -123,7 +116,7 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
     private CompletableFuture<InputStream> retrieve(Statement boundStatement) {
         ResultSetFuture results = session().executeAsync(boundStatement);
         return translate(results).thenApply(resultSet -> stream(resultSet.spliterator(), false)
-                        .peek(r -> log.debug("Retrieving chunk: {}", r.getLong("chunk_index")))
+                        .peek(r -> log.debug("Retrieving chunk: {}", r.getInt("chunk_index")))
                         .map(r -> r.get("chunk", InputStream.class)).reduce(SequenceInputStream::new).get()); // chunks
                                                                                                               // now in
                                                                                                               // one
@@ -133,11 +126,11 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
 
     @Override
     public CompletableFuture<Void> setContent(IRI iri, InputStream stream, Map<String, String> metadata /* ignored */) {
-        return setChunk(iri, stream, new AtomicLong()).thenAccept(x -> {});
+        return setChunk(iri, stream, new AtomicInteger()).thenAccept(x -> {});
     }
 
     @SuppressWarnings("resource")
-    private CompletableFuture<Long> setChunk(IRI iri, InputStream stream, AtomicLong chunkIndex) {
+    private CompletableFuture<Long> setChunk(IRI iri, InputStream stream, AtomicInteger chunkIndex) {
         try (CountingInputStream countingChunk = new CountingInputStream(new BoundedInputStream(stream, maxChunkLength))) {
             @SuppressWarnings("cast")
             // cast to match this object with InputStreamCodec
