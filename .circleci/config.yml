@@ -21,6 +21,6 @@ jobs:
     - run: mvn install
     - run:
         name: Spew test results
-        command: find . -type f -path '**/surefire-reports/*.txt' -exec cat {} \; ;  
-                 find . -type f -path '**/failsafe-report/*.txt' -exec cat {} \;
+        command: find . -type f -path '**/surefire-reports/*.txt' -exec sh -c "cat {} 2>&1" \; ;  
+                 find . -type f -path '**/failsafe-report/*.txt' -exec sh -c "cat {} 2>&1" \;
         when: always
