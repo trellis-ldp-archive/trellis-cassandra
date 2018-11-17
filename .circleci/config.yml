@@ -7,9 +7,10 @@ jobs:
         MAVEN_OPTS: -Xmx2048m
     - image: circleci/cassandra:3.10
       environment:
-        JAVA_OPTS: -Xmx3072m
-        JVM_OPTS: -Xmx3072m
+#        JAVA_OPTS: -Xmx3072m
+#        JVM_OPTS: -Xmx3072m
         MAX_HEAP_SIZE: 3072M
+        HEAP_NEWSIZE: 512M
     working_directory: ~/trellis-cassandra
 
     steps:
