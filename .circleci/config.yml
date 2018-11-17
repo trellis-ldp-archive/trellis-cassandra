@@ -31,7 +31,7 @@ jobs:
         paths:
         - ~/.m2
         key: v1-dependencies-{{ checksum "pom.xml" }}
-    - run: mvn -Dcassandra.skip -Dcassandra.nativeTransportPort=9042 install
+    - run: mvn -X -Dcassandra.skip -Dcassandra.nativeTransportPort=9042 install
     - run:
         name: Save test results
         command: |
