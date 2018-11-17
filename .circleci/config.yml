@@ -12,7 +12,9 @@ jobs:
 
     steps:
     - checkout
-    - run: sudo apt-get install cassandra-tools
+    - run: |
+        sudo echo "deb http://www.apache.org/dist/cassandra/debian 311x main" >> /etc/apt/sources.list  
+        sudo apt-get install cassandra-tools
     - run:
         name: Load C* schema
         command: |
