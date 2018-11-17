@@ -7,7 +7,7 @@ jobs:
         MAVEN_OPTS: -Xmx2048m
     - image: cassandra:3.11
       environment:
-        JAVA_OPTS: -Xmx2048m
+        JAVA_OPTS: -Xmx3072m
     working_directory: ~/trellis-cassandra
 
     steps:
