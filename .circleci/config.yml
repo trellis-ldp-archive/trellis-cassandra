@@ -3,11 +3,11 @@ jobs:
   build:
     docker:
     - image: circleci/openjdk:8-jdk
-    - image: cassandra:3.11
       environment:
         MAVEN_OPTS: -Xmx2048m
-        MAX_HEAP_SIZE: 2048m
-        HEAP_NEWSIZE: 256m
+    - image: cassandra:3.11
+      environment:
+        JAVA_OPTS: -Xmx2048m
     working_directory: ~/trellis-cassandra
 
     steps:
