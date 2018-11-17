@@ -8,18 +8,13 @@ jobs:
         MAVEN_OPTS: -Xmx2048m
         MAX_HEAP_SIZE: 2048m
         HEAP_NEWSIZE: 256m
-    working_directory: ~/trellis
+    working_directory: ~/$CIRCLE_PROJECT_REPONAME
 
     steps:
     - checkout
     - run:
         name: Load C* schema
-        command: |
-          pwd
-          ls
-          pushd trellis-cassandra
-          sh src/test/resources/load.sh
-          popd
+        command: sh src/test/resources/load.sh
     - restore_cache:
         keys:
         - v1-dependencies-{{ checksum "pom.xml" }}
