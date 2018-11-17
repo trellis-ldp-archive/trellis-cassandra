@@ -17,7 +17,8 @@
     <cassandra.contactAddress>localhost</cassandra.contactAddress>
 
     <jandex.version>2.0.5.Final</jandex.version>
-    <!-- <tamaya.version>0.4-incubating-SNAPSHOT</tamaya.version> -->
+
+    <thorntail.version>2.2.1.Final</thorntail.version>
 
     <tamaya.version>0.3-incubating</tamaya.version>
 
@@ -255,6 +256,43 @@
       <plugin>
         <groupId>io.thorntail</groupId>
         <artifactId>thorntail-maven-plugin</artifactId>
+        <version>${thorntail.version}</version>
+        <configuration>
+          <fractions>
+            <fraction>!logging</fraction>
+          </fractions>
+          <fractionDetectMode>force</fractionDetectMode>
+          <useUberJar>true</useUberJar>
+          <properties>
+            <org.jboss.logging.provider>slf4j</org.jboss.logging.provider>
+            <cassandra.contactPort>${cassandra.nativeTransportPort}</cassandra.contactPort>
+            <cassandra.contactAddress>${cassandra.contactAddress}</cassandra.contactAddress>
+            <swarm.http.port>${trellis.port}</swarm.http.port>
+            <logback.configurationFile>${project.build.directory}/test-classes/logback-test.xml</logback.configurationFile>
+          </properties>
+        </configuration>
+        <executions>
+          <execution>
+            <id>package</id>
+            <goals>
+              <goal>package</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>start</id>
+            <phase>pre-integration-test</phase>
+            <goals>
+              <goal>start</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>stop</id>
+            <phase>post-integration-test</phase>
+            <goals>
+              <goal>stop</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <artifactId>maven-war-plugin</artifactId>

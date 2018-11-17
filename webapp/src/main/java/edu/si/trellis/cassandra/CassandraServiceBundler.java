@@ -1,10 +1,15 @@
 package edu.si.trellis.cassandra;
 
+import static java.lang.Integer.parseInt;
+
+import edu.si.trellis.cassandra.CassandraBinaryService.MaxChunkSize;
+
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
+import org.apache.tamaya.inject.api.Config;
 import org.trellisldp.api.*;
 import org.trellisldp.io.JenaIOService;
 
@@ -13,7 +18,7 @@ import org.trellisldp.io.JenaIOService;
  *
  */
 @ApplicationScoped
-public class InjectedServiceBundler implements ServiceBundler {
+public class CassandraServiceBundler implements ServiceBundler {
 
     @Inject
     private AuditService auditService;

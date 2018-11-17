@@ -97,6 +97,9 @@
               <cassandra.contactPort>${cassandra.nativeTransportPort}</cassandra.contactPort>
               <cassandra.contactNode>${cassandra.contactNode}</cassandra.contactNode>
               <java.net.preferIPv4Stack>true</java.net.preferIPv4Stack>
+              <cassandra.maxChunkSize>2000000</cassandra.maxChunkSize>
+              <org.jboss.logging.provider>slf4j</org.jboss.logging.provider>
+              <logback.configurationFile>${project.build.directory}/test-classes/logback-test.xml</logback.configurationFile>
             </systemProperties>
           </container>
           <configuration>

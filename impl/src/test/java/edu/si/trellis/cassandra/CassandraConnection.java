@@ -12,6 +12,8 @@ import com.datastax.driver.core.QueryLogger;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.extras.codecs.jdk8.InstantCodec;
 
+import edu.si.trellis.cassandra.CassandraBinaryService.MaxChunkSize;
+
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 
@@ -51,7 +53,7 @@ class CassandraConnection extends ExternalResource {
         session = cluster.connect("trellis");
         resourceService = new CassandraResourceService(session);
         resourceService.initializeQueriesAndRoot();
-        binaryService = new CassandraBinaryService(null, session, 1 * 1024 * 1024);
+        binaryService = new CassandraBinaryService(null, session, MaxChunkSize.DEFAULT_MAX_CHUNK_SIZE);
         binaryService.initializeStatements();
         if (cleanBefore) cleanOut();
     }

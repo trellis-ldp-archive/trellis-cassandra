@@ -2,6 +2,7 @@ package edu.si.trellis.cassandra;
 
 import static com.datastax.driver.core.ConsistencyLevel.LOCAL_ONE;
 import static com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static java.util.Base64.getEncoder;
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -20,6 +21,8 @@ import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
 import java.security.MessageDigest;
 import java.util.Map;
 import java.util.Set;
@@ -29,6 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
+import javax.inject.Qualifier;
 
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.rdf.api.IRI;
@@ -43,8 +47,6 @@ import org.trellisldp.api.IdentifierService;
 public class CassandraBinaryService extends CassandraService implements BinaryService {
 
     private static final Logger log = getLogger(CassandraBinaryService.class);
-
-    private static final int DEFAULT_MAX_CHUNK_LENGTH = 1 * 1024 * 1024;
 
     private static final long DONE = -1;
 
@@ -68,15 +70,32 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
 
     private PreparedStatement deleteStatement, readRangeStatement, readStatement, insertStatement;
 
-    public CassandraBinaryService(IdentifierService idService, Session session, int chunkLength) {
+    /**
+     * The maximum size of any chunk in this service.
+     */
+    @Documented
+    @Retention(RUNTIME)
+    @Qualifier
+    public static @interface MaxChunkSize {
+
+        /**
+         * Use 1MB for default max chunk size.
+         */
+        public static final int DEFAULT_MAX_CHUNK_SIZE = 1024 * 1024;
+
+    }
+
+    /**
+     * @param idService {@link IdentifierService} to use for binaries
+     * @param session {@link Session} to use to connect to Cassandra
+     * @param chunkLength the maximum size of any chunk in this service
+     */
+    @Inject
+    public CassandraBinaryService(IdentifierService idService, Session session, @MaxChunkSize int chunkLength) {
         super(session);
         this.idService = idService;
         this.maxChunkLength = chunkLength;
-    }
-
-    @Inject
-    public CassandraBinaryService(IdentifierService idService, Session session) {
-        this(idService, session, DEFAULT_MAX_CHUNK_LENGTH);
+        log.info("Using chunk length: {}", chunkLength);
     }
 
     @PostConstruct
@@ -131,10 +150,11 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
 
     @SuppressWarnings("resource")
     private CompletableFuture<Long> setChunk(IRI iri, InputStream stream, AtomicInteger chunkIndex) {
-        try (CountingInputStream countingChunk = new CountingInputStream(new BoundedInputStream(stream, maxChunkLength))) {
+        try (CountingInputStream countingChunk = new CountingInputStream(
+                        new BoundedInputStream(stream, maxChunkLength))) {
             @SuppressWarnings("cast")
             // cast to match this object with InputStreamCodec
-            InputStream chunk = (InputStream)countingChunk;
+            InputStream chunk = (InputStream) countingChunk;
             Statement boundStatement = insertStatement.bind(iri, chunkIndex.getAndIncrement(), chunk)
                             .setConsistencyLevel(LOCAL_QUORUM);
             return translate(session().executeAsync(boundStatement)).thenApply(r -> countingChunk.getByteCount())

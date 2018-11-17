@@ -13,6 +13,8 @@ import com.datastax.driver.core.QueryLogger;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.extras.codecs.jdk8.InstantCodec;
 
+import edu.si.trellis.cassandra.CassandraBinaryService.MaxChunkSize;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -30,11 +32,26 @@ import org.apache.tamaya.inject.api.Config;
 import org.slf4j.Logger;
 
 /**
- * Provides a Cassandra {@link Session}.
+ * Provides a Cassandra {@link Session} and other context for operating Cassandra-based services.
  *
  */
 @ApplicationScoped
-public class CassandraSession {
+public class CassandraContext {
+
+    private static final Logger log = getLogger(CassandraContext.class);
+
+    @Inject
+    @Config(value = { "cassandra.maxChunkSize", "CASSANDRA_MAX_CHUNK_SIZE" }, defaultValue = "1048576")
+    private String maxChunkSize;
+
+    /**
+     * @return the maximum size of chunk for a {@link CassandraBinaryService}
+     */
+    @Produces
+    @MaxChunkSize
+    public int maxChunkSize() {
+        return parseInt(maxChunkSize);
+    }
 
     private Cluster cluster;
 
@@ -48,8 +65,6 @@ public class CassandraSession {
     @Config(value = { "cassandra.contactAddress", "CASSANDRA_CONTACT_ADDRESS" }, defaultValue = "localhost")
     private String contactAddress;
     private final CountDownLatch sessionInitialized = new CountDownLatch(1);
-
-    private static final Logger log = getLogger(CassandraSession.class);
 
     /**
      * Poll timeout in ms for waiting for Cassandra connection.
@@ -65,7 +80,8 @@ public class CassandraSession {
         this.cluster = Cluster.builder().withoutJMXReporting().withoutMetrics().addContactPoint(contactAddress)
                         .withPort(parseInt(contactPort)).build();
         if (log.isDebugEnabled()) cluster.register(QueryLogger.builder().build());
-        cluster.getConfiguration().getCodecRegistry().register(inputStreamCodec ,iriCodec, datasetCodec, bigint(), InstantCodec.instance);
+        cluster.getConfiguration().getCodecRegistry().register(inputStreamCodec, iriCodec, datasetCodec, bigint(),
+                        InstantCodec.instance);
         Timer connector = new Timer("Cassandra Connection Maker");
         TimerTask task = new TimerTask() {
             @Override

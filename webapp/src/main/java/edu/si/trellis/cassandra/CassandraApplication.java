@@ -28,7 +28,7 @@ public class CassandraApplication extends Application {
     private static final Logger log = getLogger(CassandraApplication.class);
 
     @Inject
-    private InjectedServiceBundler services;
+    private CassandraServiceBundler services;
 
     @Override
     public Set<Object> getSingletons() {
