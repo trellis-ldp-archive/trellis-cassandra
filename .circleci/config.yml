@@ -18,7 +18,7 @@ jobs:
           sudo sh -c "echo 'deb http://www.apache.org/dist/cassandra/debian 311x main' >> /etc/apt/sources.list"  
           sudo apt-get update
           curl https://www.apache.org/dist/cassandra/KEYS | sudo apt-key add -
-          sudo apt-get install cassandra-tools
+          sudo apt-get --allow-unauthenticated install cassandra-tools
     - run:
         name: Load Cassandra schema
         command: sh src/test/resources/load.sh
