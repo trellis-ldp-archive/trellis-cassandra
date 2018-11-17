@@ -27,6 +27,7 @@ jobs:
         command: |
           sudo apt-get remove maven
           sudo apt-get install maven=3.3.9-4
+          export PATH=/usr/bin:$PATH
           mvn -v
     - restore_cache:
         keys:
