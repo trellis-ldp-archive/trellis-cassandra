@@ -15,7 +15,9 @@ jobs:
     - run:
         name: Load C* schema
         command: |
-          pushd trellis/trellis-cassandra
+          pwd
+          ls
+          pushd trellis-cassandra
           sh src/test/resources/load.sh
           popd
     - restore_cache:
