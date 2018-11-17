@@ -8,14 +8,14 @@ jobs:
         MAVEN_OPTS: -Xmx2048m
         MAX_HEAP_SIZE: 2048m
         HEAP_NEWSIZE: 256m
-    working_directory: ~
+    working_directory: ~/trellis
 
     steps:
     - checkout
     - run:
         name: Load C* schema
         command: |
-          pushd trellis-cassandra
+          pushd trellis/trellis-cassandra
           sh src/test/resources/load.sh
           popd
     - restore_cache:
