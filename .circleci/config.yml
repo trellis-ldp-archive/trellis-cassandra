@@ -12,17 +12,16 @@ jobs:
 
     steps:
     - checkout
-    - run: |
-        sudo sh -c "echo 'deb http://www.apache.org/dist/cassandra/debian 311x main' >> /etc/apt/sources.list"  
-        sudo apt-get update
-        sudo apt-get install cassandra-tools
-    - run:
-        name: Load C* schema
+    - run: 
+        name: Install Cassandra for nodetool and cqlsh
         command: |
-          pwd
-          ls 
-          ls src/test/resources/load.sh
-          sh src/test/resources/load.sh
+          sudo sh -c "echo 'deb http://www.apache.org/dist/cassandra/debian 311x main' >> /etc/apt/sources.list"  
+          sudo apt-get update
+          curl https://www.apache.org/dist/cassandra/KEYS | sudo apt-key add -
+          sudo apt-get install cassandra-tools
+    - run:
+        name: Load Cassandra schema
+        command: sh src/test/resources/load.sh
     - restore_cache:
         keys:
         - v1-dependencies-{{ checksum "pom.xml" }}
@@ -43,6 +42,8 @@ jobs:
         path: ~/junit
     - store_artifacts:
         path: ~/junit 
-    - run: ls ~/junit | xargs cat
+    - run:
+        name: Spool test results 
+        command: ls ~/junit | xargs cat
 
 
