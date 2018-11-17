@@ -25,7 +25,7 @@ jobs:
     - run: 
         name: Install Maven < 3.6.0 (https://issues.jboss.org/browse/THORN-2229)
         command: |
-          sudo apt-get uninstall maven
+          sudo apt-get remove maven
           sudo apt-get install maven=3.3.9-4
     - restore_cache:
         keys:
