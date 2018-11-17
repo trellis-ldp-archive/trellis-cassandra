@@ -5,7 +5,7 @@ jobs:
     - image: circleci/openjdk:8-jdk
       environment:
         MAVEN_OPTS: -Xmx2048m
-    - image: cassandra:3.11
+    - image: circleci/cassandra:3.10
       environment:
         JAVA_OPTS: -Xmx3072m
     working_directory: ~/trellis-cassandra
