@@ -14,7 +14,11 @@ jobs:
     - checkout
     - run:
         name: Load C* schema
-        command: sh src/test/resources/load.sh
+        command: |
+          pwd
+          ls 
+          ls src/test/resources/load.sh
+          sh src/test/resources/load.sh
     - restore_cache:
         keys:
         - v1-dependencies-{{ checksum "pom.xml" }}
