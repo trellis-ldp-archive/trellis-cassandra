@@ -219,7 +219,7 @@
     <plugins>
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <!-- <version>3.0.0-M2</version> -->
+        <version>1.4.1</version>
         <executions>
           <execution>
             <id>enforce-maven</id>
