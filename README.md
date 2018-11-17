@@ -1,6 +1,8 @@
 # trellis-cassandra
 The delicious vanilla of [Trellis LDP](https://github.com/trellis-ldp/trellis) laced with tasty chocolate [Apache Cassandra](https://cassandra.apache.org/) ribbons.
 
+[![CircleCI](https://circleci.com/gh/ajs6f/trellis-cassandra/tree/master.svg?style=svg)](https://circleci.com/gh/ajs6f/trellis-cassandra/tree/master)
+
 Use
 ```
 mvn clean install
