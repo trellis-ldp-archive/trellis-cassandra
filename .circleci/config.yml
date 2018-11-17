@@ -12,6 +12,12 @@ jobs:
 
     steps:
     - checkout
+    - run:
+        name: Load C* schema
+        command: |
+          pushd trellis-cassandra
+          sh src/test/resources/load.sh
+          popd
     - restore_cache:
         keys:
         - v1-dependencies-{{ checksum "pom.xml" }}
