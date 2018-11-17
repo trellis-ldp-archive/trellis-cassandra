@@ -12,7 +12,7 @@ jobs:
 
     steps:
     - checkout
-    - run: apt-get cassandra-tools
+    - run: apt-get install cassandra-tools
     - run:
         name: Load C* schema
         command: |
