@@ -18,11 +18,6 @@ import org.trellisldp.test.ResourceServiceTests;
 
 public class CassandraResourceServiceIT extends CassandraServiceIT implements ResourceServiceTests {
 
-    @Override
-    public void testDeleteResource() {
-        // TODO https://github.com/trellis-ldp/trellis/issues/303
-    }
-
     @Test
     public void testCreateAndGet() throws InterruptedException, ExecutionException {
         IRI id = createIRI("http://example.com/id/foo");

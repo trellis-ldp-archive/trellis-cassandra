@@ -77,7 +77,7 @@ public class DatasetCodecTest {
     }
 
     @Test
-    public void edgeCase1() throws Exception {
+    public void edgeCase1() {
         assertEquals(0, datasetCodec.parse(null).size());
     }
 
