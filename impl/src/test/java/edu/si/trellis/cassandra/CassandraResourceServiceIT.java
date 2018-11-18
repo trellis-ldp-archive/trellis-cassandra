@@ -13,8 +13,15 @@ import org.apache.commons.rdf.api.Quad;
 import org.junit.jupiter.api.Test;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.Resource;
+import org.trellisldp.api.ResourceService;
+import org.trellisldp.test.ResourceServiceTests;
 
-public class CassandraResourceServiceIT extends CassandraServiceIT {
+public class CassandraResourceServiceIT extends CassandraServiceIT implements ResourceServiceTests {
+
+    @Override
+    public void testDeleteResource() {
+        // TODO https://github.com/trellis-ldp/trellis/issues/303
+    }
 
     @Test
     public void testCreateAndGet() throws InterruptedException, ExecutionException {
@@ -34,12 +41,17 @@ public class CassandraResourceServiceIT extends CassandraServiceIT {
         assertEquals(ixnModel, resource.getInteractionModel());
         assertEquals(container,
                         resource.getContainer().orElseThrow(() -> new AssertionError("Failed to find any container!")));
-        
+
         Quad firstQuad = resource.stream().findFirst().orElseThrow(() -> new AssertionError("Failed to find quad!"));
         assertEquals(quad, firstQuad);
     }
 
     private IRI createIRI(String iri) {
         return rdfFactory.createIRI(iri);
+    }
+
+    @Override
+    public ResourceService getResourceService() {
+        return connection.resourceService;
     }
 }
