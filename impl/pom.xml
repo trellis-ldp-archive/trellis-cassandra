@@ -136,9 +136,9 @@
 
     <!-- test gear -->
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.12</version>
+      <groupId>org.trellisldp</groupId>
+      <artifactId>trellis-test</artifactId>
+      <version>${trellis.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>

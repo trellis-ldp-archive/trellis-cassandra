@@ -1,5 +1,7 @@
 package edu.si.trellis.cassandra;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.trellisldp.api.Metadata.builder;
 
 import java.util.concurrent.ExecutionException;
@@ -8,7 +10,7 @@ import java.util.concurrent.Future;
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.Resource;
 
@@ -19,6 +21,7 @@ public class CassandraResourceServiceIT extends CassandraServiceIT {
         IRI id = createIRI("http://example.com/id/foo");
         IRI container = createIRI("http://example.com/id");
         IRI ixnModel = createIRI("http://example.com/ixnModel");
+        @SuppressWarnings("resource")
         Dataset quads = rdfFactory.createDataset();
         Quad quad = rdfFactory.createQuad(id, ixnModel, id, ixnModel);
         quads.add(quad);

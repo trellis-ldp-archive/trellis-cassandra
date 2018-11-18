@@ -2,6 +2,9 @@ package edu.si.trellis.cassandra;
 
 import static edu.si.trellis.cassandra.DatasetCodec.datasetCodec;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.datastax.driver.core.exceptions.InvalidTypeException;
 
@@ -18,16 +21,15 @@ import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.RDFTerm;
 import org.apache.commons.rdf.simple.SimpleRDF;
 import org.apache.jena.riot.RiotException;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class DatasetCodecTest extends Assert {
+public class DatasetCodecTest {
 
     private static final RDF rdf = new SimpleRDF();
 
-    @Test(expected = InvalidTypeException.class)
+    @Test
     public void badParse() {
-        datasetCodec.parse("SGDF   &&$$$dfshgou;sdfhgoudfhogh");
+        assertThrows(InvalidTypeException.class, () -> datasetCodec.parse("SGDF   &&$$$dfshgou;sdfhgoudfhogh"));
     }
 
     @Test
@@ -108,9 +110,9 @@ public class DatasetCodecTest extends Assert {
         assertEquals(0, datasetCodec.deserialize(null, null).size());
     }
 
-    @Test(expected=InvalidTypeException.class)
+    @Test
     public void badData() {
-        datasetCodec.serialize(new BadDataset(), null);
+        assertThrows(InvalidTypeException.class, () -> datasetCodec.serialize(new BadDataset(), null));
     }
 
     private Quad quad(BlankNodeOrIRI g, BlankNodeOrIRI s, IRI p, RDFTerm o) {
@@ -120,52 +122,67 @@ public class DatasetCodecTest extends Assert {
     private IRI iri(String v) {
         return rdf.createIRI(v);
     }
-    
+
     /**
      * {@link #stream()} throws a {@code RiotException} for testing.
      *
      */
     private static final class BadDataset implements Dataset {
         @Override
-        public void add(Quad quad) { }
+        public void add(Quad quad) {}
 
         @Override
-        public void add(BlankNodeOrIRI graphName, BlankNodeOrIRI subject, IRI predicate, RDFTerm object) { }
+        public void add(BlankNodeOrIRI graphName, BlankNodeOrIRI subject, IRI predicate, RDFTerm object) {}
 
         @Override
-        public boolean contains(Quad quad) { return false; }
+        public boolean contains(Quad quad) {
+            return false;
+        }
 
         @Override
         public boolean contains(Optional<BlankNodeOrIRI> graphName, BlankNodeOrIRI subject, IRI predicate,
-                        RDFTerm object) { return false; }
+                        RDFTerm object) {
+            return false;
+        }
 
         @Override
-        public Graph getGraph() { return null; }
+        public Graph getGraph() {
+            return null;
+        }
 
         @Override
-        public Optional<Graph> getGraph(BlankNodeOrIRI graphName) { return null; }
+        public Optional<Graph> getGraph(BlankNodeOrIRI graphName) {
+            return null;
+        }
 
         @Override
-        public Stream<BlankNodeOrIRI> getGraphNames() { return null; }
+        public Stream<BlankNodeOrIRI> getGraphNames() {
+            return null;
+        }
 
         @Override
-        public void remove(Quad quad) { }
+        public void remove(Quad quad) {}
 
         @Override
-        public void remove(Optional<BlankNodeOrIRI> graphName, BlankNodeOrIRI subject, IRI predicate,
-                        RDFTerm object) { }
+        public void remove(Optional<BlankNodeOrIRI> graphName, BlankNodeOrIRI subject, IRI predicate, RDFTerm object) {}
 
         @Override
-        public void clear() { }
+        public void clear() {}
 
         @Override
-        public long size() { return 1; }
+        public long size() {
+            return 1;
+        }
 
         @Override
-        public Stream<? extends Quad> stream() { throw new RiotException(); }
+        public Stream<? extends Quad> stream() {
+            throw new RiotException();
+        }
 
         @Override
-        public Stream<? extends Quad> stream(Optional<BlankNodeOrIRI> graphName, BlankNodeOrIRI subject,
-                        IRI predicate, RDFTerm object) { return null; }
+        public Stream<? extends Quad> stream(Optional<BlankNodeOrIRI> graphName, BlankNodeOrIRI subject, IRI predicate,
+                        RDFTerm object) {
+            return null;
+        }
     }
 }

@@ -1,13 +1,17 @@
 package edu.si.trellis.cassandra;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("resource")
-public class ByteBufferInputStreamTest extends Assert {
+public class ByteBufferInputStreamTest {
 
     private final byte[] testByteArray = new byte[] { 1, 2, 3, 4, 3, 2, 1 };
     private final ByteBuffer testData = ByteBuffer.wrap(testByteArray);
@@ -16,12 +20,12 @@ public class ByteBufferInputStreamTest extends Assert {
         return testData.asReadOnlyBuffer();
     }
 
-    @Test(expected = IOException.class)
+    @Test
     public void cantResetBeyondLimit() throws IOException {
         ByteBufferInputStream stream = new ByteBufferInputStream(testData());
         stream.mark(3);
         stream.read(new byte[8]);
-        stream.reset();
+        assertThrows(IOException.class, stream::reset);
     }
 
     @Test

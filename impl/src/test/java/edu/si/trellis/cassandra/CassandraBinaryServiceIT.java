@@ -2,6 +2,9 @@ package edu.si.trellis.cassandra;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.UUID.randomUUID;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import com.google.common.io.CountingInputStream;
@@ -13,7 +16,7 @@ import java.util.concurrent.CompletableFuture;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.rdf.api.IRI;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 public class CassandraBinaryServiceIT extends CassandraServiceIT {
@@ -54,9 +57,10 @@ public class CassandraBinaryServiceIT extends CassandraServiceIT {
         assertEquals(md5sum, digest);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void badDigestAlgorithmChoice() {
-        connection.binaryService.calculateDigest(createIRI(), "BAD DIGEST ALGORITHM!!!");
+        assertThrows(IllegalArgumentException.class,
+                        () -> connection.binaryService.calculateDigest(createIRI(), "BAD DIGEST ALGORITHM!!!"));
     }
 
     private IRI createIRI() {

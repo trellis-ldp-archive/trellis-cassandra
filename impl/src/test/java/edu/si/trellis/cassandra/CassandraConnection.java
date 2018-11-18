@@ -14,46 +14,42 @@ import com.datastax.driver.extras.codecs.jdk8.InstantCodec;
 
 import edu.si.trellis.cassandra.CassandraBinaryService.MaxChunkSize;
 
-import org.junit.rules.ExternalResource;
+import org.junit.jupiter.api.extension.AfterAllCallback;
+import org.junit.jupiter.api.extension.BeforeAllCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
 import org.slf4j.Logger;
 
-class CassandraConnection extends ExternalResource {
+class CassandraConnection implements AfterAllCallback, BeforeAllCallback {
 
     private static final String[] CLEANOUT_QUERIES = new String[] { "TRUNCATE Metadata ; ", "TRUNCATE Mutabledata ; ",
             "TRUNCATE Immutabledata ;", "TRUNCATE Binarydata ;" };
 
     private static final Logger log = getLogger(CassandraConnection.class);
 
-    private final String keyspace;
+    private static final String keyspace = "trellis";
 
-    protected Cluster cluster;
-    protected Session session;
-    public CassandraResourceService resourceService;
-    public CassandraBinaryService binaryService;
-    private final int port;
-    private final String contactAddress;
+    private Cluster cluster;
+    private Session session;
+    CassandraResourceService resourceService;
+    CassandraBinaryService binaryService;
 
-    private final boolean cleanBefore, cleanAfter;
+    private static final String contactAddress = System.getProperty("cassandra.contactAddress", "127.0.0.1");
 
-    public CassandraConnection(final String contactAddress, final int port, final String keyspace,
-                    final boolean cleanBefore, final boolean cleanAfter) {
-        this.contactAddress = contactAddress;
-        this.port = port;
-        this.keyspace = keyspace;
-        this.cleanBefore = cleanBefore;
-        this.cleanAfter = cleanAfter;
-    }
+    private static final Integer port = Integer.getInteger("cassandra.nativeTransportPort", 9042);
+
+    private static final boolean cleanBefore = Boolean.getBoolean("cleanBeforeTests");
+    private static final boolean cleanAfter = Boolean.getBoolean("cleanAfterTests");
 
     @Override
-    protected void before() {
-        cluster = builder().withoutMetrics().addContactPoint(contactAddress).withPort(port).build();
+    public void beforeAll(ExtensionContext context) {
+        this.cluster = builder().withoutMetrics().addContactPoint(contactAddress).withPort(port).build();
         codecRegistry().register(inputStreamCodec, iriCodec, datasetCodec, InstantCodec.instance);
         QueryLogger queryLogger = QueryLogger.builder().build();
         cluster.register(queryLogger);
-        session = cluster.connect("trellis");
-        resourceService = new CassandraResourceService(session);
+        this.session = cluster.connect("trellis");
+        this.resourceService = new CassandraResourceService(session);
         resourceService.initializeQueriesAndRoot();
-        binaryService = new CassandraBinaryService(null, session, MaxChunkSize.DEFAULT_MAX_CHUNK_SIZE);
+        this.binaryService = new CassandraBinaryService(null, session, MaxChunkSize.DEFAULT_MAX_CHUNK_SIZE);
         binaryService.initializeStatements();
         if (cleanBefore) cleanOut();
     }
@@ -69,7 +65,7 @@ class CassandraConnection extends ExternalResource {
     }
 
     @Override
-    protected void after() {
+    public void afterAll(ExtensionContext context) {
         if (cleanAfter) cleanOut();
         session.close();
         cluster.close();
