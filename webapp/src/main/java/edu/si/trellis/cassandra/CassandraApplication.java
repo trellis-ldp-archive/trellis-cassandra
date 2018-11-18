@@ -15,6 +15,7 @@ import javax.ws.rs.core.Application;
 
 import org.apache.tamaya.inject.api.Config;
 import org.slf4j.Logger;
+import org.trellisldp.http.TrellisHttpFilter;
 import org.trellisldp.http.TrellisHttpResource;
 
 /**
@@ -32,6 +33,6 @@ public class CassandraApplication extends Application {
 
     @Override
     public Set<Object> getSingletons() {
-        return ImmutableSet.of(new TrellisHttpResource(services));
+        return ImmutableSet.of(new TrellisHttpResource(services), new TrellisHttpFilter());
     }
 }
