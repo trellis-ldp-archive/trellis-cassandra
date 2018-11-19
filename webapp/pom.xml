@@ -160,6 +160,11 @@
     </dependency>
     <dependency>
       <groupId>org.apache.tamaya.ext</groupId>
+      <artifactId>tamaya-cdi</artifactId>
+      <version>${tamaya.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tamaya.ext</groupId>
       <artifactId>tamaya-json</artifactId>
       <version>${tamaya.version}</version>
       <exclusions>
