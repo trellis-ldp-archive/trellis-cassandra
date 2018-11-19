@@ -1,8 +1,7 @@
 package edu.si.trellis.cassandra;
 
-import static org.apache.tamaya.ConfigurationProvider.getConfiguration;
-import static org.apache.tamaya.ConfigurationProvider.setConfiguration;
-import static org.apache.tamaya.format.ConfigurationFormats.createPropertySource;
+import static org.apache.tamaya.Configuration.current;
+import static org.apache.tamaya.Configuration.setCurrent;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import com.google.common.collect.ImmutableSet;
@@ -23,6 +22,7 @@ import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 
 import org.apache.tamaya.Configuration;
+import org.apache.tamaya.format.ConfigurationFormats;
 import org.apache.tamaya.inject.api.Config;
 import org.apache.tamaya.spi.PropertySource;
 import org.slf4j.Logger;
@@ -69,9 +69,8 @@ public class CassandraApplication extends Application {
     private void addConfig(URL url) {
         try {
             log.info("Adding additional config from: {}", url.toURI());
-            PropertySource filePropertySource = createPropertySource(url);
-            Configuration newConfig = getConfiguration().toBuilder().addPropertySources(filePropertySource).build();
-            setConfiguration(newConfig);
+            PropertySource propSource = ConfigurationFormats.getInstance().createPropertySource(url);
+            setCurrent(current().toBuilder().addPropertySources(propSource).build());
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         } catch (URISyntaxException e) {
