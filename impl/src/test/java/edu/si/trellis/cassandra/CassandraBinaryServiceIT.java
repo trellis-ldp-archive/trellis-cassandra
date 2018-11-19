@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.slf4j.LoggerFactory.getLogger;
+import static org.trellisldp.api.BinaryMetadata.builder;
 
 import com.google.common.io.CountingInputStream;
 
@@ -28,7 +29,7 @@ public class CassandraBinaryServiceIT extends CassandraServiceIT {
         IRI id = createIRI();
         String content = "This is only a short test, but it has meaning";
         InputStream testInput = IOUtils.toInputStream(content, UTF_8);
-        connection.binaryService.setContent(id, testInput);
+        connection.binaryService.setContent(builder(id).build(), testInput);
 
         InputStream got = connection.binaryService.getContent(id).get();
         String reply = IOUtils.toString(got, UTF_8);
@@ -45,7 +46,7 @@ public class CassandraBinaryServiceIT extends CassandraServiceIT {
         final String md5sum = "89c4b71c69f59cde963ce8aa9dbe1617";
         FileInputStream fis = new FileInputStream("src/test/resources/test.jpg");
         CountingInputStream cis = new CountingInputStream(fis);
-        connection.binaryService.setContent(id, cis);
+        connection.binaryService.setContent(builder(id).build(), cis);
         long bytesWritten = cis.getCount();
 
         CompletableFuture<InputStream> got = connection.binaryService.getContent(id);

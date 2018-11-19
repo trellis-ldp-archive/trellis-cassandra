@@ -24,7 +24,6 @@ import java.io.UncheckedIOException;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.security.MessageDigest;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -37,6 +36,7 @@ import javax.inject.Qualifier;
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.rdf.api.IRI;
 import org.slf4j.Logger;
+import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IdentifierService;
 
@@ -144,8 +144,8 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
     }
 
     @Override
-    public CompletableFuture<Void> setContent(IRI iri, InputStream stream, Map<String, String> metadata /* ignored */) {
-        return setChunk(iri, stream, new AtomicInteger()).thenAccept(x -> {});
+    public CompletableFuture<Void> setContent(BinaryMetadata meta, InputStream stream) {
+        return setChunk(meta.getIdentifier(), stream, new AtomicInteger()).thenAccept(Long::longValue);
     }
 
     @SuppressWarnings("resource")
