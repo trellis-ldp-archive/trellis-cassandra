@@ -19,14 +19,9 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.jboss.arquillian.junit.Arquillian;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
 import org.slf4j.Logger;
-import org.wildfly.swarm.arquillian.DefaultDeployment;
 
-@RunWith(Arquillian.class)
-@DefaultDeployment
 public class BasicOperationIT {
 
     private static final Logger log = getLogger(BasicOperationIT.class);

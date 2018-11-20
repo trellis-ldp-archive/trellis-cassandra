@@ -5,6 +5,8 @@
   <artifactId>trellis-cassandra</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
+  
+  <name>Trellis/Cassandra</name>
 
   <scm>
     <url>git@github.com:ajs6f/trellis-cassandra.git</url>
