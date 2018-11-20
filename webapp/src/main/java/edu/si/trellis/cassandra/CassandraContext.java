@@ -88,14 +88,14 @@ public class CassandraContext {
             public void run() {
                 if (portIsOpen(contactAddress, contactPort)) {
                     session = cluster.connect("trellis");
-                    log.debug("Set keyspace to trellis");
-                    cancel();
+                    log.debug("Connection made and keyspace set to 'trellis'.");
                     sessionInitialized.countDown();
+                    cancel();
                 }
             }
         };
+        log.debug("Waiting for connection...");
         connector.schedule(task, 0, POLL_TIMEOUT);
-
     }
 
     private static boolean portIsOpen(String ip, String port) {
@@ -105,7 +105,7 @@ public class CassandraContext {
             socket.close();
             return true;
         } catch (IOException e) {
-            log.debug("Waiting for connection to {}:{}", ip, port);
+            log.debug("Waiting for connection to {}:{}...", ip, port);
             return false;
         }
     }
