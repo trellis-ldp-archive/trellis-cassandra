@@ -20,5 +20,16 @@ mvn -Dcassandra.skip -Dcassandra.contactAddress=$NODE -Dcassandra.nativeTranspor
 
 To configure for runtime, provide the location and port of a contact node in your Cassandra cluster. This can be done via environment properties (or Java system properties). Use the names `CASSANDRA_CONTACT_PORT`(`cassandra.contactPort`) and `CASSANDRA_CONTACT_ADDRESS`(`cassandra.contactAddress`) (subject to change < 1.0). Additionally, you may configure the size of chunk (in bytes) used for binary storage as `CASSANDRA_MAX_CHUNK_SIZE`(`cassandra.maxChunkSize`).
 
+It is also possible to adjust consistency settings for read and write for binary and RDF data, all independently. The configuration keys are as follows:
+
+| Data category | READ | WRITE |
+| ------------- | ---- | ----- |
+| Binary | `CASSANDRA_BINARY_READ_CONSISTENCY` (`cassandra.binaryReadConsistency`) | `CASSANDRA_BINARY_WRITE_CONSISTENCY` (`cassandra.binaryWriteConsistency`) |
+| RDF | `CASSANDRA_RDF_READ_CONSISTENCY` (`cassandra.rdfReadConsistency`) |  `CASSANDRA_RDF_WRITE_CONSISTENCY` (`cassandra.rdfWriteConsistency`) |
+
+and values are drawn from the usual [Cassandra options](https://cassandra.apache.org/doc/latest/architecture/dynamo.html#tunable-consistency). The default value for each consistency level is `ONE`.
+
 You may also use a JSON document for these settings. Use `TRELLIS_CONFIG_FILE` (`configurationFile`) to use a file or `TRELLIS_CONFIG_URL` (`configurationUrl`) to use a document loaded from an arbitrary URL. The document should be a simple object with keys named as system properties shown above (`cassandra.contactPort`, `cassandra.contactAddress`, etc.).
+
+
 
