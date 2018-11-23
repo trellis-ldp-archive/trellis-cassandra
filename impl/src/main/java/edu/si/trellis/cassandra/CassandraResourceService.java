@@ -19,10 +19,7 @@ import static org.trellisldp.vocabulary.LDP.Container;
 import static org.trellisldp.vocabulary.LDP.NonRDFSource;
 import static org.trellisldp.vocabulary.LDP.RDFSource;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
+import com.datastax.driver.core.*;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.querybuilder.Select.Where;
 import com.google.common.collect.ImmutableSet;
@@ -78,11 +75,14 @@ public class CassandraResourceService extends CassandraService implements Resour
      * Constructor.
      * 
      * @param session a Cassandra {@link Session} for use by this service for its lifetime
+     * @param readCons the read-consistency to use
+     * @param writeCons the write-consistency to use
      */
     @Inject
-    public CassandraResourceService(final Session session) {
-        super(session);
-        this.resourceQueries = new ResourceQueries(session);
+    public CassandraResourceService(final Session session, @RdfReadConsistency ConsistencyLevel readCons,
+                    @RdfWriteConsistency ConsistencyLevel writeCons) {
+        super(session, readCons, writeCons);
+        this.resourceQueries = new ResourceQueries(session, readConsistency());
     }
 
     /**
@@ -146,7 +146,7 @@ public class CassandraResourceService extends CassandraService implements Resour
 
     @Override
     public CompletableFuture<Resource> get(final IRI id, Instant time) {
-        BoundStatement boundStatement = getStatement.bind(id, time);
+        Statement boundStatement = getStatement.bind(id, time).setConsistencyLevel(readConsistency());
         log.debug("Executing CQL statement: {} with identifier: {}", getStatement.getQueryString(), id);
         return translate(session().executeAsync(boundStatement)).thenApply(buildResource(id));
     }
@@ -159,7 +159,7 @@ public class CassandraResourceService extends CassandraService implements Resour
     @Override
     public CompletableFuture<Void> add(final IRI id, final Dataset dataset) {
         log.debug("Adding immutable data to {}", id);
-        return execute(immutableInsertStatement.bind(id, dataset, now()));
+        return executeAndDone(immutableInsertStatement.bind(id, dataset, now()), writeConsistency());
     }
 
     @Override
@@ -177,7 +177,7 @@ public class CassandraResourceService extends CassandraService implements Resour
     @Override
     public CompletableFuture<Void> delete(Metadata meta) {
         log.debug("Deleting {}", meta.getIdentifier());
-        return execute(deleteStatement.bind(meta.getIdentifier()));
+        return executeAndDone(deleteStatement.bind(meta.getIdentifier()), writeConsistency());
     }
 
     /*
@@ -186,8 +186,10 @@ public class CassandraResourceService extends CassandraService implements Resour
     @Override
     public CompletableFuture<Void> touch(IRI id) {
         return get(id).thenApply(CassandraResource.class::cast).thenApply(CassandraResource::getCreated)
-                        .thenCompose(created -> execute(update(MUTABLE_TABLENAME).where(eq("identifier", id))
-                                        .and(eq("created", created)).with(set("modified", now()))));
+                        .thenCompose(created -> executeAndDone(
+                                        update(MUTABLE_TABLENAME).where(eq("identifier", id))
+                                                        .and(eq("created", created)).with(set("modified", now())),
+                                        writeConsistency()));
     }
 
     @Override
@@ -199,9 +201,10 @@ public class CassandraResourceService extends CassandraService implements Resour
     @Override
     public CompletableFuture<SortedSet<Instant>> mementos(IRI id) {
         Where query = select("modified").from(MUTABLE_TABLENAME).where(eq("identifier", id));
-        return read(query).thenApply(results -> stream(results::spliterator, NONNULL + DISTINCT, false)
-                        .map(getFieldAs("modified", Instant.class)).map(time -> time.truncatedTo(SECONDS))
-                        .collect(toCollection(TreeSet::new)));
+        return execute(query, readConsistency())
+                        .thenApply(results -> stream(results::spliterator, NONNULL + DISTINCT, false)
+                                        .map(getFieldAs("modified", Instant.class))
+                                        .map(time -> time.truncatedTo(SECONDS)).collect(toCollection(TreeSet::new)));
     }
 
     private static <T> Function<Row, T> getFieldAs(String k, Class<T> klass) {
@@ -220,7 +223,7 @@ public class CassandraResourceService extends CassandraService implements Resour
         IRI container = meta.getContainer().orElse(null);
 
         //@formatter:off
-        return execute(insertInto(MUTABLE_TABLENAME)
+        return executeAndDone(insertInto(MUTABLE_TABLENAME)
                         .value("interactionModel", ixnModel)
                         .value("size", size)
                         .value("mimeType", mimeType)
@@ -230,7 +233,8 @@ public class CassandraResourceService extends CassandraService implements Resour
                         .value("modified", now)
                         .value("binaryIdentifier", binaryIdentifier)
                         .value("created", now)
-                        .value("identifier", id));
+                        .value("identifier", id), 
+                        writeConsistency());
         //@formatter:on
     }
 
@@ -250,21 +254,26 @@ public class CassandraResourceService extends CassandraService implements Resour
         private static final String basicContainmentQuery = "SELECT identifier AS contained FROM "
                         + BASIC_CONTAINMENT_TABLENAME + " WHERE container = ? ;";
 
-        private Session session;
+        private final Session session;
 
         private PreparedStatement mutableQuadStreamStatement, immutableQuadStreamStatement, basicContainmentStatement;
 
-        @Inject
-        ResourceQueries(Session session) {
+        private final ConsistencyLevel readConsistency;
+
+        ResourceQueries(Session session, ConsistencyLevel readCons) {
             this.session = session;
+            this.readConsistency = readCons;
             prepareQueries();
         }
 
         void prepareQueries() {
             log.trace("Preparing " + getClass().getSimpleName() + " queries.");
-            this.mutableQuadStreamStatement = session.prepare(mutableQuadStreamQuery);
-            this.immutableQuadStreamStatement = session.prepare(immutableQuadStreamQuery);
-            this.basicContainmentStatement = session.prepare(basicContainmentQuery);
+            this.mutableQuadStreamStatement = session.prepare(mutableQuadStreamQuery)
+                            .setConsistencyLevel(readConsistency);
+            this.immutableQuadStreamStatement = session.prepare(immutableQuadStreamQuery)
+                            .setConsistencyLevel(readConsistency);
+            this.basicContainmentStatement = session.prepare(basicContainmentQuery)
+                            .setConsistencyLevel(readConsistency);
             log.trace("Prepared " + getClass().getSimpleName() + " queries.");
         }
 

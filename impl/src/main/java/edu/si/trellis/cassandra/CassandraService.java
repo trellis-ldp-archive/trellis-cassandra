@@ -3,6 +3,7 @@ package edu.si.trellis.cassandra;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
@@ -14,9 +15,6 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
-
 import org.slf4j.Logger;
 import org.trellisldp.api.RuntimeTrellisException;
 
@@ -26,26 +24,38 @@ abstract class CassandraService {
 
     protected Session session;
 
+    private ConsistencyLevel readConsistency, writeConsistency;
+
+    protected ConsistencyLevel readConsistency() {
+        return readConsistency;
+    }
+
+    protected ConsistencyLevel writeConsistency() {
+        return writeConsistency;
+    }
+
     /**
      * Same-thread execution. TODO use a pool?
      */
     private final Executor executor = Runnable::run;
 
-    public CassandraService(Session session) {
+    protected CassandraService(Session session, ConsistencyLevel readCons, ConsistencyLevel writeCons) {
         this.session = session;
+        this.readConsistency = readCons;
+        this.writeConsistency = writeCons;
     }
 
     protected Session session() {
         return session;
     }
 
-    protected CompletableFuture<Void> execute(Statement statement) {
+    protected CompletableFuture<Void> executeAndDone(Statement statement, ConsistencyLevel readCons) {
         log.debug("Executing CQL statement: {}", statement);
-        return read(statement).thenApply(r -> null);
+        return execute(statement, readCons).thenApply(r -> null);
     }
 
-    protected CompletableFuture<ResultSet> read(Statement statement) {
-        return translate(session().executeAsync(statement));
+    protected CompletableFuture<ResultSet> execute(Statement statement, ConsistencyLevel readCons) {
+        return translate(session().executeAsync(statement.setConsistencyLevel(readCons)));
     }
 
     protected <T> CompletableFuture<T> translate(ListenableFuture<T> result) {

@@ -107,7 +107,8 @@ class CassandraResource implements Resource {
         BoundStatement mutableQuadStreamQuery = queries.mutableQuadStreamStatement().bind(getIdentifier(),
                         getCreated());
         Stream<Quad> mutableQuads = quadStreamFromQuery(mutableQuadStreamQuery);
-        Stream<Quad> immutableQuads = quadStreamFromQuery(queries.immutableQuadStreamStatement().bind(getIdentifier()));
+        BoundStatement immutableQuadStreamQuery = queries.immutableQuadStreamStatement().bind(getIdentifier());
+        Stream<Quad> immutableQuads = quadStreamFromQuery(immutableQuadStreamQuery);
         Stream<Quad> quads = concat(mutableQuads, immutableQuads);
         if (isContainer) {
             Stream<Quad> containmentQuadsInContainment = basicContainmentTriples().map(toQuad(PreferContainment));

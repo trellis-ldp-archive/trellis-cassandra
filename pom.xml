@@ -5,7 +5,7 @@
   <artifactId>trellis-cassandra</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
-  
+
   <name>Trellis/Cassandra</name>
 
   <scm>
@@ -34,6 +34,8 @@
 
     <trellis.version>0.8.0-SNAPSHOT</trellis.version>
     <cassandra.test.version>3.11.2</cassandra.test.version>
+
+    <thorntail.version>2.2.1.Final</thorntail.version>
 
     <logback.version>1.2.3</logback.version>
 
@@ -72,6 +74,13 @@
 
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>io.thorntail</groupId>
+        <artifactId>bom</artifactId>
+        <version>${thorntail.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
       <!-- logging -->
       <dependency>
         <groupId>ch.qos.logback</groupId>
@@ -138,6 +147,7 @@
             <startNativeTransport>true</startNativeTransport>
             <addTestClasspath>true</addTestClasspath>
             <systemPropertyVariables>
+              <log4j.configurationFile>${project.build.directory}/test-classes/log4j2-test.xml</log4j.configurationFile>
               <cassandra.jmx.local.port>${cassandra.jmx.local.port}</cassandra.jmx.local.port>
             </systemPropertyVariables>
             <!-- use a load script after resource filtering -->
@@ -163,8 +173,6 @@
           <executions>
             <execution>
               <id>start</id>
-              <!-- we shift C* to start very early to avoid the webapp starting before C*
-                <phase>package</phase> -->
               <goals>
                 <goal>start</goal>
               </goals>

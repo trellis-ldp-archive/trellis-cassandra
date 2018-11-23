@@ -1,6 +1,7 @@
 package edu.si.trellis.cassandra;
 
 import static com.datastax.driver.core.Cluster.builder;
+import static com.datastax.driver.core.ConsistencyLevel.ONE;
 import static edu.si.trellis.cassandra.DatasetCodec.datasetCodec;
 import static edu.si.trellis.cassandra.IRICodec.iriCodec;
 import static edu.si.trellis.cassandra.InputStreamCodec.inputStreamCodec;
@@ -11,8 +12,6 @@ import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.QueryLogger;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.extras.codecs.jdk8.InstantCodec;
-
-import edu.si.trellis.cassandra.CassandraBinaryService.MaxChunkSize;
 
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
@@ -47,9 +46,9 @@ class CassandraConnection implements AfterAllCallback, BeforeAllCallback {
         QueryLogger queryLogger = QueryLogger.builder().build();
         cluster.register(queryLogger);
         this.session = cluster.connect("trellis");
-        this.resourceService = new CassandraResourceService(session);
+        this.resourceService = new CassandraResourceService(session, ONE, ONE);
         resourceService.initializeQueriesAndRoot();
-        this.binaryService = new CassandraBinaryService(null, session, MaxChunkSize.DEFAULT_MAX_CHUNK_SIZE);
+        this.binaryService = new CassandraBinaryService(null, session, MaxChunkSize.DEFAULT_MAX_CHUNK_SIZE, ONE, ONE);
         binaryService.initializeStatements();
         if (cleanBefore) cleanOut();
     }

@@ -2,8 +2,6 @@ package edu.si.trellis.cassandra;
 
 import static java.lang.Integer.parseInt;
 
-import edu.si.trellis.cassandra.CassandraBinaryService.MaxChunkSize;
-
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;

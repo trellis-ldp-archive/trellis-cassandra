@@ -1,8 +1,6 @@
 package edu.si.trellis.cassandra;
 
-import static com.datastax.driver.core.ConsistencyLevel.LOCAL_ONE;
 import static com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static java.util.Base64.getEncoder;
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -12,17 +10,12 @@ import static org.apache.commons.codec.digest.DigestUtils.updateDigest;
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.*;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.ResultSetFuture;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.*;
 import com.google.common.collect.ImmutableSet;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
-import java.lang.annotation.Documented;
-import java.lang.annotation.Retention;
 import java.security.MessageDigest;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -31,7 +24,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
-import javax.inject.Qualifier;
 
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.rdf.api.IRI;
@@ -71,28 +63,17 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
     private PreparedStatement deleteStatement, readRangeStatement, readStatement, insertStatement;
 
     /**
-     * The maximum size of any chunk in this service.
-     */
-    @Documented
-    @Retention(RUNTIME)
-    @Qualifier
-    public static @interface MaxChunkSize {
-
-        /**
-         * Use 1MB for default max chunk size.
-         */
-        public static final int DEFAULT_MAX_CHUNK_SIZE = 1024 * 1024;
-
-    }
-
-    /**
      * @param idService {@link IdentifierService} to use for binaries
      * @param session {@link Session} to use to connect to Cassandra
      * @param chunkLength the maximum size of any chunk in this service
+     * @param readCons the read-consistency to use
+     * @param writeCons the write-consistency to use
      */
     @Inject
-    public CassandraBinaryService(IdentifierService idService, Session session, @MaxChunkSize int chunkLength) {
-        super(session);
+    public CassandraBinaryService(IdentifierService idService, Session session, @MaxChunkSize int chunkLength,
+                    @BinaryReadConsistency ConsistencyLevel readCons,
+                    @BinaryWriteConsistency ConsistencyLevel writeCons) {
+        super(session, readCons, writeCons);
         this.idService = idService;
         this.maxChunkLength = chunkLength;
         log.info("Using chunk length: {}", chunkLength);
@@ -114,8 +95,7 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
         int lastChunk = to / maxChunkLength;
         int chunkStreamStart = from % maxChunkLength;
         int rangeSize = to - from + 1; // +1 because range is inclusive
-        Statement boundStatement = readRangeStatement.bind(identifier.getIRIString(), firstChunk, lastChunk)
-                        .setConsistencyLevel(LOCAL_ONE);
+        Statement boundStatement = readRangeStatement.bind(identifier.getIRIString(), firstChunk, lastChunk);
         return retrieve(boundStatement).thenApply(in -> { // skip to fulfill lower end of range
             try {
                 in.skip(chunkStreamStart);
@@ -128,12 +108,12 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
 
     @Override
     public CompletableFuture<InputStream> getContent(IRI identifier) {
-        Statement boundStatement = readStatement.bind(identifier.getIRIString()).setConsistencyLevel(LOCAL_ONE);
+        Statement boundStatement = readStatement.bind(identifier.getIRIString());
         return retrieve(boundStatement);
     }
 
     private CompletableFuture<InputStream> retrieve(Statement boundStatement) {
-        ResultSetFuture results = session().executeAsync(boundStatement);
+        ResultSetFuture results = session().executeAsync(boundStatement.setConsistencyLevel(readConsistency()));
         return translate(results).thenApply(resultSet -> stream(resultSet.spliterator(), false)
                         .peek(r -> log.debug("Retrieving chunk: {}", r.getInt("chunk_index")))
                         .map(r -> r.get("chunk", InputStream.class)).reduce(SequenceInputStream::new).get()); // chunks
@@ -157,7 +137,8 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
             InputStream chunk = (InputStream) countingChunk;
             Statement boundStatement = insertStatement.bind(iri, chunkIndex.getAndIncrement(), chunk)
                             .setConsistencyLevel(LOCAL_QUORUM);
-            return translate(session().executeAsync(boundStatement)).thenApply(r -> countingChunk.getByteCount())
+            return translate(session().executeAsync(boundStatement.setConsistencyLevel(writeConsistency())))
+                            .thenApply(r -> countingChunk.getByteCount())
                             .thenComposeAsync(bytesStored -> bytesStored == maxChunkLength
                                             ? setChunk(iri, stream, chunkIndex)
                                             : completedFuture(DONE), mappingThread);
@@ -166,7 +147,8 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
 
     @Override
     public CompletableFuture<Void> purgeContent(IRI identifier) {
-        Statement boundStatement = deleteStatement.bind(identifier.getIRIString());
+        Statement boundStatement = deleteStatement.bind(identifier.getIRIString())
+                        .setConsistencyLevel(writeConsistency());
         return translate(session().executeAsync(boundStatement)).thenAccept(x -> {});
     }
 
