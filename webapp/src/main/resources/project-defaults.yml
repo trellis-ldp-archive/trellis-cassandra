@@ -5,7 +5,7 @@ swarm:
     port: ${trellis.port}
   logging:
     root-logger:
-      level: DEBUG
+      level: WARN
     loggers:
       org.hibernate:
         level: ERROR 

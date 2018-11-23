@@ -8,11 +8,10 @@ import static java.lang.Integer.parseInt;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.QueryLogger;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.extras.codecs.jdk8.InstantCodec;
-
-import edu.si.trellis.cassandra.CassandraBinaryService.MaxChunkSize;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -40,8 +39,32 @@ public class CassandraContext {
     private static final Logger log = getLogger(CassandraContext.class);
 
     @Inject
+    @Config(value = { "cassandra.contactPort", "CASSANDRA_CONTACT_PORT" }, defaultValue = "9042")
+    private String contactPort;
+
+    @Inject
+    @Config(value = { "cassandra.contactAddress", "CASSANDRA_CONTACT_ADDRESS" }, defaultValue = "localhost")
+    private String contactAddress;
+
+    @Inject
     @Config(value = { "cassandra.maxChunkSize", "CASSANDRA_MAX_CHUNK_SIZE" }, defaultValue = "1048576")
     private String maxChunkSize;
+
+    @Inject
+    @Config(value = { "cassandra.binaryReadConsistency", "CASSANDRA_BINARY_READ_CONSISTENCY" }, defaultValue = "ONE")
+    private ConsistencyLevel binaryReadConsistency;
+
+    @Inject
+    @Config(value = { "cassandra.binaryWriteConsistency", "CASSANDRA_BINARY_WRITE_CONSISTENCY" }, defaultValue = "ONE")
+    private ConsistencyLevel binaryWriteConsistency;
+
+    @Inject
+    @Config(value = { "cassandra.rdfReadConsistency", "CASSANDRA_RDF_READ_CONSISTENCY" }, defaultValue = "ONE")
+    private ConsistencyLevel rdfReadConsistency;
+
+    @Inject
+    @Config(value = { "cassandra.rdfWriteConsistency", "CASSANDRA_RDF_WRITE_CONSISTENCY" }, defaultValue = "ONE")
+    private ConsistencyLevel rdfWriteConsistency;
 
     /**
      * @return the maximum size of chunk for a {@link CassandraBinaryService}
@@ -52,17 +75,46 @@ public class CassandraContext {
         return parseInt(maxChunkSize);
     }
 
+    /**
+     * @return the read-consistency to use querying Cassandra binary data
+     */
+    @Produces
+    @BinaryReadConsistency
+    public ConsistencyLevel binaryReadConsistency() {
+        return binaryReadConsistency;
+    }
+
+    /**
+     * @return the write-consistency to use querying Cassandra binary data
+     */
+    @Produces
+    @BinaryWriteConsistency
+    public ConsistencyLevel binaryWriteConsistency() {
+        return binaryWriteConsistency;
+    }
+
+    /**
+     * @return the read-consistency to use querying Cassandra RDF data
+     */
+    @Produces
+    @RdfReadConsistency
+    public ConsistencyLevel rdfReadConsistency() {
+        return rdfReadConsistency;
+    }
+
+    /**
+     * @return the write-consistency to use querying Cassandra RDF data
+     */
+    @Produces
+    @RdfWriteConsistency
+    public ConsistencyLevel rdfWriteConsistency() {
+        return rdfWriteConsistency;
+    }
+
     private Cluster cluster;
 
     private Session session;
 
-    @Inject
-    @Config(value = { "cassandra.contactPort", "CASSANDRA_CONTACT_PORT" }, defaultValue = "9042")
-    private String contactPort;
-
-    @Inject
-    @Config(value = { "cassandra.contactAddress", "CASSANDRA_CONTACT_ADDRESS" }, defaultValue = "localhost")
-    private String contactAddress;
     private final CountDownLatch sessionInitialized = new CountDownLatch(1);
 
     /**
