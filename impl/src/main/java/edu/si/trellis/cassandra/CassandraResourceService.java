@@ -22,13 +22,11 @@ import static org.trellisldp.vocabulary.LDP.RDFSource;
 import com.datastax.driver.core.*;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.querybuilder.Select.Where;
+import com.datastax.driver.core.utils.UUIDs;
 import com.google.common.collect.ImmutableSet;
 
 import java.time.Instant;
-import java.util.Optional;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
@@ -66,7 +64,7 @@ public class CassandraResourceService extends CassandraService implements Resour
     private static final String DELETE_QUERY = "DELETE FROM " + MUTABLE_TABLENAME + " WHERE identifier = ? ";
 
     private static final String IMMUTABLE_INSERT_QUERY = "INSERT INTO " + IMMUTABLE_TABLENAME
-                    + " (identifier, quads, modified) VALUES (?,?,?)";
+                    + " (identifier, quads, created) VALUES (?,?,?)";
     private PreparedStatement getStatement, immutableInsertStatement, deleteStatement;
 
     private final ResourceQueries resourceQueries;
@@ -128,7 +126,7 @@ public class CassandraResourceService extends CassandraService implements Resour
             log.debug("Found container = {} for resource {}", container, id);
             Instant modified = metadata.get("modified", Instant.class);
             log.debug("Found modified = {} for resource {}", modified, id);
-            Instant created = metadata.get("created", Instant.class);
+            UUID created = metadata.getUUID("created");
             log.debug("Found created = {} for resource {}", created, id);
             return new CassandraResource(id, ixnModel, hasAcl, binaryId, mimeType, size, container, modified, created,
                             resourceQueries);
@@ -232,7 +230,7 @@ public class CassandraResourceService extends CassandraService implements Resour
                         .value("quads", data)
                         .value("modified", now)
                         .value("binaryIdentifier", binaryIdentifier)
-                        .value("created", now)
+                        .value("created", UUIDs.timeBased())
                         .value("identifier", id), 
                         writeConsistency());
         //@formatter:on

@@ -7,10 +7,8 @@ import static edu.si.trellis.cassandra.InputStreamCodec.inputStreamCodec;
 import static java.lang.Integer.parseInt;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.QueryLogger;
-import com.datastax.driver.core.Session;
+import com.datastax.driver.core.*;
+import com.datastax.driver.extras.codecs.date.SimpleTimestampCodec;
 import com.datastax.driver.extras.codecs.jdk8.InstantCodec;
 
 import java.io.IOException;
@@ -129,11 +127,12 @@ public class CassandraContext {
     public void connect() {
         log.info("Using Cassandra node address: {} and port: {}", contactAddress, contactPort);
         log.debug("Looking for connection...");
-        this.cluster = Cluster.builder().withoutJMXReporting().withoutMetrics().addContactPoint(contactAddress)
+        this.cluster = Cluster.builder().withTimestampGenerator(new AtomicMonotonicTimestampGenerator())
+                        .withoutJMXReporting().withoutMetrics().addContactPoint(contactAddress)
                         .withPort(parseInt(contactPort)).build();
         if (log.isDebugEnabled()) cluster.register(QueryLogger.builder().build());
-        cluster.getConfiguration().getCodecRegistry().register(inputStreamCodec, iriCodec, datasetCodec, bigint(),
-                        InstantCodec.instance);
+        cluster.getConfiguration().getCodecRegistry().register(SimpleTimestampCodec.instance, inputStreamCodec,
+                        iriCodec, datasetCodec, bigint(), InstantCodec.instance);
         Timer connector = new Timer("Cassandra Connection Maker");
         TimerTask task = new TimerTask() {
             @Override

@@ -7,10 +7,8 @@ import static edu.si.trellis.cassandra.IRICodec.iriCodec;
 import static edu.si.trellis.cassandra.InputStreamCodec.inputStreamCodec;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.CodecRegistry;
-import com.datastax.driver.core.QueryLogger;
-import com.datastax.driver.core.Session;
+import com.datastax.driver.core.*;
+import com.datastax.driver.extras.codecs.date.SimpleTimestampCodec;
 import com.datastax.driver.extras.codecs.jdk8.InstantCodec;
 
 import org.junit.jupiter.api.extension.AfterAllCallback;
@@ -41,8 +39,10 @@ class CassandraConnection implements AfterAllCallback, BeforeAllCallback {
 
     @Override
     public void beforeAll(ExtensionContext context) {
-        this.cluster = builder().withoutMetrics().addContactPoint(contactAddress).withPort(port).build();
-        codecRegistry().register(inputStreamCodec, iriCodec, datasetCodec, InstantCodec.instance);
+        this.cluster = builder().withoutMetrics().withTimestampGenerator(new AtomicMonotonicTimestampGenerator())
+                        .addContactPoint(contactAddress).withPort(port).build();
+        codecRegistry().register(inputStreamCodec, iriCodec, datasetCodec, InstantCodec.instance,
+                        SimpleTimestampCodec.instance);
         QueryLogger queryLogger = QueryLogger.builder().build();
         cluster.register(queryLogger);
         this.session = cluster.connect("trellis");

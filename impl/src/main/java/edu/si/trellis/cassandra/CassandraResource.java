@@ -1,5 +1,6 @@
 package edu.si.trellis.cassandra;
 
+import static com.datastax.driver.core.utils.UUIDs.unixTimestamp;
 import static java.util.stream.Stream.concat;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.BinaryMetadata.builder;
@@ -8,12 +9,14 @@ import static org.trellisldp.vocabulary.LDP.*;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Row;
+import com.datastax.driver.core.utils.UUIDs;
 
 import edu.si.trellis.cassandra.CassandraResourceService.ResourceQueries;
 
 import java.time.Instant;
 import java.util.Optional;
 import java.util.Spliterator;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -34,14 +37,16 @@ class CassandraResource implements Resource {
 
     private final boolean hasAcl, isContainer;
 
-    private final Instant modified, created;
+    private final Instant modified;
+
+    private final UUID created;
 
     private final ResourceQueries queries;
 
     private final BinaryMetadata binary;
 
     public CassandraResource(IRI id, IRI ixnModel, boolean hasAcl, IRI binaryIdentifier, String mimeType, long size,
-                    IRI container, Instant modified, Instant created, ResourceQueries queries) {
+                    IRI container, Instant modified, UUID created, ResourceQueries queries) {
         this.identifier = id;
         this.interactionModel = ixnModel;
         this.isContainer = Container.equals(getInteractionModel())
@@ -87,7 +92,7 @@ class CassandraResource implements Resource {
      * 
      * @return the created date for this resource
      */
-    public Instant getCreated() {
+    public UUID getCreated() {
         return created;
     }
 
@@ -105,7 +110,7 @@ class CassandraResource implements Resource {
     public Stream<Quad> stream() {
         log.trace("Retrieving quad stream for resource {}", getIdentifier());
         BoundStatement mutableQuadStreamQuery = queries.mutableQuadStreamStatement().bind(getIdentifier(),
-                        getCreated());
+                        unixTimestamp(getCreated()));
         Stream<Quad> mutableQuads = quadStreamFromQuery(mutableQuadStreamQuery);
         BoundStatement immutableQuadStreamQuery = queries.immutableQuadStreamStatement().bind(getIdentifier());
         Stream<Quad> immutableQuads = quadStreamFromQuery(immutableQuadStreamQuery);
