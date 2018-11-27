@@ -205,10 +205,6 @@ public class CassandraResourceService extends CassandraService implements Resour
                                         .map(time -> time.truncatedTo(SECONDS)).collect(toCollection(TreeSet::new)));
     }
 
-    private static <T> Function<Row, T> getFieldAs(String k, Class<T> klass) {
-        return row -> row.get(k, klass);
-    }
-
     private CompletableFuture<Void> write(Metadata meta, Dataset data) {
         IRI id = meta.getIdentifier();
         IRI ixnModel = meta.getInteractionModel();

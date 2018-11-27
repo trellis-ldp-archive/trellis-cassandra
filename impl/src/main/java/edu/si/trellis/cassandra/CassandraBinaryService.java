@@ -9,6 +9,7 @@ import static org.apache.commons.codec.digest.DigestUtils.getDigest;
 import static org.apache.commons.codec.digest.DigestUtils.updateDigest;
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.*;
 import static org.slf4j.LoggerFactory.getLogger;
+import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 
 import com.datastax.driver.core.*;
 import com.google.common.collect.ImmutableSet;
@@ -28,6 +29,7 @@ import javax.inject.Inject;
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.rdf.api.IRI;
 import org.slf4j.Logger;
+import org.trellisldp.api.Binary;
 import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IdentifierService;
@@ -42,25 +44,20 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
 
     private static final long DONE = -1;
 
-    private int maxChunkLength = 1 * 1024 * 1024;
-
     private static final String SHA = "SHA";
 
     // TODO JDK9 supports SHA3 algorithms (SHA3_256, SHA3_384, SHA3_512)
     // TODO Move digest calculation to the C* node.
     private static final Set<String> algorithms = ImmutableSet.of(MD5, MD2, SHA, SHA_1, SHA_256, SHA_384, SHA_512);
 
-    private final IdentifierService idService;
-
     private static final String INSERT_QUERY = "INSERT INTO Binarydata (identifier, chunk_index, chunk) VALUES (:identifier, :chunk_index, :chunk)";
-
-    private static final String READ_QUERY = "SELECT chunk, chunk_index FROM Binarydata WHERE identifier = ?;";
-
-    private static final String READ_RANGE_QUERY = "SELECT chunk, chunk_index FROM Binarydata WHERE identifier = ? and chunk_index >= :start and chunk_index <= :end;";
 
     private static final String DELETE_QUERY = "DELETE FROM Binarydata WHERE identifier = ?;";
 
-    private PreparedStatement deleteStatement, readRangeStatement, readStatement, insertStatement;
+    private PreparedStatement deleteStatement, insertStatement;
+
+    private final BinaryQueries queries;
+    private final IdentifierService idService;
 
     /**
      * @param idService {@link IdentifierService} to use for binaries
@@ -75,52 +72,25 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
                     @BinaryWriteConsistency ConsistencyLevel writeCons) {
         super(session, readCons, writeCons);
         this.idService = idService;
-        this.maxChunkLength = chunkLength;
         log.info("Using chunk length: {}", chunkLength);
+        this.queries = new BinaryQueries(session(), chunkLength);
     }
 
     @PostConstruct
     void initializeStatements() {
         this.insertStatement = session().prepare(INSERT_QUERY);
-        this.readStatement = session().prepare(READ_QUERY);
-        this.readRangeStatement = session().prepare(READ_RANGE_QUERY);
         this.deleteStatement = session().prepare(DELETE_QUERY);
     }
 
     @Override
-    public CompletableFuture<InputStream> getContent(IRI identifier, Integer from, Integer to) {
-        requireNonNull(from, "Byte range component 'from' may not be null!");
-        requireNonNull(to, "Byte range component 'to' may not be null!");
-        int firstChunk = from / maxChunkLength;
-        int lastChunk = to / maxChunkLength;
-        int chunkStreamStart = from % maxChunkLength;
-        int rangeSize = to - from + 1; // +1 because range is inclusive
-        Statement boundStatement = readRangeStatement.bind(identifier.getIRIString(), firstChunk, lastChunk);
-        return retrieve(boundStatement).thenApply(in -> { // skip to fulfill lower end of range
-            try {
-                in.skip(chunkStreamStart);
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
-            return in;
-        }).thenApply(in -> new BoundedInputStream(in, rangeSize)); // apply limit for upper end of range
-    }
-
-    @Override
-    public CompletableFuture<InputStream> getContent(IRI identifier) {
-        Statement boundStatement = readStatement.bind(identifier.getIRIString());
-        return retrieve(boundStatement);
-    }
-
-    private CompletableFuture<InputStream> retrieve(Statement boundStatement) {
-        ResultSetFuture results = session().executeAsync(boundStatement.setConsistencyLevel(readConsistency()));
-        return translate(results).thenApply(resultSet -> stream(resultSet.spliterator(), false)
-                        .peek(r -> log.debug("Retrieving chunk: {}", r.getInt("chunk_index")))
-                        .map(r -> r.get("chunk", InputStream.class)).reduce(SequenceInputStream::new).get()); // chunks
-                                                                                                              // now in
-                                                                                                              // one
-                                                                                                              // large
-                                                                                                              // stream
+    public CompletableFuture<Binary> get(IRI id) {
+        return translate(session().executeAsync((Statement) null)).thenApply(rows -> {
+            final Row meta = rows.one();
+            boolean wasFound = meta != null;
+            log.debug("Binary {} was {}found", id, wasFound ? "" : "not ");
+            if (!wasFound) throw new RuntimeException();
+            return meta;
+        }).thenApply(r -> r.getLong("size")).thenApply(size -> new CassandraBinary(id, size, queries));
     }
 
     @Override
@@ -131,7 +101,7 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
     @SuppressWarnings("resource")
     private CompletableFuture<Long> setChunk(IRI iri, InputStream stream, AtomicInteger chunkIndex) {
         try (CountingInputStream countingChunk = new CountingInputStream(
-                        new BoundedInputStream(stream, maxChunkLength))) {
+                        new BoundedInputStream(stream, queries.maxChunkLength()))) {
             @SuppressWarnings("cast")
             // cast to match this object with InputStreamCodec
             InputStream chunk = (InputStream) countingChunk;
@@ -139,7 +109,7 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
                             .setConsistencyLevel(LOCAL_QUORUM);
             return translate(session().executeAsync(boundStatement.setConsistencyLevel(writeConsistency())))
                             .thenApply(r -> countingChunk.getByteCount())
-                            .thenComposeAsync(bytesStored -> bytesStored == maxChunkLength
+                            .thenComposeAsync(bytesStored -> bytesStored == queries.maxChunkLength()
                                             ? setChunk(iri, stream, chunkIndex)
                                             : completedFuture(DONE), mappingThread);
         }
@@ -178,4 +148,48 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
      * TODO threadpool?
      */
     private Executor mappingThread = Runnable::run;
+
+    static class BinaryQueries {
+
+        private final Session session;
+
+        private static final String READ_QUERY = "SELECT chunk, chunk_index FROM Binarydata WHERE identifier = ?;";
+
+        private static final String READ_RANGE_QUERY = "SELECT chunk, chunk_index FROM Binarydata WHERE identifier = ? and chunk_index >= :start and chunk_index <= :end;";
+
+        private PreparedStatement readRangeStatement, readStatement;
+
+        private final int maxChunkLength;
+
+        private final ConsistencyLevel readConsistency;
+
+        public BinaryQueries(Session session, int maxChunkLength, ConsistencyLevel consistency) {
+            this.session = session;
+            this.readStatement = session.prepare(READ_QUERY);
+            this.readRangeStatement = session.prepare(READ_RANGE_QUERY);
+            this.maxChunkLength = maxChunkLength;
+            this.readConsistency = consistency;
+        }
+
+        int maxChunkLength() {
+            return maxChunkLength;
+        }
+
+        Session session() {
+            return session;
+        }
+
+        PreparedStatement readRangeStatement() {
+            return readRangeStatement;
+        }
+
+        PreparedStatement readStatement() {
+            return readStatement;
+        }
+
+        ConsistencyLevel readConsistency() {
+            return readConsistency;
+        }
+
+    }
 }
