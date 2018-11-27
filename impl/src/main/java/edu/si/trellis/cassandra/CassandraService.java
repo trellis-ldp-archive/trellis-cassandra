@@ -3,10 +3,7 @@ package edu.si.trellis.cassandra;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.*;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import java.util.Optional;
@@ -14,6 +11,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.trellisldp.api.RuntimeTrellisException;
@@ -21,6 +19,10 @@ import org.trellisldp.api.RuntimeTrellisException;
 abstract class CassandraService {
 
     private static final Logger log = getLogger(CassandraService.class);
+
+    protected static <T> Function<Row, T> getFieldAs(String k, Class<T> klass) {
+        return row -> row.get(k, klass);
+    }
 
     protected Session session;
 
