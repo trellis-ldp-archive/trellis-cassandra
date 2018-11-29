@@ -96,9 +96,11 @@ public class CassandraResourceService extends CassandraService implements Resour
         this.immutableInsertStatement = session().prepare(IMMUTABLE_INSERT_QUERY);
 
         IRI rootIri = TrellisUtils.getInstance().createIRI(TRELLIS_DATA_PREFIX);
-        Metadata rootResource = builder(rootIri).interactionModel(BasicContainer).build();
         try {
-            create(rootResource, null).get();
+            if (get(rootIri).get().equals(MISSING_RESOURCE)) {
+                Metadata rootResource = builder(rootIri).interactionModel(BasicContainer).build();
+                create(rootResource, null).get();
+            }
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeTrellisException(e);
         }
