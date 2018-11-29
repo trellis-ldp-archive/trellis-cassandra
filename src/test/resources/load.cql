@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS mutabledata (identifier text, quads text, interaction
 CREATE TABLE IF NOT EXISTS immutabledata (identifier text, quads text, created timestamp,
     PRIMARY KEY ((identifier), created)) WITH CLUSTERING ORDER BY (created DESC);
 
-CREATE TABLE IF NOT EXISTS binarydata (identifier text, chunk_index int, chunk blob,
+CREATE TABLE IF NOT EXISTS binarydata (identifier text, size bigint, chunk_index int, chunk blob,
     PRIMARY KEY (identifier, chunk_index)) WITH CLUSTERING ORDER BY (chunk_index ASC);
 
 -- Index for basic containment

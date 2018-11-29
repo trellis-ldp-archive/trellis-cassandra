@@ -1,26 +1,36 @@
 package edu.si.trellis.cassandra;
 
-import java.io.IOException;
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.Row;
+import com.datastax.driver.core.Session;
+
 import java.io.InputStream;
 
-public class LazyChunkInputStream extends InputStream {
+import org.trellisldp.api.RuntimeTrellisException;
 
-    private InputStream chunk;
+/**
+ * An {@link InputStream} backed by a Cassandra query to retrieve one binary chunk.
+ * <p>
+ * Not thread-safe!
+ * </p>
+ * 
+ * @see InputStreamCodec
+ */
+public class LazyChunkInputStream extends LazyFilterInputStream {
+
+    private final Session session;
+
+    private final BoundStatement query;
+
+    public LazyChunkInputStream(Session session, BoundStatement query) {
+        this.session = session;
+        this.query = query;
+    }
 
     @Override
-    public int read() throws IOException {
-        checkInitialized();
-        return chunk.read();
+    protected void initialize() {
+        Row row = session.execute(query).one();
+        if (row == null) throw new RuntimeTrellisException("Missing binary chunk!");
+        wrap(row.get("chunk", InputStream.class));
     }
-
-    private void checkInitialized() {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void close() throws IOException {
-        if (chunk != null) chunk.close();
-    }
-
 }
