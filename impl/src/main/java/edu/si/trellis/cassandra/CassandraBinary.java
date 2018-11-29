@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BinaryOperator;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.input.BoundedInputStream;
@@ -45,8 +46,7 @@ public class CassandraBinary implements Binary {
 
     @Override
     public InputStream getContent() {
-        // TODO Auto-generated method stub
-        return null;
+        return retrieve(q.readStatement().bind(id));
     }
 
     @Override
@@ -60,8 +60,8 @@ public class CassandraBinary implements Binary {
         Statement boundStatement = q.readRangeStatement().bind(id.getIRIString(), firstChunk, lastChunk);
 
         // skip to fulfill lower end of range
-        try (InputStream retrieve = retrieve(boundStatement);) {
-            // we control the codec from 
+        try (InputStream retrieve = retrieve(boundStatement)) {
+            // we control the codec from
             retrieve.skip(chunkStreamStart);
             return new BoundedInputStream(retrieve, rangeSize); // apply limit for // range
         } catch (IOException e) {
@@ -69,13 +69,14 @@ public class CassandraBinary implements Binary {
         }
     }
 
+    //@formatter:off
     private InputStream retrieve(Statement boundStatement) {
         return stream(q.session().execute(boundStatement.setConsistencyLevel(q.readConsistency())).spliterator(), false)
-                        .peek(r -> log.debug("Retrieving chunk: {}", r.getInt("chunk_index")))
-                        .map(r -> r.get("chunk", InputStream.class)).reduce(SequenceInputStream::new).get(); // chunks
-        // now in
-        // one
-        // large
-        // stream
+                        .map(r->r.getInt("chunk_index"))
+                        .peek(chunkNumber -> log.debug("Found pointer to chunk: {}", chunkNumber))
+                        .map(chunkNumber -> q.readSingleChunk().bind(id, chunkNumber))
+                        .<InputStream> map(statement -> new LazyChunkInputStream(q.session(), statement))
+                        .reduce(SequenceInputStream::new).get(); // chunks now in one large stream
     }
+    //@formatter:on
 }
