@@ -67,7 +67,7 @@ public class CassandraResourceService extends CassandraService implements Resour
                     + " (identifier, quads, created) VALUES (?,?,?)";
     private PreparedStatement getStatement, immutableInsertStatement, deleteStatement;
 
-    private final ResourceQueries resourceQueries;
+    private final ResourceContext resourceQueries;
 
     /**
      * Constructor.
@@ -80,7 +80,7 @@ public class CassandraResourceService extends CassandraService implements Resour
     public CassandraResourceService(final Session session, @RdfReadConsistency ConsistencyLevel readCons,
                     @RdfWriteConsistency ConsistencyLevel writeCons) {
         super(session, readCons, writeCons);
-        this.resourceQueries = new ResourceQueries(session, readConsistency());
+        this.resourceQueries = new ResourceContext(session, readConsistency());
     }
 
     /**
@@ -239,7 +239,7 @@ public class CassandraResourceService extends CassandraService implements Resour
         return SUPPORTED_INTERACTION_MODELS;
     }
 
-    static class ResourceQueries {
+    static class ResourceContext {
 
         private static final String mutableQuadStreamQuery = "SELECT quads FROM " + MUTABLE_TABLENAME
                         + "  WHERE identifier = ? AND createdSeconds <= ? LIMIT 1 ALLOW FILTERING;";
@@ -256,7 +256,7 @@ public class CassandraResourceService extends CassandraService implements Resour
 
         private final ConsistencyLevel readConsistency;
 
-        ResourceQueries(Session session, ConsistencyLevel readCons) {
+        ResourceContext(Session session, ConsistencyLevel readCons) {
             this.session = session;
             this.readConsistency = readCons;
             prepareQueries();

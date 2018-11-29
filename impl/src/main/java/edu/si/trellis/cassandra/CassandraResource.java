@@ -10,7 +10,7 @@ import static org.trellisldp.vocabulary.LDP.*;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Statement;
 
-import edu.si.trellis.cassandra.CassandraResourceService.ResourceQueries;
+import edu.si.trellis.cassandra.CassandraResourceService.ResourceContext;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -40,12 +40,12 @@ class CassandraResource implements Resource {
 
     private final UUID created;
 
-    private final ResourceQueries queries;
+    private final ResourceContext queries;
 
     private final BinaryMetadata binary;
 
     public CassandraResource(IRI id, IRI ixnModel, boolean hasAcl, IRI binaryIdentifier, String mimeType, long size,
-                    IRI container, Instant modified, UUID created, ResourceQueries queries) {
+                    IRI container, Instant modified, UUID created, ResourceContext queries) {
         this.identifier = id;
         this.interactionModel = ixnModel;
         this.isContainer = Container.equals(getInteractionModel())

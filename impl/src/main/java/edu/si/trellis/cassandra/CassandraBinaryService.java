@@ -8,7 +8,11 @@ import static org.apache.commons.codec.digest.DigestUtils.updateDigest;
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.*;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import com.datastax.driver.core.*;
+import com.datastax.driver.core.ConsistencyLevel;
+import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.Row;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.Statement;
 import com.google.common.collect.ImmutableSet;
 
 import java.io.IOException;
@@ -26,10 +30,7 @@ import javax.inject.Inject;
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.rdf.api.IRI;
 import org.slf4j.Logger;
-import org.trellisldp.api.Binary;
-import org.trellisldp.api.BinaryMetadata;
-import org.trellisldp.api.BinaryService;
-import org.trellisldp.api.IdentifierService;
+import org.trellisldp.api.*;
 
 /**
  * Implements {@link BinaryService} by chunking binary data across Cassandra.
@@ -55,7 +56,7 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
 
     private PreparedStatement deleteStatement, insertStatement, retrieveStatement;
 
-    private final BinaryQueries queries;
+    private final BinaryContext queries;
     private final IdentifierService idService;
 
     /**
@@ -72,7 +73,7 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
         super(session, readCons, writeCons);
         this.idService = idService;
         log.info("Using chunk length: {}", chunkLength);
-        this.queries = new BinaryQueries(session(), chunkLength, readConsistency());
+        this.queries = new BinaryContext(session(), chunkLength, readConsistency());
     }
 
     @PostConstruct
@@ -89,7 +90,7 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
             final Row meta = rows.one();
             boolean wasFound = meta != null;
             log.debug("Binary {} was {}found", id, wasFound ? "" : "not ");
-            if (!wasFound) throw new RuntimeException("Binary not found under IRI: " + id.getIRIString());
+            if (!wasFound) throw new RuntimeTrellisException("Binary not found under IRI: " + id.getIRIString());
             return meta;
         }).thenApply(r -> r.getLong("size")).thenApply(size -> new CassandraBinary(id, size, queries));
     }
@@ -154,7 +155,7 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
      */
     private Executor mappingThread = Runnable::run;
 
-    static class BinaryQueries {
+    static class BinaryContext {
 
         private final Session session;
 
@@ -170,7 +171,7 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
 
         private final ConsistencyLevel readConsistency;
 
-        public BinaryQueries(Session session, int maxChunkLength, ConsistencyLevel consistency) {
+        public BinaryContext(Session session, int maxChunkLength, ConsistencyLevel consistency) {
             this.session = session;
             this.readStatement = session.prepare(READ_QUERY);
             this.readRangeStatement = session.prepare(READ_RANGE_QUERY);

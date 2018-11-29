@@ -55,6 +55,10 @@ public class CassandraApplication extends Application {
     public void importAdditionalConfig() {
         additionalConfigFile.map(this::toUrl).ifPresent(this::addConfig);
         additionalConfigUrl.ifPresent(this::addConfig);
+        log.debug("Using system properties:");
+        System.getProperties().forEach((k, v) -> log.debug("{} : {}", k, v));
+        log.debug("Using ENV vars:");
+        System.getenv().forEach((k, v) -> log.debug("{} : {}", k, v));
     }
 
     private URL toUrl(File f) {
