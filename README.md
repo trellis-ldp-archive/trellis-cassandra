@@ -18,7 +18,27 @@ mvn -Dcassandra.skip -Dcassandra.contactAddress=$NODE -Dcassandra.nativeTranspor
 ```
  to use an non-bundled Cassandra cluster for testing, but be aware that you must load an appropriate schema yourself if you do this. Please find an example in `src/test/resources/load.cql`.
 
-To configure for runtime, provide the location and port of a contact node in your Cassandra cluster. This can be done via environment properties (or Java system properties). Use the names `CASSANDRA_CONTACT_PORT`(`cassandra.contactPort`) and `CASSANDRA_CONTACT_ADDRESS`(`cassandra.contactAddress`) (subject to change < 1.0). Additionally, you may configure the size of chunk (in bytes) used for binary storage as `CASSANDRA_MAX_CHUNK_SIZE`(`cassandra.maxChunkSize`).
+You can launch the built application (found in `webapp/target`) via an invocation:
+```
+java $OPTS -jar webapp-$version-thorntail.jar webapp-$version.war
+```
+with `OPTS` set to whatever runtime properties for configuration you may require.
+
+### Important Options
+
+To configure the connection to Cassandra, you must provide the location and port of an initial contact node in your Cassandra cluster. This can be done via environment properties (or Java system properties). Use the names `CASSANDRA_CONTACT_PORT`(`cassandra.contactPort`) and `CASSANDRA_CONTACT_ADDRESS`(`cassandra.contactAddress`) (subject to change < 1.0). These default to `localhost` and `9042`. Additionally, you may configure the size (in bytes) of chunk used for binary storage as `CASSANDRA_MAX_CHUNK_SIZE`(`cassandra.maxChunkSize`).
+
+Trellis-Cassandra uses Logback for logging. To enable and configure logging, configure Logback via:
+```
+-Dorg.jboss.logging.provider=slf4j  -Dlogback.configurationFile=/your/logback/config
+```
+
+In some containerized deployments, you may receive an error like `java.net.SocketException: Protocol family unavailable`, which indicates that the appplication is trying to bind to an IPv6 port. You can prevent this if needed via
+```
+-Djava.net.preferIPv4Stack=true`
+```
+
+To configure the connection to Cassandra, you must provide the location and port of an initial contact node in your Cassandra cluster. This can be done via environment properties (or Java system properties). Use the names `CASSANDRA_CONTACT_PORT`(`cassandra.contactPort`) and `CASSANDRA_CONTACT_ADDRESS`(`cassandra.contactAddress`) (subject to change < 1.0). These default to `localhost` and `9042`. Additionally, you may configure the size (in bytes) of chunk used for binary storage as `CASSANDRA_MAX_CHUNK_SIZE`(`cassandra.maxChunkSize`).
 
 It is also possible to adjust consistency settings for read and write for binary and RDF data, all independently. The configuration keys are as follows:
 
