@@ -120,6 +120,9 @@ public class CassandraContext {
      */
     private static final int POLL_TIMEOUT = 1000;
 
+    private static final TypeCodec<?>[] STANDARD_CODECS = new TypeCodec<?>[] { SimpleTimestampCodec.instance,
+            inputStreamCodec, iriCodec, datasetCodec, bigint(), InstantCodec.instance };
+
     /**
      * Connect to Cassandra, lazily.
      */
@@ -131,33 +134,30 @@ public class CassandraContext {
                         .withoutJMXReporting().withoutMetrics().addContactPoint(contactAddress)
                         .withPort(parseInt(contactPort)).build();
         if (log.isDebugEnabled()) cluster.register(QueryLogger.builder().build());
-        cluster.getConfiguration().getCodecRegistry().register(SimpleTimestampCodec.instance, inputStreamCodec,
-                        iriCodec, datasetCodec, bigint(), InstantCodec.instance);
+        cluster.getConfiguration().getCodecRegistry().register(STANDARD_CODECS);
         Timer connector = new Timer("Cassandra Connection Maker", true);
-        TimerTask task = new TimerTask() {
+        log.debug("Connecting to Cassandra...");
+        connector.schedule(new TimerTask() {
             @Override
             public void run() {
-                if (portIsOpen(contactAddress, contactPort)) {
+                if (isPortOpen(contactAddress, contactPort)) {
                     session = cluster.connect("trellis");
                     log.debug("Connection made and keyspace set to 'trellis'.");
                     sessionInitialized.countDown();
-                    cancel();
+                    this.cancel();
                     connector.cancel();
-                }
+                } else log.debug("Still trying connection to {}:{}...", contactAddress, contactPort);
             }
-        };
-        log.debug("Waiting for connection...");
-        connector.schedule(task, 0, POLL_TIMEOUT);
+        }, 0, POLL_TIMEOUT);
     }
 
-    private static boolean portIsOpen(String ip, String port) {
+    private static boolean isPortOpen(String ip, String port) {
         try {
             Socket socket = new Socket();
             socket.connect(new InetSocketAddress(ip, parseInt(port)), POLL_TIMEOUT);
             socket.close();
             return true;
-        } catch (IOException e) {
-            log.debug("Still looking for connection to {}:{}...", ip, port);
+        } catch (@SuppressWarnings("unused") IOException e) {
             return false;
         }
     }

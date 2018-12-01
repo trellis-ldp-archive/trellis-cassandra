@@ -29,7 +29,7 @@ public class ByteBufferInputStreamTest {
     }
 
     @Test
-    public void availableWorks() throws IOException {
+    public void availableWorks() {
         ByteBufferInputStream stream = new ByteBufferInputStream(testData());
         assertEquals(7, stream.available());
     }
@@ -66,7 +66,7 @@ public class ByteBufferInputStreamTest {
     }
 
     @Test
-    public void readWorks() throws IOException {
+    public void readWorks() {
         ByteBufferInputStream stream = new ByteBufferInputStream(testData());
         for (int i : testByteArray) assertEquals(i, stream.read());
     }

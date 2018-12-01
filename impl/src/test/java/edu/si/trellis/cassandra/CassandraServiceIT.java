@@ -2,7 +2,6 @@ package edu.si.trellis.cassandra;
 
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.simple.SimpleRDF;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class CassandraServiceIT {
