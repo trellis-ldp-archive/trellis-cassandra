@@ -133,7 +133,7 @@ public class CassandraContext {
         if (log.isDebugEnabled()) cluster.register(QueryLogger.builder().build());
         cluster.getConfiguration().getCodecRegistry().register(SimpleTimestampCodec.instance, inputStreamCodec,
                         iriCodec, datasetCodec, bigint(), InstantCodec.instance);
-        Timer connector = new Timer("Cassandra Connection Maker");
+        Timer connector = new Timer("Cassandra Connection Maker", true);
         TimerTask task = new TimerTask() {
             @Override
             public void run() {
@@ -142,6 +142,7 @@ public class CassandraContext {
                     log.debug("Connection made and keyspace set to 'trellis'.");
                     sessionInitialized.countDown();
                     cancel();
+                    connector.cancel();
                 }
             }
         };
