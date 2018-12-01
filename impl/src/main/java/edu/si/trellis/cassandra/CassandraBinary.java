@@ -3,6 +3,7 @@ package edu.si.trellis.cassandra;
 import static java.util.stream.StreamSupport.stream;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.Statement;
 
 import edu.si.trellis.cassandra.CassandraBinaryService.BinaryContext;
@@ -33,8 +34,8 @@ public class CassandraBinary implements Binary {
 
     /**
      * @param id identifier for this {@link Binary}
-     * @param size size in bytes of this  {@code Binary}
-     * @param c context for queries 
+     * @param size size in bytes of this {@code Binary}
+     * @param c context for queries
      */
     public CassandraBinary(IRI id, Long size, BinaryContext c) {
         this.id = id;
@@ -70,10 +71,12 @@ public class CassandraBinary implements Binary {
 
     //@formatter:off
     private InputStream retrieve(Statement boundStatement) {
-        return stream(context.session().execute(boundStatement.setConsistencyLevel(context.readConsistency())).spliterator(), false)
+        ConsistencyLevel readConsistency = context.readConsistency();
+        Statement statementWithConsistency = boundStatement.setConsistencyLevel(readConsistency);
+        return stream(context.session().execute(statementWithConsistency).spliterator(), false)
                         .map(r -> r.getInt("chunk_index"))
                         .peek(chunkNumber -> log.debug("Found pointer to chunk: {}", chunkNumber))
-                        .map(chunkNumber -> context.readSingleChunk().bind(id, chunkNumber))
+                        .map(chunkNumber -> context.readSingleChunk().bind(id, chunkNumber).setConsistencyLevel(readConsistency))
                         .<InputStream> map(statement -> new LazyChunkInputStream(context.session(), statement))
                         .reduce(SequenceInputStream::new) // chunks now in one large stream
                         .orElseThrow(() -> new RuntimeTrellisException("Binary not found under IRI: " + id.getIRIString()));
