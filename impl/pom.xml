@@ -44,6 +44,8 @@
                 <cassandra.nativeTransportPort>${cassandra.nativeTransportPort}</cassandra.nativeTransportPort>
                 <cassandra.contactAddress>${cassandra.contactAddress}</cassandra.contactAddress>
                 <test.keyspace>${test.keyspace}</test.keyspace>
+                <logback.configurationFile>${project.build.directory}/test-classes/logback-test.xml</logback.configurationFile>
+                <project.build.directory>${project.build.directory}</project.build.directory>
               </systemProperties>
             </configuration>
           </execution>

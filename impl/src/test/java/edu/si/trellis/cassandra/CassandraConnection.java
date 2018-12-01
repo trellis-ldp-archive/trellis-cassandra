@@ -26,21 +26,25 @@ class CassandraConnection implements AfterAllCallback, BeforeAllCallback {
     private static final String keyspace = "trellis";
 
     private Cluster cluster;
+
     private Session session;
+
     CassandraResourceService resourceService;
+
     CassandraBinaryService binaryService;
 
-    private static final String contactAddress = System.getProperty("cassandra.contactAddress", "127.0.0.1");
+    private static final String contactAddress = System.getProperty("cassandra.contactAddress", "localhost");
 
-    private static final Integer port = Integer.getInteger("cassandra.nativeTransportPort", 9042);
+    private static final Integer contactPort = Integer.getInteger("cassandra.nativeTransportPort", 9042);
 
     private static final boolean cleanBefore = Boolean.getBoolean("cleanBeforeTests");
+
     private static final boolean cleanAfter = Boolean.getBoolean("cleanAfterTests");
 
     @Override
     public void beforeAll(ExtensionContext context) {
-        this.cluster = builder().withoutMetrics().withTimestampGenerator(new AtomicMonotonicTimestampGenerator())
-                        .addContactPoint(contactAddress).withPort(port).build();
+        log.debug("Trying Cassandra connection at: {}:{}", contactAddress, contactPort);
+        this.cluster = builder().withoutMetrics().addContactPoint(contactAddress).withPort(contactPort).build();
         codecRegistry().register(inputStreamCodec, iriCodec, datasetCodec, InstantCodec.instance,
                         SimpleTimestampCodec.instance);
         QueryLogger queryLogger = QueryLogger.builder().build();

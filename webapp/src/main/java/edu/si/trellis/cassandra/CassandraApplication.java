@@ -59,6 +59,10 @@ public class CassandraApplication extends Application {
         System.getProperties().forEach((k, v) -> log.debug("{} : {}", k, v));
         log.debug("Using ENV vars:");
         System.getenv().forEach((k, v) -> log.debug("{} : {}", k, v));
+        log.debug("Using Tamaya configuration sources:");
+        current().getContext().getPropertySources().forEach(s -> log.debug("{}", s));
+        log.debug("Using Tamaya configuration:");
+        current().getProperties().forEach((k, v) -> log.debug("{} : {}", k, v));
     }
 
     private URL toUrl(File f) {

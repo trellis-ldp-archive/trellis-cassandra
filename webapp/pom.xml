@@ -266,9 +266,11 @@
           </fractions>
           <fractionDetectMode>force</fractionDetectMode>
           <useUberJar>true</useUberJar>
+          <environment>
+            <CASSANDRA_CONTACT_PORT>${cassandra.nativeTransportPort}</CASSANDRA_CONTACT_PORT>
+            <CASSANDRA_CONTACT_ADDRESS>${cassandra.contactAddress}</CASSANDRA_CONTACT_ADDRESS>
+          </environment>
           <properties>
-            <cassandra.contactPort>${cassandra.nativeTransportPort}</cassandra.contactPort>
-            <cassandra.contactAddress>${cassandra.contactAddress}</cassandra.contactAddress>
             <swarm.http.port>${trellis.port}</swarm.http.port>
             <org.jboss.logging.provider>slf4j</org.jboss.logging.provider>
             <logback.configurationFile>${project.build.directory}/test-classes/logback-test.xml</logback.configurationFile>
