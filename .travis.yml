@@ -40,6 +40,9 @@ script: mvn -Dcassandra.skip -Dcassandra.nativeTransportPort=9042 install
 
 # in case of failure, spew reports
 after_failure:
-  - cat target/*-reports/*.txt
   - cat impl/target/*-reports/*.txt
   - cat webapp/target/*-reports/*.txt
+  - cat integration-tests/target/*-reports/*.txt
+  - cat impl/target/logs/system.log
+  - cat webapp/target/logs/system.log
+  - cat integration-tests/target/logs/system.log
