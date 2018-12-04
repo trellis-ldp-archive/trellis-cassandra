@@ -7,11 +7,13 @@ ADD target/webapp-*.war /webapp.war
 
 COPY docker_command.sh /command.sh
 RUN chmod +x /command.sh
+COPY logback-docker.xml /logback-docker.xml
+RUN mkdir /logs
 
 ARG GIT_COMMIT_ID_DESCRIBE
 ARG GIT_ORIGIN_REMOTE_URL
-LABEL git.remote.origin.url=${GIT_ORIGIN_REMOTE_URL}
-LABEL git.commit.id.describe=${GIT_COMMIT_ID_DESCRIBE}
+LABEL git.url=${GIT_ORIGIN_REMOTE_URL}
+LABEL git.commit=${GIT_COMMIT_ID_DESCRIBE}
 
 
 CMD ["/command.sh"]
