@@ -3,7 +3,6 @@ package edu.si.trellis.cassandra;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.UUID.randomUUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.BinaryMetadata.builder;
@@ -64,12 +63,6 @@ public class CassandraBinaryServiceIT extends CassandraServiceIT {
             assertEquals(md5sum, digest);
         }
 
-    }
-
-    @Test
-    public void badDigestAlgorithmChoice() {
-        assertThrows(IllegalArgumentException.class,
-                        () -> connection.binaryService.calculateDigest(createIRI(), "BAD DIGEST ALGORITHM!!!"));
     }
 
     private IRI createIRI() {

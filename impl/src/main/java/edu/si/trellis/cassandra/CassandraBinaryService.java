@@ -1,9 +1,7 @@
 package edu.si.trellis.cassandra;
 
 import static com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM;
-import static java.util.Base64.getEncoder;
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static org.apache.commons.codec.digest.DigestUtils.getDigest;
 import static org.apache.commons.codec.digest.DigestUtils.updateDigest;
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.*;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -129,11 +127,10 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
     }
 
     @Override
-    public CompletableFuture<String> calculateDigest(IRI identifier, String algorithm) {
-        MessageDigest digest = getDigest(algorithm);
+    public CompletableFuture<byte[]> calculateDigest(IRI identifier, MessageDigest algorithm) {
         return get(identifier).thenApply(Binary::getContent).thenApplyAsync(in -> {
             try (InputStream stream = in) {
-                return getEncoder().encodeToString(updateDigest(digest, stream).digest());
+                return updateDigest(algorithm, stream).digest();
             } catch (final IOException e) {
                 throw new UncheckedIOException(e);
             }
