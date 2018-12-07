@@ -38,7 +38,8 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
 
     private static final Logger log = getLogger(CassandraBinaryService.class);
 
-    private static final long DONE = -1;
+    @SuppressWarnings("boxing")
+    private static final Long DONE = -1L;
 
     private static final String SHA = "SHA";
 
@@ -107,7 +108,7 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
         try (CountingInputStream countingChunk = new CountingInputStream(
                         new BoundedInputStream(stream, queries.maxChunkLength()))) {
             @SuppressWarnings("cast")
-            // cast to match this object with InputStreamCodec
+            // upcast to match this object with InputStreamCodec
             InputStream chunk = (InputStream) countingChunk;
             Statement boundStatement = insertStatement.bind(id, size, chunkIndex.getAndIncrement(), chunk)
                             .setConsistencyLevel(LOCAL_QUORUM);
