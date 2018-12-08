@@ -16,7 +16,7 @@ to build with a bundled Cassandra instance for testing. See Maven profiles in `w
 ```
 mvn -Dcassandra.skip -Dcassandra.contactAddress=$NODE -Dcassandra.nativeTransportPort=$PORT clean install
 ```
- to use an non-bundled Cassandra cluster for testing, but be aware that you must load an appropriate schema yourself if you do this. Please find an example in `src/test/resources/load.cql`.
+ to use an non-bundled Cassandra cluster for testing, but be aware that you must load an appropriate schema yourself into the `Trellis` keyspace if you do this. Please find an example in `src/test/resources/load.cql`.
 
 You can launch the built application (found in `webapp/target`) via an invocation:
 ```
@@ -26,7 +26,7 @@ with `OPTS` set to whatever runtime properties for configuration you may require
 
 ### Important Options
 
-To configure the connection to Cassandra, you must provide the location and port of an initial contact node in your Cassandra cluster. This can be done via environment properties (or Java system properties). Use the names `CASSANDRA_CONTACT_PORT`(`cassandra.contactPort`) and `CASSANDRA_CONTACT_ADDRESS`(`cassandra.contactAddress`) (subject to change < 1.0). These default to `localhost` and `9042`. Additionally, you may configure the size (in bytes) of chunk used for binary storage as `CASSANDRA_MAX_CHUNK_SIZE`(`cassandra.maxChunkSize`).
+To configure the connection to Cassandra, you must provide the location and port of an initial contact node in your Cassandra cluster. This cluster must be configured (by some other means) with a minimal schema in the `Trellis` keyspace such as is shown in `src/test/resources/load.cql`. The connection can be configured via environment properties (or Java system properties). Use the names `CASSANDRA_CONTACT_PORT`(`cassandra.contactPort`) and `CASSANDRA_CONTACT_ADDRESS`(`cassandra.contactAddress`) (subject to change < 1.0). These default to `localhost` and `9042`. Additionally, you may configure the size (in bytes) of chunk used for binary storage as `CASSANDRA_MAX_CHUNK_SIZE`(`cassandra.maxChunkSize`).
 
 Trellis-Cassandra uses Logback for logging. To enable and configure logging, configure Logback via:
 ```
