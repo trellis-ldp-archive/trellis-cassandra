@@ -78,7 +78,7 @@ public class CassandraResourceService extends CassandraService implements Resour
     private PreparedStatement getStatement, immutableInsertStatement, deleteStatement, mutableInsertStatement,
                     touchStatement, mementosStatement;
 
-    private final ResourceContext resourceQueries;
+    private final ResourceQueryContext resourceQueries;
 
     /**
      * Constructor.
@@ -91,7 +91,7 @@ public class CassandraResourceService extends CassandraService implements Resour
     public CassandraResourceService(final Session session, @RdfReadConsistency ConsistencyLevel readCons,
                     @RdfWriteConsistency ConsistencyLevel writeCons) {
         super(session, readCons, writeCons);
-        this.resourceQueries = new ResourceContext(session, readConsistency());
+        this.resourceQueries = new ResourceQueryContext(session, readConsistency());
     }
 
     /**
@@ -241,7 +241,7 @@ public class CassandraResourceService extends CassandraService implements Resour
         return SUPPORTED_INTERACTION_MODELS;
     }
 
-    static class ResourceContext {
+    static class ResourceQueryContext {
 
         private static final String mutableQuadStreamQuery = "SELECT quads FROM " + MUTABLE_TABLENAME
                         + "  WHERE identifier = ? AND createdSeconds <= ? LIMIT 1 ALLOW FILTERING;";
@@ -256,22 +256,15 @@ public class CassandraResourceService extends CassandraService implements Resour
 
         private PreparedStatement mutableQuadStreamStatement, immutableQuadStreamStatement, basicContainmentStatement;
 
-        private final ConsistencyLevel readConsistency;
-
-        ResourceContext(Session session, ConsistencyLevel readCons) {
+        ResourceQueryContext(Session session, ConsistencyLevel consistency) {
             this.session = session;
-            this.readConsistency = readCons;
-            prepareQueries();
-        }
-
-        void prepareQueries() {
             log.trace("Preparing " + getClass().getSimpleName() + " queries.");
             this.mutableQuadStreamStatement = session.prepare(mutableQuadStreamQuery)
-                            .setConsistencyLevel(readConsistency);
+                            .setConsistencyLevel(consistency);
             this.immutableQuadStreamStatement = session.prepare(immutableQuadStreamQuery)
-                            .setConsistencyLevel(readConsistency);
+                            .setConsistencyLevel(consistency);
             this.basicContainmentStatement = session.prepare(basicContainmentQuery)
-                            .setConsistencyLevel(readConsistency);
+                            .setConsistencyLevel(consistency);
             log.trace("Prepared " + getClass().getSimpleName() + " queries.");
         }
 

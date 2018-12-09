@@ -1,7 +1,6 @@
 package edu.si.trellis.cassandra;
 
-import static com.datastax.driver.core.ConsistencyLevel.LOCAL_QUORUM;
-import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.apache.commons.codec.digest.DigestUtils.updateDigest;
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.*;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -19,7 +18,6 @@ import java.io.UncheckedIOException;
 import java.security.MessageDigest;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.PostConstruct;
@@ -115,14 +113,20 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
             @SuppressWarnings("cast")
             // upcast to match this object with InputStreamCodec
             InputStream chunk = (InputStream) countingChunk;
-            Statement boundStatement = insertStatement.bind(id, size, chunkIndex.getAndIncrement(), chunk)
-                            .setConsistencyLevel(LOCAL_QUORUM);
+            Statement boundStatement = insertStatement.bind(id, size, chunkIndex.getAndIncrement(), chunk);
             return translate(session().executeAsync(boundStatement.setConsistencyLevel(writeConsistency())))
                             .thenApply(r -> countingChunk.getByteCount())
                             .thenComposeAsync(bytesStored -> bytesStored == maxChunkLength
                                             ? setChunk(meta, stream, chunkIndex)
-                                            : completedFuture(DONE), mappingThread);
+                                            : finished(id), workers);
         }
+    }
+
+    private static CompletableFuture<Long> finished(IRI id) {
+        return supplyAsync(() -> {
+            log.debug("Finished persisting: {}", id);
+            return DONE;
+        }, Runnable::run);
     }
 
     @Override
@@ -140,7 +144,7 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
             } catch (final IOException e) {
                 throw new UncheckedIOException(e);
             }
-        }, mappingThread);
+        }, workers);
     }
 
     @Override
@@ -152,11 +156,6 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
     public String generateIdentifier() {
         return idService.getSupplier().get();
     }
-
-    /**
-     * TODO threadpool?
-     */
-    private Executor mappingThread = Runnable::run;
 
     static class BinaryQueryContext {
 
