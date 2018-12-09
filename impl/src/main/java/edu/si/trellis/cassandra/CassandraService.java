@@ -1,6 +1,7 @@
 package edu.si.trellis.cassandra;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
+import static java.util.concurrent.Executors.newCachedThreadPool;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import com.datastax.driver.core.*;
@@ -36,10 +37,7 @@ abstract class CassandraService {
         return writeConsistency;
     }
 
-    /**
-     * Same-thread execution. TODO use a pool?
-     */
-    private final Executor executor = Runnable::run;
+    protected final Executor workers = newCachedThreadPool();
 
     protected CassandraService(Session session, ConsistencyLevel readCons, ConsistencyLevel writeCons) {
         this.session = session;
@@ -69,15 +67,6 @@ abstract class CassandraService {
                 log.error("Error in persistence!", e.getCause());
                 throw new CompletionException(e.getCause());
             }
-        }, executor);
+        }, workers);
     }
-
-    protected <T> Optional<T> resynchronize(CompletableFuture<T> from) {
-        try {
-            return Optional.of(from.get());
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeTrellisException(e);
-        }
-    }
-
 }

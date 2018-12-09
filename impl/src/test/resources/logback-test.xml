@@ -1,4 +1,4 @@
-<configuration debug="true" scan="true">
+<configuration debug="false" scan="true">
 
   <property name="log.dir" value="${project.build.directory}/logs"/>
 
@@ -20,7 +20,7 @@
     <appender-ref ref="STDOUT"/>
   </root>
 
-  <!-- <logger name="org.apache.cassandra" level="WARN"/> -->
+  <logger name="org.apache.cassandra" level="WARN"/>
   <!-- <logger name="com.thinkaurelius.thrift" level="ERROR"/> -->
   <logger name="org.apache.tamaya" level="DEBUG"/>
   <logger name="edu.si" level="TRACE"/>
