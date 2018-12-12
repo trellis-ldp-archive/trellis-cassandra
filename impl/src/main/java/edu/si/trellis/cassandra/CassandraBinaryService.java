@@ -161,7 +161,7 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
 
         private final Session session;
 
-        private static final String READ_QUERY = "SELECT chunk_index FROM Binarydata WHERE identifier = ?;";
+        private static final String READ_ALL_QUERY = "SELECT chunk_index FROM Binarydata WHERE identifier = ?;";
 
         private static final String READ_RANGE_QUERY = "SELECT chunk_index FROM Binarydata WHERE identifier = ? and chunk_index >= :start and chunk_index <= :end;";
 
@@ -171,7 +171,7 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
 
         public BinaryQueryContext(Session session, ConsistencyLevel consistency) {
             this.session = session;
-            this.readStatement = session.prepare(READ_QUERY).setConsistencyLevel(consistency);
+            this.readStatement = session.prepare(READ_ALL_QUERY).setConsistencyLevel(consistency);
             this.readRangeStatement = session.prepare(READ_RANGE_QUERY).setConsistencyLevel(consistency);
             this.readChunkStatement = session.prepare(READ_CHUNK_QUERY).setConsistencyLevel(consistency);
         }
