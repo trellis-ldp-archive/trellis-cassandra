@@ -50,10 +50,10 @@ class CassandraConnection implements AfterAllCallback, BeforeAllCallback {
         QueryLogger queryLogger = QueryLogger.builder().build();
         cluster.register(queryLogger);
         this.session = cluster.connect("trellis");
-        this.resourceService = new CassandraResourceService(session, ONE, ONE);
+        this.resourceService = new CassandraResourceService(new ResourceQueryContext(session, ONE, ONE));
         resourceService.initializeQueriesAndRoot();
-        this.binaryService = new CassandraBinaryService(null, session, MaxChunkSize.DEFAULT_MAX_CHUNK_SIZE, ONE, ONE);
-        binaryService.initializeStatements();
+        this.binaryService = new CassandraBinaryService(null, MaxChunkSize.DEFAULT_MAX_CHUNK_SIZE,
+                        new BinaryQueryContext(session, ONE, ONE));
         if (cleanBefore) cleanOut();
     }
 

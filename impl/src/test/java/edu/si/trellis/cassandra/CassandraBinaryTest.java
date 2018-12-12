@@ -1,14 +1,15 @@
 package edu.si.trellis.cassandra;
 
+import static com.datastax.driver.core.ConsistencyLevel.ONE;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.when;
 
 import com.datastax.driver.core.*;
-
-import edu.si.trellis.cassandra.CassandraBinaryService.BinaryQueryContext;
 
 import java.io.InputStream;
 import java.util.Spliterator;
@@ -20,6 +21,7 @@ import org.apache.commons.rdf.simple.SimpleRDF;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.trellisldp.api.RuntimeTrellisException;
 
@@ -34,9 +36,6 @@ public class CassandraBinaryTest {
     private int testChunkSize;
 
     private final IRI testId = factory.createIRI("urn:test");
-
-    @Mock
-    private BinaryQueryContext mockContext;
 
     @Mock
     private PreparedStatement mockPreparedStatement1, mockPreparedStatement2;
@@ -60,21 +59,23 @@ public class CassandraBinaryTest {
 
     @Test
     public void correctSize() {
-        CassandraBinary testCassandraBinary = new CassandraBinary(testId, testSize, mockContext, testChunkSize);
+        when(mockSession.prepare(anyString())).thenReturn(mockPreparedStatement1);
+        BinaryQueryContext testContext = new BinaryQueryContext(mockSession, ONE, ONE);
+        CassandraBinary testCassandraBinary = new CassandraBinary(testId, testSize, testContext, testChunkSize);
         assertSame(testSize, testCassandraBinary.getSize());
     }
 
     @Test
     public void noContent() {
-
-        when(mockContext.readStatement()).thenReturn(mockPreparedStatement1);
+        when(mockSession.prepare(anyString())).thenReturn(mockPreparedStatement1);
         when(mockPreparedStatement1.bind(testId)).thenReturn(mockBoundStatement1);
-        when(mockContext.session()).thenReturn(mockSession);
+        when(mockPreparedStatement1.setConsistencyLevel(any())).thenReturn(mockPreparedStatement1);
+        BinaryQueryContext testContext = new BinaryQueryContext(mockSession, ONE, ONE);
         when(mockSession.execute(mockBoundStatement1)).thenReturn(mockResultSet1);
         testSpliterator = new TestRowSpliterator(0, mockRow);
         when(mockResultSet1.spliterator()).thenReturn(testSpliterator);
 
-        CassandraBinary testCassandraBinary = new CassandraBinary(testId, testSize, mockContext, testChunkSize);
+        CassandraBinary testCassandraBinary = new CassandraBinary(testId, testSize, testContext, testChunkSize);
 
         try {
             testCassandraBinary.getContent();

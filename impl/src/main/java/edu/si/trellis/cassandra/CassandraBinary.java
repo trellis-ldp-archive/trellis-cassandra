@@ -5,8 +5,6 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import com.datastax.driver.core.Statement;
 
-import edu.si.trellis.cassandra.CassandraBinaryService.BinaryQueryContext;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
@@ -53,7 +51,7 @@ public class CassandraBinary implements Binary {
 
     @Override
     public InputStream getContent() {
-        return retrieve(context.readStatement().bind(id));
+        return retrieve(context.readStatement.bind(id));
     }
 
     @Override
@@ -62,7 +60,7 @@ public class CassandraBinary implements Binary {
         int lastChunk = to / chunkLength;
         int chunkStreamStart = from % chunkLength;
         int rangeSize = to - from + 1; // +1 because range is inclusive
-        Statement boundStatement = context.readRangeStatement().bind(id.getIRIString(), firstChunk, lastChunk);
+        Statement boundStatement = context.readRangeStatement.bind(id.getIRIString(), firstChunk, lastChunk);
 
         try (InputStream retrieve = retrieve(boundStatement)) {
             retrieve.skip(chunkStreamStart); // skip to fulfill lower end of range
@@ -74,11 +72,11 @@ public class CassandraBinary implements Binary {
 
     //@formatter:off
     private InputStream retrieve(Statement statement) {
-        return stream(context.session().execute(statement).spliterator(), false)
+        return stream(context.session.execute(statement).spliterator(), false)
                         .map(r -> r.getInt("chunk_index"))
                         .peek(chunkNumber -> log.debug("Found pointer to chunk: {}", chunkNumber))
-                        .map(chunkNumber -> context.readSingleChunk().bind(id, chunkNumber))
-                        .<InputStream> map(s -> new LazyChunkInputStream(context.session(), s))
+                        .map(chunkNumber -> context.readChunkStatement.bind(id, chunkNumber))
+                        .<InputStream> map(s -> new LazyChunkInputStream(context.session, s))
                         .reduce(SequenceInputStream::new) // chunks now in one large stream
                         .orElseThrow(() -> new RuntimeTrellisException("Binary not found under IRI: " + id.getIRIString()));
     }

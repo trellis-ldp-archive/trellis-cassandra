@@ -10,8 +10,6 @@ import static org.trellisldp.vocabulary.LDP.*;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Statement;
 
-import edu.si.trellis.cassandra.CassandraResourceService.ResourceQueryContext;
-
 import java.time.Instant;
 import java.util.Optional;
 import java.util.Spliterator;
@@ -109,9 +107,9 @@ class CassandraResource implements Resource {
     public Stream<Quad> stream() {
         log.trace("Retrieving quad stream for resource {}", getIdentifier());
         long createdMs = unixTimestamp(getCreated());
-        Statement mutableQuadStreamQuery = queries.mutableQuadStreamStatement().bind(getIdentifier(), createdMs);
+        Statement mutableQuadStreamQuery = queries.mutableQuadStreamStatement.bind(getIdentifier(), createdMs);
         Stream<Quad> mutableQuads = quadStreamFromQuery(mutableQuadStreamQuery);
-        Statement immutableQuadStreamQuery = queries.immutableQuadStreamStatement().bind(getIdentifier());
+        Statement immutableQuadStreamQuery = queries.immutableQuadStreamStatement.bind(getIdentifier());
         Stream<Quad> immutableQuads = quadStreamFromQuery(immutableQuadStreamQuery);
         Stream<Quad> quads = concat(mutableQuads, immutableQuads);
         if (isContainer) {
@@ -124,15 +122,15 @@ class CassandraResource implements Resource {
 
     private Stream<Triple> basicContainmentTriples() {
         RDF rdfFactory = TrellisUtils.getInstance();
-        final Spliterator<Row> rows = queries.session()
-                        .execute(queries.basicContainmentStatement().bind(getIdentifier())).spliterator();
+        final Spliterator<Row> rows = queries.session.execute(queries.basicContainmentStatement.bind(getIdentifier()))
+                        .spliterator();
         Stream<IRI> contained = StreamSupport.stream(rows, false).map(getFieldAs("contained", IRI.class));
         return contained.map(cont -> rdfFactory.createTriple(getIdentifier(), LDP.contains, cont))
                         .peek(t -> log.trace("Built containment triple: {}", t));
     }
 
     private Stream<Quad> quadStreamFromQuery(final Statement boundStatement) {
-        final Spliterator<Row> rows = queries.session().execute(boundStatement).spliterator();
+        final Spliterator<Row> rows = queries.session.execute(boundStatement).spliterator();
         Stream<Dataset> datasets = StreamSupport.stream(rows, false).map(getFieldAs("quads", Dataset.class));
         return datasets.flatMap(Dataset::stream);
     }
