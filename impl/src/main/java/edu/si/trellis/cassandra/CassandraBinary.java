@@ -3,7 +3,6 @@ package edu.si.trellis.cassandra;
 import static java.util.stream.StreamSupport.stream;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.Statement;
 
 import edu.si.trellis.cassandra.CassandraBinaryService.BinaryQueryContext;
@@ -74,14 +73,12 @@ public class CassandraBinary implements Binary {
     }
 
     //@formatter:off
-    private InputStream retrieve(Statement boundStatement) {
-        ConsistencyLevel readConsistency = context.readConsistency();
-        Statement statementWithConsistency = boundStatement.setConsistencyLevel(readConsistency);
-        return stream(context.session().execute(statementWithConsistency).spliterator(), false)
+    private InputStream retrieve(Statement statement) {
+        return stream(context.session().execute(statement).spliterator(), false)
                         .map(r -> r.getInt("chunk_index"))
                         .peek(chunkNumber -> log.debug("Found pointer to chunk: {}", chunkNumber))
                         .map(chunkNumber -> context.readSingleChunk().bind(id, chunkNumber))
-                        .<InputStream> map(statement -> new LazyChunkInputStream(context.session(), statement))
+                        .<InputStream> map(s -> new LazyChunkInputStream(context.session(), s))
                         .reduce(SequenceInputStream::new) // chunks now in one large stream
                         .orElseThrow(() -> new RuntimeTrellisException("Binary not found under IRI: " + id.getIRIString()));
     }

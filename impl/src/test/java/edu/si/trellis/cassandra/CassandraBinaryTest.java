@@ -4,7 +4,6 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import com.datastax.driver.core.*;
@@ -71,8 +70,7 @@ public class CassandraBinaryTest {
         when(mockContext.readStatement()).thenReturn(mockPreparedStatement1);
         when(mockPreparedStatement1.bind(testId)).thenReturn(mockBoundStatement1);
         when(mockContext.session()).thenReturn(mockSession);
-        when(mockSession.execute(mockBoundStatement1.setConsistencyLevel(any(ConsistencyLevel.class))))
-                        .thenReturn(mockResultSet1);
+        when(mockSession.execute(mockBoundStatement1)).thenReturn(mockResultSet1);
         testSpliterator = new TestRowSpliterator(0, mockRow);
         when(mockResultSet1.spliterator()).thenReturn(testSpliterator);
 

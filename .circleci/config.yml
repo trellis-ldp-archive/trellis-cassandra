@@ -47,6 +47,18 @@ jobs:
           find . -type f -regex ".*/target/surefire-reports/.*txt" -exec cp {} ~/junit/ \;
           find . -type f -regex ".*/target/failsafe-reports/.*txt" -exec cp {} ~/junit/ \;
         when: always
+    - run:
+        name: Spool test results 
+        command: find ~/junit -name *.txt | xargs cat
+        when: on_fail
+    - run:
+        name: Spool logs 
+        command: find . -type f -regex ".*/target/logs/system.log" -exec cat {} \;
+        when: on_fail
+    - run:
+        name: Spool itest logs 
+        command: cat integration-tests/target/logs/system.log
+        when: on_fail
     - store_test_results:
         path: ~/junit
     - store_artifacts:

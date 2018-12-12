@@ -1,6 +1,5 @@
 package edu.si.trellis.cassandra;
 
-import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
 import static java.time.Instant.now;
 import static java.time.temporal.ChronoUnit.DAYS;
 import static java.time.temporal.ChronoUnit.SECONDS;
@@ -21,7 +20,6 @@ import static org.trellisldp.vocabulary.LDP.RDFSource;
 
 import com.datastax.driver.core.*;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.querybuilder.Select.Where;
 import com.datastax.driver.core.utils.UUIDs;
 import com.google.common.collect.ImmutableSet;
 
@@ -55,7 +53,9 @@ public class CassandraResourceService extends CassandraService implements Resour
     private static final Logger log = getLogger(CassandraResourceService.class);
 
     static final String MUTABLE_TABLENAME = "mutabledata";
+
     static final String IMMUTABLE_TABLENAME = "immutabledata";
+
     static final String BASIC_CONTAINMENT_TABLENAME = "basiccontainment";
 
     private static final String GET_QUERY = "SELECT * FROM " + MUTABLE_TABLENAME + " WHERE identifier = ? AND "
@@ -65,7 +65,18 @@ public class CassandraResourceService extends CassandraService implements Resour
 
     private static final String IMMUTABLE_INSERT_QUERY = "INSERT INTO " + IMMUTABLE_TABLENAME
                     + " (identifier, quads, created) VALUES (?,?,?)";
-    private PreparedStatement getStatement, immutableInsertStatement, deleteStatement;
+
+    private static final String MUTABLE_INSERT_QUERY = "INSERT INTO " + MUTABLE_TABLENAME
+                    + " (interactionModel, size, mimeType, createdSeconds, container, quads, modified, binaryIdentifier, created, identifier)"
+                    + " VALUES (?,?,?,?,?,?,?,?,?,?)";
+
+    private static final String TOUCH_QUERY = "UPDATE " + MUTABLE_TABLENAME
+                    + " SET modified=? WHERE created=? AND identifier=?";
+
+    private static final String MEMENTOS_QUERY = "SELECT modified FROM " + MUTABLE_TABLENAME + " WHERE identifier = ?";
+
+    private PreparedStatement getStatement, immutableInsertStatement, deleteStatement, mutableInsertStatement,
+                    touchStatement, mementosStatement;
 
     private final ResourceContext resourceQueries;
 
@@ -89,11 +100,18 @@ public class CassandraResourceService extends CassandraService implements Resour
     @PostConstruct
     void initializeQueriesAndRoot() {
         log.debug("Preparing retrieval query: {}", GET_QUERY);
-        this.getStatement = session().prepare(GET_QUERY);
+        this.getStatement = session().prepare(GET_QUERY).setConsistencyLevel(readConsistency());
         log.debug("Preparing deletion query: {}", DELETE_QUERY);
-        this.deleteStatement = session().prepare(DELETE_QUERY);
+        this.deleteStatement = session().prepare(DELETE_QUERY).setConsistencyLevel(writeConsistency());
         log.debug("Preparing immmutable data insert query: {}", IMMUTABLE_INSERT_QUERY);
-        this.immutableInsertStatement = session().prepare(IMMUTABLE_INSERT_QUERY);
+        this.immutableInsertStatement = session().prepare(IMMUTABLE_INSERT_QUERY)
+                        .setConsistencyLevel(writeConsistency());
+        log.debug("Preparing mutable data insert statement: {}", MUTABLE_INSERT_QUERY);
+        this.mutableInsertStatement = session().prepare(MUTABLE_INSERT_QUERY).setConsistencyLevel(writeConsistency());
+        log.debug("Preparing touch data update statement: {}", TOUCH_QUERY);
+        this.touchStatement = session().prepare(TOUCH_QUERY).setConsistencyLevel(writeConsistency());
+        log.debug("Preparing Mementos data retrieval statement: {}", MEMENTOS_QUERY);
+        this.mementosStatement = session().prepare(MEMENTOS_QUERY).setConsistencyLevel(readConsistency());
 
         IRI rootIri = TrellisUtils.getInstance().createIRI(TRELLIS_DATA_PREFIX);
         try {
@@ -159,7 +177,7 @@ public class CassandraResourceService extends CassandraService implements Resour
     @Override
     public CompletableFuture<Void> add(final IRI id, final Dataset dataset) {
         log.debug("Adding immutable data to {}", id);
-        return executeAndDone(immutableInsertStatement.bind(id, dataset, now()), writeConsistency());
+        return executeAndDone(immutableInsertStatement.bind(id, dataset, now()));
     }
 
     @Override
@@ -177,7 +195,7 @@ public class CassandraResourceService extends CassandraService implements Resour
     @Override
     public CompletableFuture<Void> delete(Metadata meta) {
         log.debug("Deleting {}", meta.getIdentifier());
-        return executeAndDone(deleteStatement.bind(meta.getIdentifier()), writeConsistency());
+        return executeAndDone(deleteStatement.bind(meta.getIdentifier()));
     }
 
     /*
@@ -186,10 +204,7 @@ public class CassandraResourceService extends CassandraService implements Resour
     @Override
     public CompletableFuture<Void> touch(IRI id) {
         return get(id).thenApply(CassandraResource.class::cast).thenApply(CassandraResource::getCreated)
-                        .thenCompose(created -> executeAndDone(
-                                        update(MUTABLE_TABLENAME).where(eq("identifier", id))
-                                                        .and(eq("created", created)).with(set("modified", now())),
-                                        writeConsistency()));
+                        .thenCompose(created -> executeAndDone(touchStatement.bind(now(), created, id)));
     }
 
     @Override
@@ -200,8 +215,7 @@ public class CassandraResourceService extends CassandraService implements Resour
 
     @Override
     public CompletableFuture<SortedSet<Instant>> mementos(IRI id) {
-        Where query = select("modified").from(MUTABLE_TABLENAME).where(eq("identifier", id));
-        return execute(query, readConsistency())
+        return execute(mementosStatement.bind(id))
                         .thenApply(results -> stream(results::spliterator, NONNULL + DISTINCT, false)
                                         .map(getFieldAs("modified", Instant.class))
                                         .map(time -> time.truncatedTo(SECONDS)).collect(toCollection(TreeSet::new)));
@@ -218,20 +232,8 @@ public class CassandraResourceService extends CassandraService implements Resour
         String mimeType = binary.flatMap(BinaryMetadata::getMimeType).orElse(null);
         IRI container = meta.getContainer().orElse(null);
 
-        //@formatter:off
-        return executeAndDone(insertInto(MUTABLE_TABLENAME)
-                        .value("interactionModel", ixnModel)
-                        .value("size", size)
-                        .value("mimeType", mimeType)
-                        .value("createdSeconds", now.truncatedTo(SECONDS))
-                        .value("container", container)
-                        .value("quads", data)
-                        .value("modified", now)
-                        .value("binaryIdentifier", binaryIdentifier)
-                        .value("created", UUIDs.timeBased())
-                        .value("identifier", id), 
-                        writeConsistency());
-        //@formatter:on
+        return executeAndDone(mutableInsertStatement.bind(ixnModel, size, mimeType, now.truncatedTo(SECONDS), container,
+                        data, now, binaryIdentifier, UUIDs.timeBased(), id));
     }
 
     @Override

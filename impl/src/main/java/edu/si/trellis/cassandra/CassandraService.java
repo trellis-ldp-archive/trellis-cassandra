@@ -51,13 +51,13 @@ abstract class CassandraService {
         return session;
     }
 
-    protected CompletableFuture<Void> executeAndDone(Statement statement, ConsistencyLevel readCons) {
+    protected CompletableFuture<Void> executeAndDone(Statement statement) {
         log.debug("Executing CQL statement: {}", statement);
-        return execute(statement, readCons).thenApply(r -> null);
+        return execute(statement).thenAccept(r -> log.debug("Executed CQL statement: {}", statement));
     }
 
-    protected CompletableFuture<ResultSet> execute(Statement statement, ConsistencyLevel readCons) {
-        return translate(session().executeAsync(statement.setConsistencyLevel(readCons)));
+    protected CompletableFuture<ResultSet> execute(Statement statement) {
+        return translate(session().executeAsync(statement));
     }
 
     protected <T> CompletableFuture<T> translate(ListenableFuture<T> result) {

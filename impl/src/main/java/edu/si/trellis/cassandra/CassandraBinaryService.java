@@ -110,8 +110,8 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
         Long size = meta.getSize().orElse(null);
         log.debug("Recording chunk {} of binary content under: {}", chunkIndex.get(), id);
 
-        try (BoundedInputStream bs = new BoundedInputStream(stream, maxChunkLength);
-             CountingInputStream countingChunk = new CountingInputStream(bs)) {
+        try (CountingInputStream countingChunk = new CountingInputStream(
+                        new BoundedInputStream(stream, maxChunkLength))) {
             @SuppressWarnings("cast")
             // upcast to match this object with InputStreamCodec
             InputStream chunk = (InputStream) countingChunk;
@@ -122,8 +122,6 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
                             .thenComposeAsync(bytesStored -> bytesStored == maxChunkLength
                                             ? setChunk(meta, stream, chunkIndex)
                                             : completedFuture(DONE), mappingThread);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
         }
     }
 
@@ -172,14 +170,11 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
 
         private PreparedStatement readRangeStatement, readStatement, readChunkStatement;
 
-        private final ConsistencyLevel readConsistency;
-
         public BinaryQueryContext(Session session, ConsistencyLevel consistency) {
             this.session = session;
-            this.readStatement = session.prepare(READ_QUERY);
-            this.readRangeStatement = session.prepare(READ_RANGE_QUERY);
-            this.readChunkStatement = session.prepare(READ_CHUNK_QUERY);
-            this.readConsistency = consistency;
+            this.readStatement = session.prepare(READ_QUERY).setConsistencyLevel(consistency);
+            this.readRangeStatement = session.prepare(READ_RANGE_QUERY).setConsistencyLevel(consistency);
+            this.readChunkStatement = session.prepare(READ_CHUNK_QUERY).setConsistencyLevel(consistency);
         }
 
         Session session() {
@@ -197,10 +192,5 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
         PreparedStatement readStatement() {
             return readStatement;
         }
-
-        ConsistencyLevel readConsistency() {
-            return readConsistency;
-        }
-
     }
 }
