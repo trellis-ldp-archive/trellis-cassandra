@@ -8,17 +8,18 @@ import static org.trellisldp.api.TrellisUtils.toQuad;
 import static org.trellisldp.vocabulary.LDP.*;
 
 import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Statement;
 
 import java.time.Instant;
 import java.util.Optional;
 import java.util.Spliterator;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import org.apache.commons.rdf.api.*;
+import org.apache.commons.rdf.api.IRI;
+import org.apache.commons.rdf.api.Quad;
+import org.apache.commons.rdf.api.RDF;
+import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
 import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.Resource;
@@ -106,11 +107,9 @@ class CassandraResource implements Resource {
     @Override
     public Stream<Quad> stream() {
         log.trace("Retrieving quad stream for resource {}", getIdentifier());
-        long createdMs = unixTimestamp(getCreated());
-        Statement mutableQuadStreamQuery = queries.mutableQuadStreamStatement.bind(getIdentifier(), createdMs);
-        Stream<Quad> mutableQuads = quadStreamFromQuery(mutableQuadStreamQuery);
-        Statement immutableQuadStreamQuery = queries.immutableQuadStreamStatement.bind(getIdentifier());
-        Stream<Quad> immutableQuads = quadStreamFromQuery(immutableQuadStreamQuery);
+        Long createdMs = unixTimestamp(getCreated());
+        Stream<Quad> mutableQuads = queries.mutableQuadStream(getIdentifier(), createdMs);
+        Stream<Quad> immutableQuads = queries.immutableQuadStream(getIdentifier());
         Stream<Quad> quads = concat(mutableQuads, immutableQuads);
         if (isContainer) {
             Stream<Quad> containmentQuadsInContainment = basicContainmentTriples().map(toQuad(PreferContainment));
@@ -122,20 +121,9 @@ class CassandraResource implements Resource {
 
     private Stream<Triple> basicContainmentTriples() {
         RDF rdfFactory = TrellisUtils.getInstance();
-        final Spliterator<Row> rows = queries.session.execute(queries.basicContainmentStatement.bind(getIdentifier()))
-                        .spliterator();
-        Stream<IRI> contained = StreamSupport.stream(rows, false).map(getFieldAs("contained", IRI.class));
+        final Spliterator<Row> rows = queries.containment(getIdentifier()).spliterator();
+        Stream<IRI> contained = StreamSupport.stream(rows, false).map(r -> r.get("contained", IRI.class));
         return contained.map(cont -> rdfFactory.createTriple(getIdentifier(), LDP.contains, cont))
                         .peek(t -> log.trace("Built containment triple: {}", t));
-    }
-
-    private Stream<Quad> quadStreamFromQuery(final Statement boundStatement) {
-        final Spliterator<Row> rows = queries.session.execute(boundStatement).spliterator();
-        Stream<Dataset> datasets = StreamSupport.stream(rows, false).map(getFieldAs("quads", Dataset.class));
-        return datasets.flatMap(Dataset::stream);
-    }
-
-    private static <T> Function<Row, T> getFieldAs(String k, Class<T> klass) {
-        return row -> row.get(k, klass);
     }
 }

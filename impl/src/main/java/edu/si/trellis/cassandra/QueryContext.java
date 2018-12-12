@@ -11,6 +11,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.function.Function;
 
 import org.slf4j.Logger;
 
@@ -48,6 +49,10 @@ abstract class QueryContext {
 
     protected CompletableFuture<ResultSet> execute(Statement statement) {
         return translate(session.executeAsync(statement));
+    }
+
+    protected ResultSet executeSync(Statement statement) {
+        return session.execute(statement);
     }
 
     protected <T> CompletableFuture<T> translate(ListenableFuture<T> result) {

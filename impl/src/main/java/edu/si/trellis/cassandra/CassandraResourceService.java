@@ -20,7 +20,6 @@ import static org.trellisldp.vocabulary.LDP.RDFSource;
 
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.utils.UUIDs;
 import com.google.common.collect.ImmutableSet;
 
@@ -121,8 +120,7 @@ public class CassandraResourceService extends CassandraService implements Resour
 
     @Override
     public CompletableFuture<Resource> get(final IRI id, Instant time) {
-        Statement boundStatement = queryContext.getStatement.bind(id, time);
-        return queryContext.execute(boundStatement).thenApply(buildResource(id));
+        return queryContext.get(id, time).thenApply(buildResource(id));
     }
 
     @Override
@@ -133,7 +131,7 @@ public class CassandraResourceService extends CassandraService implements Resour
     @Override
     public CompletableFuture<Void> add(final IRI id, final Dataset dataset) {
         log.debug("Adding immutable data to {}", id);
-        return queryContext.executeAndDone(queryContext.immutableInsertStatement.bind(id, dataset, now()));
+        return queryContext.immutate(id, dataset, now());
     }
 
     @Override
@@ -171,9 +169,9 @@ public class CassandraResourceService extends CassandraService implements Resour
 
     @Override
     public CompletableFuture<SortedSet<Instant>> mementos(IRI id) {
-        return queryContext.execute(queryContext.mementosStatement.bind(id))
+        return queryContext.mementos(id)
                         .thenApply(results -> stream(results::spliterator, NONNULL + DISTINCT, false)
-                                        .map(getFieldAs("modified", Instant.class))
+                                        .map(r -> r.get("modified", Instant.class))
                                         .map(time -> time.truncatedTo(SECONDS)).collect(toCollection(TreeSet::new)));
     }
 

@@ -6,7 +6,6 @@ import static org.apache.commons.codec.digest.MessageDigestAlgorithms.*;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Statement;
 import com.google.common.collect.ImmutableSet;
 
 import java.io.IOException;
@@ -63,7 +62,7 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
     @Override
     public CompletableFuture<Binary> get(IRI id) {
         log.debug("Retrieving binary content from: {}", id);
-        return queryContext.execute(queryContext.retrieveStatement.bind(id)).thenApply(rows -> {
+        return queryContext.get(id).thenApply(rows -> {
             final Row meta = rows.one();
             boolean wasFound = meta != null;
             log.debug("Binary {} was {}found", id, wasFound ? "" : "not ");
@@ -90,8 +89,8 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
             @SuppressWarnings("cast")
             // upcast to match this object with InputStreamCodec
             InputStream chunk = (InputStream) countingChunk;
-            Statement boundStatement = queryContext.insertStatement.bind(id, size, chunkIndex.getAndIncrement(), chunk);
-            return queryContext.execute(boundStatement).thenApply(r -> countingChunk.getByteCount())
+            return queryContext.insert(id, size, chunkIndex.getAndIncrement(), chunk)
+                            .thenApply(r -> countingChunk.getByteCount())
                             .thenComposeAsync(bytesStored -> bytesStored == maxChunkLength
                                             ? setChunk(meta, stream, chunkIndex)
                                             : finished(id), queryContext.workers);
@@ -107,7 +106,7 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
 
     @Override
     public CompletableFuture<Void> purgeContent(IRI identifier) {
-        return queryContext.executeAndDone(queryContext.deleteStatement.bind(identifier));
+        return queryContext.delete(identifier);
     }
 
     @Override

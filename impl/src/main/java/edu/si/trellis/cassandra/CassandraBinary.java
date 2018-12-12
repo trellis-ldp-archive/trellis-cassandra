@@ -1,9 +1,6 @@
 package edu.si.trellis.cassandra;
 
-import static java.util.stream.StreamSupport.stream;
 import static org.slf4j.LoggerFactory.getLogger;
-
-import com.datastax.driver.core.Statement;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,7 +10,6 @@ import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.rdf.api.IRI;
 import org.slf4j.Logger;
 import org.trellisldp.api.Binary;
-import org.trellisldp.api.RuntimeTrellisException;
 
 /**
  * Simple implementation of {@link Binary} that pulls content from Cassandra on demand.
@@ -51,7 +47,7 @@ public class CassandraBinary implements Binary {
 
     @Override
     public InputStream getContent() {
-        return retrieve(context.readStatement.bind(id));
+        return context.read(id);
     }
 
     @Override
@@ -60,25 +56,11 @@ public class CassandraBinary implements Binary {
         int lastChunk = to / chunkLength;
         int chunkStreamStart = from % chunkLength;
         int rangeSize = to - from + 1; // +1 because range is inclusive
-        Statement boundStatement = context.readRangeStatement.bind(id.getIRIString(), firstChunk, lastChunk);
-
-        try (InputStream retrieve = retrieve(boundStatement)) {
+        try (InputStream retrieve = context.readRange(id, firstChunk, lastChunk)) {
             retrieve.skip(chunkStreamStart); // skip to fulfill lower end of range
             return new BoundedInputStream(retrieve, rangeSize); // apply limit for upper end of range
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
-
-    //@formatter:off
-    private InputStream retrieve(Statement statement) {
-        return stream(context.session.execute(statement).spliterator(), false)
-                        .map(r -> r.getInt("chunk_index"))
-                        .peek(chunkNumber -> log.debug("Found pointer to chunk: {}", chunkNumber))
-                        .map(chunkNumber -> context.readChunkStatement.bind(id, chunkNumber))
-                        .<InputStream> map(s -> new LazyChunkInputStream(context.session, s))
-                        .reduce(SequenceInputStream::new) // chunks now in one large stream
-                        .orElseThrow(() -> new RuntimeTrellisException("Binary not found under IRI: " + id.getIRIString()));
-    }
-    //@formatter:on
 }

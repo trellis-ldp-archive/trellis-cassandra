@@ -2,18 +2,20 @@ package edu.si.trellis.cassandra;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.Session;
+import com.datastax.driver.core.*;
 
 import java.time.Instant;
+import java.util.Spliterator;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import javax.inject.Inject;
 
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
+import org.apache.commons.rdf.api.Quad;
 import org.slf4j.Logger;
 
 class ResourceQueryContext extends QueryContext {
@@ -46,7 +48,7 @@ class ResourceQueryContext extends QueryContext {
     private static final String basicContainmentQuery = "SELECT identifier AS contained FROM "
                     + BASIC_CONTAINMENT_TABLENAME + " WHERE container = ? ;";
 
-    final PreparedStatement getStatement, immutableInsertStatement, deleteStatement, mutableInsertStatement,
+    private final PreparedStatement getStatement, immutableInsertStatement, deleteStatement, mutableInsertStatement,
                     touchStatement, mementosStatement, mutableQuadStreamStatement, immutableQuadStreamStatement,
                     basicContainmentStatement;
 
@@ -73,8 +75,16 @@ class ResourceQueryContext extends QueryContext {
         this.basicContainmentStatement = session.prepare(basicContainmentQuery).setConsistencyLevel(readConsistency);
     }
 
+    CompletableFuture<ResultSet> get(IRI id, Instant time) {
+        return execute(getStatement.bind(id, time));
+    }
+
     CompletableFuture<Void> touch(Instant modified, UUID created, IRI id) {
         return executeAndDone(touchStatement.bind(modified, created, id));
+    }
+
+    CompletableFuture<ResultSet> mementos(IRI id) {
+        return execute(mementosStatement.bind(id));
     }
 
     CompletableFuture<Void> mutate(IRI ixnModel, Long size, String mimeType, Instant createdSeconds, IRI container,
@@ -85,5 +95,27 @@ class ResourceQueryContext extends QueryContext {
 
     CompletableFuture<Void> delete(IRI id) {
         return executeAndDone(deleteStatement.bind(id));
+    }
+
+    ResultSet containment(IRI id) {
+        return executeSync(basicContainmentStatement.bind(id));
+    }
+
+    Stream<Quad> mutableQuadStream(IRI id, Long time) {
+        return quadStreamFromQuery(mutableQuadStreamStatement.bind(id, time));
+    }
+
+    Stream<Quad> immutableQuadStream(IRI id) {
+        return quadStreamFromQuery(immutableQuadStreamStatement.bind(id));
+    }
+
+    CompletableFuture<Void> immutate(IRI id, Dataset data, Instant time) {
+        return executeAndDone(immutableInsertStatement.bind(id, data, time));
+    }
+
+    protected Stream<Quad> quadStreamFromQuery(final Statement boundStatement) {
+        final Spliterator<Row> rows = executeSync(boundStatement).spliterator();
+        Stream<Dataset> datasets = StreamSupport.stream(rows, false).map(r -> r.get("quads", Dataset.class));
+        return datasets.flatMap(Dataset::stream);
     }
 }
