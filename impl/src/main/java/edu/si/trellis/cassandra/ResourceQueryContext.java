@@ -6,8 +6,14 @@ import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
 
+import java.time.Instant;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+
 import javax.inject.Inject;
 
+import org.apache.commons.rdf.api.Dataset;
+import org.apache.commons.rdf.api.IRI;
 import org.slf4j.Logger;
 
 class ResourceQueryContext extends QueryContext {
@@ -40,8 +46,8 @@ class ResourceQueryContext extends QueryContext {
     private static final String basicContainmentQuery = "SELECT identifier AS contained FROM "
                     + BASIC_CONTAINMENT_TABLENAME + " WHERE container = ? ;";
 
-    final PreparedStatement getStatement, immutableInsertStatement, deleteStatement, mutableInsertStatement, touchStatement,
-                    mementosStatement, mutableQuadStreamStatement, immutableQuadStreamStatement,
+    final PreparedStatement getStatement, immutableInsertStatement, deleteStatement, mutableInsertStatement,
+                    touchStatement, mementosStatement, mutableQuadStreamStatement, immutableQuadStreamStatement,
                     basicContainmentStatement;
 
     @Inject
@@ -65,5 +71,19 @@ class ResourceQueryContext extends QueryContext {
         this.immutableQuadStreamStatement = session.prepare(immutableQuadStreamQuery)
                         .setConsistencyLevel(readConsistency);
         this.basicContainmentStatement = session.prepare(basicContainmentQuery).setConsistencyLevel(readConsistency);
+    }
+
+    CompletableFuture<Void> touch(Instant modified, UUID created, IRI id) {
+        return executeAndDone(touchStatement.bind(modified, created, id));
+    }
+
+    CompletableFuture<Void> mutate(IRI ixnModel, Long size, String mimeType, Instant createdSeconds, IRI container,
+                    Dataset data, Instant modified, IRI binaryIdentifier, UUID creation, IRI id) {
+        return executeAndDone(mutableInsertStatement.bind(ixnModel, size, mimeType, createdSeconds, container, data,
+                        modified, binaryIdentifier, creation, id));
+    }
+
+    CompletableFuture<Void> delete(IRI id) {
+        return executeAndDone(deleteStatement.bind(id));
     }
 }

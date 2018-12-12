@@ -4,9 +4,7 @@ import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static java.util.concurrent.Executors.newCachedThreadPool;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.*;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import java.util.concurrent.CompletableFuture;
@@ -16,7 +14,11 @@ import java.util.concurrent.Executor;
 
 import org.slf4j.Logger;
 
-public abstract class QueryContext {
+/**
+ * A context for queries run against Cassandra. All requests to Cassandra should go through a subclass.
+ *
+ */
+abstract class QueryContext {
 
     private static final Logger log = getLogger(QueryContext.class);
 
@@ -26,10 +28,15 @@ public abstract class QueryContext {
 
     protected static final String BASIC_CONTAINMENT_TABLENAME = "basiccontainment";
 
+    protected static final String BINARY_TABLENAME = "binarydata";
+
     protected final Session session;
 
     protected final Executor workers = newCachedThreadPool();
 
+    /**
+     * @param session a {@link Session} to the Cassandra cluster
+     */
     public QueryContext(Session session) {
         this.session = session;
     }

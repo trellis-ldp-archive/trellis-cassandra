@@ -151,7 +151,7 @@ public class CassandraResourceService extends CassandraService implements Resour
     @Override
     public CompletableFuture<Void> delete(Metadata meta) {
         log.debug("Deleting {}", meta.getIdentifier());
-        return queryContext.executeAndDone(queryContext.deleteStatement.bind(meta.getIdentifier()));
+        return queryContext.delete(meta.getIdentifier());
     }
 
     /*
@@ -159,8 +159,8 @@ public class CassandraResourceService extends CassandraService implements Resour
      */
     @Override
     public CompletableFuture<Void> touch(IRI id) {
-        return get(id).thenApply(CassandraResource.class::cast).thenApply(CassandraResource::getCreated).thenCompose(
-                        created -> queryContext.executeAndDone(queryContext.touchStatement.bind(now(), created, id)));
+        return get(id).thenApply(CassandraResource.class::cast).thenApply(CassandraResource::getCreated)
+                        .thenCompose(created -> queryContext.touch(now(), created, id));
     }
 
     @Override
@@ -188,8 +188,8 @@ public class CassandraResourceService extends CassandraService implements Resour
         String mimeType = binary.flatMap(BinaryMetadata::getMimeType).orElse(null);
         IRI container = meta.getContainer().orElse(null);
 
-        return queryContext.executeAndDone(queryContext.mutableInsertStatement.bind(ixnModel, size, mimeType,
-                        now.truncatedTo(SECONDS), container, data, now, binaryIdentifier, UUIDs.timeBased(), id));
+        return queryContext.mutate(ixnModel, size, mimeType, now.truncatedTo(SECONDS), container, data, now,
+                        binaryIdentifier, UUIDs.timeBased(), id);
     }
 
     @Override
