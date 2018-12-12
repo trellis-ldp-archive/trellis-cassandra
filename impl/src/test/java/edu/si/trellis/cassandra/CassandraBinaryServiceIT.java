@@ -3,25 +3,18 @@ package edu.si.trellis.cassandra;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.UUID.randomUUID;
 import static org.apache.commons.io.IOUtils.contentEquals;
-import static org.awaitility.Awaitility.await;
-import static org.awaitility.Duration.TWO_SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.BinaryMetadata.builder;
 
-import com.google.common.io.CountingInputStream;
-
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.rdf.api.IRI;
-import org.awaitility.Awaitility;
-import org.awaitility.Duration;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.trellisldp.api.Binary;
