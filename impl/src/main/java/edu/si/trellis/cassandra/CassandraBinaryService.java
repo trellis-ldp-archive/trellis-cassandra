@@ -55,8 +55,11 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
 
     private PreparedStatement deleteStatement, insertStatement, retrieveStatement;
 
-    private final BinaryContext queries;
+    private final BinaryQueryContext queries;
+
     private final IdentifierService idService;
+
+    private final int maxChunkLength;
 
     /**
      * @param idService {@link IdentifierService} to use for binaries
@@ -71,8 +74,9 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
                     @BinaryWriteConsistency ConsistencyLevel writeCons) {
         super(session, readCons, writeCons);
         this.idService = idService;
+        this.maxChunkLength = chunkLength;
         log.info("Using chunk length: {}", chunkLength);
-        this.queries = new BinaryContext(session(), chunkLength, readConsistency());
+        this.queries = new BinaryQueryContext(session(), readConsistency());
     }
 
     @PostConstruct
@@ -91,7 +95,7 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
             log.debug("Binary {} was {}found", id, wasFound ? "" : "not ");
             if (!wasFound) throw new RuntimeTrellisException("Binary not found under IRI: " + id.getIRIString());
             return meta;
-        }).thenApply(r -> r.getLong("size")).thenApply(size -> new CassandraBinary(id, size, queries));
+        }).thenApply(r -> r.getLong("size")).thenApply(size -> new CassandraBinary(id, size, queries, maxChunkLength));
     }
 
     @Override
@@ -105,8 +109,9 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
         IRI id = meta.getIdentifier();
         Long size = meta.getSize().orElse(null);
         log.debug("Recording chunk {} of binary content under: {}", chunkIndex.get(), id);
-        try (CountingInputStream countingChunk = new CountingInputStream(
-                        new BoundedInputStream(stream, queries.maxChunkLength()))) {
+
+        try (BoundedInputStream bs = new BoundedInputStream(stream, maxChunkLength);
+             CountingInputStream countingChunk = new CountingInputStream(bs)) {
             @SuppressWarnings("cast")
             // upcast to match this object with InputStreamCodec
             InputStream chunk = (InputStream) countingChunk;
@@ -114,9 +119,11 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
                             .setConsistencyLevel(LOCAL_QUORUM);
             return translate(session().executeAsync(boundStatement.setConsistencyLevel(writeConsistency())))
                             .thenApply(r -> countingChunk.getByteCount())
-                            .thenComposeAsync(bytesStored -> bytesStored == queries.maxChunkLength()
+                            .thenComposeAsync(bytesStored -> bytesStored == maxChunkLength
                                             ? setChunk(meta, stream, chunkIndex)
                                             : completedFuture(DONE), mappingThread);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -153,7 +160,7 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
      */
     private Executor mappingThread = Runnable::run;
 
-    static class BinaryContext {
+    static class BinaryQueryContext {
 
         private final Session session;
 
@@ -165,21 +172,14 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
 
         private PreparedStatement readRangeStatement, readStatement, readChunkStatement;
 
-        private final int maxChunkLength;
-
         private final ConsistencyLevel readConsistency;
 
-        public BinaryContext(Session session, int maxChunkLength, ConsistencyLevel consistency) {
+        public BinaryQueryContext(Session session, ConsistencyLevel consistency) {
             this.session = session;
             this.readStatement = session.prepare(READ_QUERY);
             this.readRangeStatement = session.prepare(READ_RANGE_QUERY);
             this.readChunkStatement = session.prepare(READ_CHUNK_QUERY);
-            this.maxChunkLength = maxChunkLength;
             this.readConsistency = consistency;
-        }
-
-        int maxChunkLength() {
-            return maxChunkLength;
         }
 
         Session session() {

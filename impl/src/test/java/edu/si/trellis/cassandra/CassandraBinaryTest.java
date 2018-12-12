@@ -9,7 +9,7 @@ import static org.mockito.Mockito.when;
 
 import com.datastax.driver.core.*;
 
-import edu.si.trellis.cassandra.CassandraBinaryService.BinaryContext;
+import edu.si.trellis.cassandra.CassandraBinaryService.BinaryQueryContext;
 
 import java.io.InputStream;
 import java.util.Spliterator;
@@ -32,10 +32,12 @@ public class CassandraBinaryTest {
 
     private Long testSize;
 
+    private int testChunkSize;
+
     private final IRI testId = factory.createIRI("urn:test");
 
     @Mock
-    private BinaryContext mockContext;
+    private BinaryQueryContext mockContext;
 
     @Mock
     private PreparedStatement mockPreparedStatement1, mockPreparedStatement2;
@@ -59,7 +61,7 @@ public class CassandraBinaryTest {
 
     @Test
     public void correctSize() {
-        CassandraBinary testCassandraBinary = new CassandraBinary(testId, testSize, mockContext);
+        CassandraBinary testCassandraBinary = new CassandraBinary(testId, testSize, mockContext, testChunkSize);
         assertSame(testSize, testCassandraBinary.getSize());
     }
 
@@ -74,7 +76,7 @@ public class CassandraBinaryTest {
         testSpliterator = new TestRowSpliterator(0, mockRow);
         when(mockResultSet1.spliterator()).thenReturn(testSpliterator);
 
-        CassandraBinary testCassandraBinary = new CassandraBinary(testId, testSize, mockContext);
+        CassandraBinary testCassandraBinary = new CassandraBinary(testId, testSize, mockContext, testChunkSize);
 
         try {
             testCassandraBinary.getContent();

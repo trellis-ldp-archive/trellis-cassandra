@@ -6,7 +6,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.Statement;
 
-import edu.si.trellis.cassandra.CassandraBinaryService.BinaryContext;
+import edu.si.trellis.cassandra.CassandraBinaryService.BinaryQueryContext;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,17 +30,21 @@ public class CassandraBinary implements Binary {
 
     private final IRI id;
 
-    private final BinaryContext context;
+    private final BinaryQueryContext context;
+
+    private final int chunkLength;
 
     /**
      * @param id identifier for this {@link Binary}
      * @param size size in bytes of this {@code Binary}
      * @param c context for queries
+     * @param length the length of chunk to use in Cassandra
      */
-    public CassandraBinary(IRI id, Long size, BinaryContext c) {
+    public CassandraBinary(IRI id, Long size, BinaryQueryContext c, int length) {
         this.id = id;
         this.size = size;
         this.context = c;
+        this.chunkLength = length;
     }
 
     @Override
@@ -55,9 +59,9 @@ public class CassandraBinary implements Binary {
 
     @Override
     public BoundedInputStream getContent(int from, int to) {
-        int firstChunk = from / context.maxChunkLength();
-        int lastChunk = to / context.maxChunkLength();
-        int chunkStreamStart = from % context.maxChunkLength();
+        int firstChunk = from / chunkLength;
+        int lastChunk = to / chunkLength;
+        int chunkStreamStart = from % chunkLength;
         int rangeSize = to - from + 1; // +1 because range is inclusive
         Statement boundStatement = context.readRangeStatement().bind(id.getIRIString(), firstChunk, lastChunk);
 
@@ -76,7 +80,7 @@ public class CassandraBinary implements Binary {
         return stream(context.session().execute(statementWithConsistency).spliterator(), false)
                         .map(r -> r.getInt("chunk_index"))
                         .peek(chunkNumber -> log.debug("Found pointer to chunk: {}", chunkNumber))
-                        .map(chunkNumber -> context.readSingleChunk().bind(id, chunkNumber).setConsistencyLevel(readConsistency))
+                        .map(chunkNumber -> context.readSingleChunk().bind(id, chunkNumber))
                         .<InputStream> map(statement -> new LazyChunkInputStream(context.session(), statement))
                         .reduce(SequenceInputStream::new) // chunks now in one large stream
                         .orElseThrow(() -> new RuntimeTrellisException("Binary not found under IRI: " + id.getIRIString()));
