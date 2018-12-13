@@ -1,12 +1,12 @@
 package edu.si.trellis.cassandra;
 
+import static java.util.Objects.requireNonNull;
+
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 
 import java.io.InputStream;
-
-import org.trellisldp.api.RuntimeTrellisException;
 
 /**
  * An {@link InputStream} backed by a Cassandra query to retrieve one binary chunk.
@@ -29,8 +29,7 @@ public class LazyChunkInputStream extends LazyFilterInputStream {
 
     @Override
     protected void initialize() {
-        Row row = session.execute(query).one();
-        if (row == null) throw new RuntimeTrellisException("Missing binary chunk!");
+        Row row = requireNonNull(session.execute(query).one(), "Missing binary chunk!");
         wrap(row.get("chunk", InputStream.class));
     }
 }

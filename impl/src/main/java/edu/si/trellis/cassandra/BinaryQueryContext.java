@@ -74,7 +74,7 @@ class BinaryQueryContext extends QueryContext {
     private InputStream retrieve(IRI id, Statement statement) {
         return stream(executeSyncRead(statement).spliterator(), false)
                         .map(r -> r.getInt("chunk_index"))
-                        .peek(chunkNumber -> log.debug("Found pointer to chunk: {}", chunkNumber))
+                        .peek(chunkNumber -> log.debug("Found record of chunk: {}", chunkNumber))
                         .map(chunkNumber -> readChunkStatement.bind(id, chunkNumber))
                         .<InputStream> map(s -> new LazyChunkInputStream(session, s))
                         .reduce(SequenceInputStream::new) // chunks now in one large stream

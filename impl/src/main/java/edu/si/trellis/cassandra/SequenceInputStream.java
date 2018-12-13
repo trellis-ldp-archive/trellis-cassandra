@@ -17,9 +17,12 @@ import org.apache.commons.io.IOUtils;
 class SequenceInputStream extends InputStream {
 
     private final InputStream s1, s2;
-    
+
+    /**
+     * Changes from {@link #s1} to {@link #s2} to {@code null} via {@link #next()}.
+     */
     private InputStream current;
-    
+
     public SequenceInputStream(InputStream s1, InputStream s2) {
         this.current = (this.s1 = s1);
         this.s2 = s2;
@@ -30,10 +33,12 @@ class SequenceInputStream extends InputStream {
         if (current == null || n <= 0) return 0;
         long toSkip = n;
         toSkip -= current.skip(toSkip);
-        toSkip -= IOUtils.skip(current, toSkip);
-        if (toSkip > 0) { // we ran out of bytes to skip or read from current
-            next();
-            toSkip -= skip(toSkip);
+        if (toSkip > 0) { // we ran out of bytes to skip from current
+            toSkip -= IOUtils.skip(current, toSkip); // read them instead
+            if (toSkip > 0) {
+                next();
+                toSkip -= skip(toSkip);
+            }
         }
         return n - toSkip;
     }

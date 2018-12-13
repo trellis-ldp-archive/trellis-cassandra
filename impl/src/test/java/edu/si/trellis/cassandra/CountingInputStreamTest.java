@@ -20,7 +20,7 @@ public class CountingInputStreamTest {
 
     @Test
     public void doNotPassClose() throws IOException {
-        new CountingInputStream(mockInputStream).close();
+        new NoopCloseCountingInputStream(mockInputStream).close();
         verify(mockInputStream, never()).close();
     }
 }

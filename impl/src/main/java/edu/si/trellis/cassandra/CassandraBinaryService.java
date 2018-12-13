@@ -87,7 +87,7 @@ public class CassandraBinaryService implements BinaryService {
         Long size = meta.getSize().orElse(null);
         log.debug("Recording chunk {} of binary content under: {}", chunkIndex.get(), id);
 
-        try (CountingInputStream countingChunk = new CountingInputStream(
+        try (NoopCloseCountingInputStream countingChunk = new NoopCloseCountingInputStream(
                         new BoundedInputStream(stream, maxChunkLength))) {
             @SuppressWarnings("cast")
             // upcast to match this object with InputStreamCodec

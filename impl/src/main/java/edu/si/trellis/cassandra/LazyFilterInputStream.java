@@ -5,13 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * Like {@link FilterInputStream} but lazier; does not fill the slot for wrapped {@link InputStream} until an operation
- * is called.
- * <p>
- * Not thread-safe!
- * </p>
- * 
- * @see FilterInputStream
+ * Like {@link FilterInputStream} but lazier; does not fill the slot for wrapped {@link InputStream} until
+ * {@link #initialize()} is called. Not thread-safe!
  */
 public abstract class LazyFilterInputStream extends InputStream {
 
@@ -22,6 +17,9 @@ public abstract class LazyFilterInputStream extends InputStream {
         return wrapped;
     }
 
+    /**
+     * Implementations of this method should use {@link #wrap(InputStream)} to fill {@link #wrapped}.
+     */
     abstract protected void initialize();
 
     protected void wrap(InputStream w) {
