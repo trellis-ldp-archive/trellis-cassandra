@@ -1,7 +1,6 @@
 package edu.si.trellis.cassandra;
 
 import static java.time.Instant.now;
-import static java.time.temporal.ChronoUnit.DAYS;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.Spliterator.DISTINCT;
 import static java.util.Spliterator.NONNULL;
