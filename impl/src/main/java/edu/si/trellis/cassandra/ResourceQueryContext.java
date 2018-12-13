@@ -76,29 +76,29 @@ class ResourceQueryContext extends QueryContext {
     }
 
     CompletableFuture<ResultSet> get(IRI id, Instant time) {
-        return execute(getStatement.bind(id, time));
+        return executeRead(getStatement.bind(id, time));
     }
 
     CompletableFuture<Void> touch(Instant modified, UUID created, IRI id) {
-        return executeAndDone(touchStatement.bind(modified, created, id));
+        return executeWrite(touchStatement.bind(modified, created, id));
     }
 
     CompletableFuture<ResultSet> mementos(IRI id) {
-        return execute(mementosStatement.bind(id));
+        return executeRead(mementosStatement.bind(id));
     }
 
     CompletableFuture<Void> mutate(IRI ixnModel, Long size, String mimeType, Instant createdSeconds, IRI container,
                     Dataset data, Instant modified, IRI binaryIdentifier, UUID creation, IRI id) {
-        return executeAndDone(mutableInsertStatement.bind(ixnModel, size, mimeType, createdSeconds, container, data,
+        return executeWrite(mutableInsertStatement.bind(ixnModel, size, mimeType, createdSeconds, container, data,
                         modified, binaryIdentifier, creation, id));
     }
 
     CompletableFuture<Void> delete(IRI id) {
-        return executeAndDone(deleteStatement.bind(id));
+        return executeWrite(deleteStatement.bind(id));
     }
 
     ResultSet containment(IRI id) {
-        return executeSync(basicContainmentStatement.bind(id));
+        return executeSyncRead(basicContainmentStatement.bind(id));
     }
 
     Stream<Quad> mutableQuadStream(IRI id, Long time) {
@@ -110,11 +110,11 @@ class ResourceQueryContext extends QueryContext {
     }
 
     CompletableFuture<Void> immutate(IRI id, Dataset data, Instant time) {
-        return executeAndDone(immutableInsertStatement.bind(id, data, time));
+        return executeWrite(immutableInsertStatement.bind(id, data, time));
     }
 
     protected Stream<Quad> quadStreamFromQuery(final Statement boundStatement) {
-        final Spliterator<Row> rows = executeSync(boundStatement).spliterator();
+        final Spliterator<Row> rows = executeSyncRead(boundStatement).spliterator();
         Stream<Dataset> datasets = StreamSupport.stream(rows, false).map(r -> r.get("quads", Dataset.class));
         return datasets.flatMap(Dataset::stream);
     }

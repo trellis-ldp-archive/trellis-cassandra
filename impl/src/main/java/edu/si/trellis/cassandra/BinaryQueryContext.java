@@ -51,11 +51,11 @@ class BinaryQueryContext extends QueryContext {
     }
 
     CompletableFuture<Void> delete(IRI id) {
-        return executeAndDone(deleteStatement.bind(id));
+        return executeWrite(deleteStatement.bind(id));
     }
 
     CompletableFuture<Void> insert(IRI id, Long size, int chunkIndex, InputStream chunk) {
-        return executeAndDone(insertStatement.bind(id, size, chunkIndex, chunk));
+        return executeWrite(insertStatement.bind(id, size, chunkIndex, chunk));
     }
 
     InputStream read(IRI id) {
@@ -67,12 +67,12 @@ class BinaryQueryContext extends QueryContext {
     }
 
     CompletableFuture<ResultSet> get(IRI id) {
-        return execute(retrieveStatement.bind(id));
+        return executeRead(retrieveStatement.bind(id));
     }
 
     //@formatter:off
     private InputStream retrieve(IRI id, Statement statement) {
-        return stream(executeSync(statement).spliterator(), false)
+        return stream(executeSyncRead(statement).spliterator(), false)
                         .map(r -> r.getInt("chunk_index"))
                         .peek(chunkNumber -> log.debug("Found pointer to chunk: {}", chunkNumber))
                         .map(chunkNumber -> readChunkStatement.bind(id, chunkNumber))

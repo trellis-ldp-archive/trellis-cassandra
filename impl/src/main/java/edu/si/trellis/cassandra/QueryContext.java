@@ -33,7 +33,7 @@ abstract class QueryContext {
 
     protected final Session session;
 
-    protected final Executor workers = newCachedThreadPool();
+    protected final Executor writeWorkers = newCachedThreadPool(), readWorkers = newCachedThreadPool();
 
     /**
      * @param session a {@link Session} to the Cassandra cluster
@@ -42,20 +42,21 @@ abstract class QueryContext {
         this.session = session;
     }
 
-    protected CompletableFuture<Void> executeAndDone(Statement statement) {
-        log.debug("Executing CQL statement: {}", statement);
-        return execute(statement).thenAccept(r -> log.debug("Executed CQL statement: {}", statement));
+    protected CompletableFuture<Void> executeWrite(Statement statement) {
+        log.debug("Executing CQL write: {}", statement);
+        return translate(session.executeAsync(statement), writeWorkers)
+                        .thenAccept(r -> log.debug("Executed CQL write: {}", statement));
     }
 
-    protected CompletableFuture<ResultSet> execute(Statement statement) {
-        return translate(session.executeAsync(statement));
+    protected CompletableFuture<ResultSet> executeRead(Statement statement) {
+        return translate(session.executeAsync(statement), readWorkers);
     }
 
-    protected ResultSet executeSync(Statement statement) {
+    protected ResultSet executeSyncRead(Statement statement) {
         return session.execute(statement);
     }
 
-    protected <T> CompletableFuture<T> translate(ListenableFuture<T> result) {
+    protected <T> CompletableFuture<T> translate(ListenableFuture<T> result, Executor workers) {
         return supplyAsync(() -> {
             try {
                 return result.get();

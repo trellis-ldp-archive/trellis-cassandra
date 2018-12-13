@@ -1,5 +1,6 @@
 package edu.si.trellis.cassandra;
 
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.apache.commons.codec.digest.DigestUtils.updateDigest;
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.*;
@@ -34,14 +35,14 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
     private static final Logger log = getLogger(CassandraBinaryService.class);
 
     @SuppressWarnings("boxing")
-    private static final Long DONE = -1L;
+    private static final CompletableFuture<Long> DONE = completedFuture(-1L);
 
     private static final String SHA = "SHA";
 
     // TODO JDK9 supports SHA3 algorithms (SHA3_256, SHA3_384, SHA3_512)
     private static final Set<String> algorithms = ImmutableSet.of(MD5, MD2, SHA, SHA_1, SHA_256, SHA_384, SHA_512);
 
-    private final BinaryQueryContext queryContext;
+    private final BinaryQueryContext cassandra;
 
     private final IdentifierService idService;
 
@@ -58,26 +59,28 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
         this.idService = idService;
         this.maxChunkLength = chunkLength;
         log.info("Using configured chunk length: {}", chunkLength);
-        this.queryContext = queryContext;
+        this.cassandra = queryContext;
     }
 
     @Override
     public CompletableFuture<Binary> get(IRI id) {
         log.debug("Retrieving binary content from: {}", id);
-        return queryContext.get(id).thenApply(rows -> {
+        return cassandra.get(id).thenApply(rows -> {
             final Row meta = rows.one();
             boolean wasFound = meta != null;
             log.debug("Binary {} was {}found", id, wasFound ? "" : "not ");
             if (!wasFound) throw new RuntimeTrellisException("Binary not found under IRI: " + id.getIRIString());
             return meta;
         }).thenApply(r -> r.getLong("size"))
-                        .thenApply(size -> new CassandraBinary(id, size, queryContext, maxChunkLength));
+                        .thenApply(size -> new CassandraBinary(id, size, cassandra, maxChunkLength));
     }
 
     @Override
-    public CompletableFuture<Void> setContent(BinaryMetadata meta, InputStream stream, Map<String, List<String>> hints) {
+    public CompletableFuture<Void> setContent(BinaryMetadata meta, InputStream stream,
+                    Map<String, List<String>> hints) {
         log.debug("Recording binary content under: {}", meta.getIdentifier());
-        return setChunk(meta, stream, new AtomicInteger()).thenAccept(Long::longValue);
+        return setChunk(meta, stream, new AtomicInteger())
+                        .thenAccept(l -> log.debug("Recorded binary content under: {}", meta.getIdentifier()));
     }
 
     @SuppressWarnings("resource")
@@ -91,24 +94,17 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
             @SuppressWarnings("cast")
             // upcast to match this object with InputStreamCodec
             InputStream chunk = (InputStream) countingChunk;
-            return queryContext.insert(id, size, chunkIndex.getAndIncrement(), chunk)
-                            .thenApply(r -> countingChunk.getByteCount())
+            return cassandra.insert(id, size, chunkIndex.getAndIncrement(), chunk)
+                            .thenApply(x -> countingChunk.getByteCount())
                             .thenComposeAsync(bytesStored -> bytesStored == maxChunkLength
                                             ? setChunk(meta, stream, chunkIndex)
-                                            : finished(id), queryContext.workers);
+                                            : DONE, cassandra.writeWorkers);
         }
-    }
-
-    private static CompletableFuture<Long> finished(IRI id) {
-        return supplyAsync(() -> {
-            log.debug("Finished persisting: {}", id);
-            return DONE;
-        }, Runnable::run);
     }
 
     @Override
     public CompletableFuture<Void> purgeContent(IRI identifier) {
-        return queryContext.delete(identifier);
+        return cassandra.delete(identifier);
     }
 
     @Override
@@ -119,7 +115,7 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
             } catch (final IOException e) {
                 throw new UncheckedIOException(e);
             }
-        }, queryContext.workers);
+        }, cassandra.readWorkers);
     }
 
     @Override
