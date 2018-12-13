@@ -1,12 +1,11 @@
 package edu.si.trellis.cassandra;
 
+import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.apache.commons.codec.digest.DigestUtils.updateDigest;
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.*;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import com.datastax.driver.core.Row;
 import com.google.common.collect.ImmutableSet;
 
 import java.io.IOException;
@@ -24,13 +23,16 @@ import javax.inject.Inject;
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.rdf.api.IRI;
 import org.slf4j.Logger;
-import org.trellisldp.api.*;
+import org.trellisldp.api.Binary;
+import org.trellisldp.api.BinaryMetadata;
+import org.trellisldp.api.BinaryService;
+import org.trellisldp.api.IdentifierService;
 
 /**
  * Implements {@link BinaryService} by chunking binary data across Cassandra.
  *
  */
-public class CassandraBinaryService extends CassandraService implements BinaryService {
+public class CassandraBinaryService implements BinaryService {
 
     private static final Logger log = getLogger(CassandraBinaryService.class);
 
@@ -65,13 +67,9 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
     @Override
     public CompletableFuture<Binary> get(IRI id) {
         log.debug("Retrieving binary content from: {}", id);
-        return cassandra.get(id).thenApply(rows -> {
-            final Row meta = rows.one();
-            boolean wasFound = meta != null;
-            log.debug("Binary {} was {}found", id, wasFound ? "" : "not ");
-            if (!wasFound) throw new RuntimeTrellisException("Binary not found under IRI: " + id.getIRIString());
-            return meta;
-        }).thenApply(r -> r.getLong("size"))
+        return cassandra.get(id).thenApply(
+                        rows -> requireNonNull(rows.one(), () -> "Binary not found under IRI: " + id.getIRIString()))
+                        .thenApply(r -> r.getLong("size"))
                         .thenApply(size -> new CassandraBinary(id, size, cassandra, maxChunkLength));
     }
 

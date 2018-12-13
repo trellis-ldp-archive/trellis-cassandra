@@ -44,14 +44,14 @@ import org.trellisldp.vocabulary.LDP;
  * @author ajs6f
  *
  */
-public class CassandraResourceService extends CassandraService implements ResourceService, MementoService {
+public class CassandraResourceService implements ResourceService, MementoService {
 
     private static final ImmutableSet<IRI> SUPPORTED_INTERACTION_MODELS = ImmutableSet.of(LDP.Resource, RDFSource,
                     NonRDFSource, Container, BasicContainer);
 
     private static final Logger log = getLogger(CassandraResourceService.class);
 
-    private final ResourceQueryContext queryContext;
+    private final ResourceQueryContext cassandra;
 
     /**
      * Constructor.
@@ -60,7 +60,7 @@ public class CassandraResourceService extends CassandraService implements Resour
      */
     @Inject
     public CassandraResourceService(ResourceQueryContext queryContext) {
-        this.queryContext = queryContext;
+        this.cassandra = queryContext;
     }
 
     /**
@@ -105,22 +105,18 @@ public class CassandraResourceService extends CassandraService implements Resour
             UUID created = metadata.getUUID("created");
             log.debug("Found created = {} for resource {}", created, id);
             return new CassandraResource(id, ixnModel, hasAcl, binaryId, mimeType, size, container, modified, created,
-                            queryContext);
+                            cassandra);
         };
     }
 
     @Override
     public CompletableFuture<? extends Resource> get(final IRI id) {
-        return get(id, theFuture());
-    }
-
-    private static Instant theFuture() {
-        return now().plus(1, DAYS);
+        return get(id, now());
     }
 
     @Override
     public CompletableFuture<Resource> get(final IRI id, Instant time) {
-        return queryContext.get(id, time).thenApply(buildResource(id));
+        return cassandra.get(id, time).thenApply(buildResource(id));
     }
 
     @Override
@@ -131,7 +127,7 @@ public class CassandraResourceService extends CassandraService implements Resour
     @Override
     public CompletableFuture<Void> add(final IRI id, final Dataset dataset) {
         log.debug("Adding immutable data to {}", id);
-        return queryContext.immutate(id, dataset, now());
+        return cassandra.immutate(id, dataset, now());
     }
 
     @Override
@@ -149,7 +145,7 @@ public class CassandraResourceService extends CassandraService implements Resour
     @Override
     public CompletableFuture<Void> delete(Metadata meta) {
         log.debug("Deleting {}", meta.getIdentifier());
-        return queryContext.delete(meta.getIdentifier());
+        return cassandra.delete(meta.getIdentifier());
     }
 
     /*
@@ -158,7 +154,7 @@ public class CassandraResourceService extends CassandraService implements Resour
     @Override
     public CompletableFuture<Void> touch(IRI id) {
         return get(id).thenApply(CassandraResource.class::cast).thenApply(CassandraResource::getCreated)
-                        .thenCompose(created -> queryContext.touch(now(), created, id));
+                        .thenCompose(created -> cassandra.touch(now(), created, id));
     }
 
     @Override
@@ -169,7 +165,7 @@ public class CassandraResourceService extends CassandraService implements Resour
 
     @Override
     public CompletableFuture<SortedSet<Instant>> mementos(IRI id) {
-        return queryContext.mementos(id)
+        return cassandra.mementos(id)
                         .thenApply(results -> stream(results::spliterator, NONNULL + DISTINCT, false)
                                         .map(r -> r.get("modified", Instant.class))
                                         .map(time -> time.truncatedTo(SECONDS)).collect(toCollection(TreeSet::new)));
@@ -178,15 +174,15 @@ public class CassandraResourceService extends CassandraService implements Resour
     private CompletableFuture<Void> write(Metadata meta, Dataset data) {
         IRI id = meta.getIdentifier();
         IRI ixnModel = meta.getInteractionModel();
+        IRI container = meta.getContainer().orElse(null);
         Instant now = now();
 
         Optional<BinaryMetadata> binary = meta.getBinary();
         IRI binaryIdentifier = binary.map(BinaryMetadata::getIdentifier).orElse(null);
         Long size = binary.flatMap(BinaryMetadata::getSize).orElse(null);
         String mimeType = binary.flatMap(BinaryMetadata::getMimeType).orElse(null);
-        IRI container = meta.getContainer().orElse(null);
 
-        return queryContext.mutate(ixnModel, size, mimeType, now.truncatedTo(SECONDS), container, data, now,
+        return cassandra.mutate(ixnModel, size, mimeType, now.truncatedTo(SECONDS), container, data, now,
                         binaryIdentifier, UUIDs.timeBased(), id);
     }
 
