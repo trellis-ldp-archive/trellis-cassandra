@@ -29,7 +29,7 @@ public class CassandraBinaryServiceIT extends CassandraServiceIT {
         log.debug("Using identifier: {} for testSetAndGetSmallContent", id);
         String content = "This is only a short test, but it has meaning";
         try (InputStream testInput = IOUtils.toInputStream(content, UTF_8)) {
-            connection.binaryService.setContent(builder(id).size(45L).build(), testInput).get();
+            connection.binaryService.setContent(builder(id).size(45L).build(), testInput, null).get();
         }
 
         try (InputStream got = connection.binaryService.get(id).get().getContent()) {
@@ -48,7 +48,7 @@ public class CassandraBinaryServiceIT extends CassandraServiceIT {
         IRI id = createIRI();
         final String md5sum = "89c4b71c69f59cde963ce8aa9dbe1617";
         try (FileInputStream testData = new FileInputStream("src/test/resources/test.jpg")) {
-            connection.binaryService.setContent(builder(id).build(), testData).get();
+            connection.binaryService.setContent(builder(id).build(), testData, null).get();
         }
 
         CompletableFuture<Binary> got = connection.binaryService.get(id);

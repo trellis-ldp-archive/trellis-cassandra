@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.security.MessageDigest;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -73,7 +75,7 @@ public class CassandraBinaryService extends CassandraService implements BinarySe
     }
 
     @Override
-    public CompletableFuture<Void> setContent(BinaryMetadata meta, InputStream stream) {
+    public CompletableFuture<Void> setContent(BinaryMetadata meta, InputStream stream, Map<String, List<String>> hints) {
         log.debug("Recording binary content under: {}", meta.getIdentifier());
         return setChunk(meta, stream, new AtomicInteger()).thenAccept(Long::longValue);
     }
