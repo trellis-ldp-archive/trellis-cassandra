@@ -19,7 +19,7 @@ public class CassandraBinary implements Binary {
 
     private static final Logger log = getLogger(CassandraBinary.class);
 
-    private final Long size;
+    private final long size;
 
     private final IRI id;
 
@@ -31,13 +31,13 @@ public class CassandraBinary implements Binary {
      * @param id identifier for this {@link Binary}
      * @param size size in bytes of this {@code Binary}
      * @param c context for queries
-     * @param length the length of chunk to use in Cassandra
+     * @param chunkLength the length of chunk to use reading bits from Cassandra
      */
-    public CassandraBinary(IRI id, Long size, BinaryQueryContext c, int length) {
+    public CassandraBinary(IRI id, long size, BinaryQueryContext c, int chunkLength) {
         this.id = id;
         this.size = size;
         this.context = c;
-        this.chunkLength = length;
+        this.chunkLength = chunkLength;
     }
 
     @Override
@@ -62,5 +62,9 @@ public class CassandraBinary implements Binary {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+    
+    public int chunkLength() {
+        return chunkLength;
     }
 }

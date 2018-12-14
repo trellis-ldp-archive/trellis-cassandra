@@ -23,10 +23,7 @@ import javax.inject.Inject;
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.rdf.api.IRI;
 import org.slf4j.Logger;
-import org.trellisldp.api.Binary;
-import org.trellisldp.api.BinaryMetadata;
-import org.trellisldp.api.BinaryService;
-import org.trellisldp.api.IdentifierService;
+import org.trellisldp.api.*;
 
 /**
  * Implements {@link BinaryService} by chunking binary data across Cassandra.
@@ -44,11 +41,14 @@ public class CassandraBinaryService implements BinaryService {
     // TODO JDK9 supports SHA3 algorithms (SHA3_256, SHA3_384, SHA3_512)
     private static final Set<String> algorithms = ImmutableSet.of(MD5, MD2, SHA, SHA_1, SHA_256, SHA_384, SHA_512);
 
+    // package-private for testing
+    static final String CASSANDRA_CHUNK_HEADER_NAME = "Cassandra-Chunk-Size";
+
     private final BinaryQueryContext cassandra;
 
     private final IdentifierService idService;
 
-    private final int maxChunkLength;
+    private final int defaultChunkLength;
 
     /**
      * @param idService {@link IdentifierService} to use for binaries
@@ -59,8 +59,8 @@ public class CassandraBinaryService implements BinaryService {
     public CassandraBinaryService(IdentifierService idService, @MaxChunkSize int chunkLength,
                     BinaryQueryContext queryContext) {
         this.idService = idService;
-        this.maxChunkLength = chunkLength;
-        log.info("Using configured chunk length: {}", chunkLength);
+        this.defaultChunkLength = chunkLength;
+        log.info("Using configured default chunk length: {}", chunkLength);
         this.cassandra = queryContext;
     }
 
@@ -69,33 +69,42 @@ public class CassandraBinaryService implements BinaryService {
         log.debug("Retrieving binary content from: {}", id);
         return cassandra.get(id).thenApply(
                         rows -> requireNonNull(rows.one(), () -> "Binary not found under IRI: " + id.getIRIString()))
-                        .thenApply(r -> r.getLong("size"))
-                        .thenApply(size -> new CassandraBinary(id, size, cassandra, maxChunkLength));
+                        .thenApply(r -> new CassandraBinary(id, r.getLong("size"), cassandra, r.getInt("chunkSize")));
     }
 
     @Override
     public CompletableFuture<Void> setContent(BinaryMetadata meta, InputStream stream,
                     Map<String, List<String>> hints) {
         log.debug("Recording binary content under: {}", meta.getIdentifier());
-        return setChunk(meta, stream, new AtomicInteger())
+        final int chunkSize;
+        if (hints == null) chunkSize = defaultChunkLength;
+        else {
+            List<String> headers = hints.get(CASSANDRA_CHUNK_HEADER_NAME);
+            if (headers == null) chunkSize = defaultChunkLength;
+            else if (headers.size() > 1)
+                throw new RuntimeTrellisException("Too many " + CASSANDRA_CHUNK_HEADER_NAME + " headers!");
+            else chunkSize = Integer.parseInt(headers.get(0));
+        }
+        return setChunk(meta, stream, new AtomicInteger(), chunkSize)
                         .thenAccept(l -> log.debug("Recorded binary content under: {}", meta.getIdentifier()));
     }
 
     @SuppressWarnings("resource")
-    private CompletableFuture<Long> setChunk(BinaryMetadata meta, InputStream stream, AtomicInteger chunkIndex) {
+    private CompletableFuture<Long> setChunk(BinaryMetadata meta, InputStream data, AtomicInteger chunkIndex,
+                    int chunkLength) {
         IRI id = meta.getIdentifier();
         Long size = meta.getSize().orElse(null);
         log.debug("Recording chunk {} of binary content under: {}", chunkIndex.get(), id);
 
         try (NoopCloseCountingInputStream countingChunk = new NoopCloseCountingInputStream(
-                        new BoundedInputStream(stream, maxChunkLength))) {
+                        new BoundedInputStream(data, chunkLength))) {
             @SuppressWarnings("cast")
             // upcast to match this object with InputStreamCodec
             InputStream chunk = (InputStream) countingChunk;
-            return cassandra.insert(id, size, chunkIndex.getAndIncrement(), chunk)
+            return cassandra.insert(id, size, chunkLength, chunkIndex.getAndIncrement(), chunk)
                             .thenApply(x -> countingChunk.getByteCount())
-                            .thenComposeAsync(bytesStored -> bytesStored == maxChunkLength
-                                            ? setChunk(meta, stream, chunkIndex)
+                            .thenComposeAsync(bytesStored -> bytesStored == chunkLength
+                                            ? setChunk(meta, data, chunkIndex, chunkLength)
                                             : DONE, cassandra.writeWorkers);
         }
     }

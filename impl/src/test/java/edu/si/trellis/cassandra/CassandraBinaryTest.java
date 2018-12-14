@@ -31,7 +31,7 @@ public class CassandraBinaryTest {
 
     private final RDF factory = new SimpleRDF();
 
-    private Long testSize;
+    private long testSize;
 
     private int testChunkSize;
 
