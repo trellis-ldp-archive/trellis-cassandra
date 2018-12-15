@@ -174,12 +174,12 @@ public class CassandraResourceService implements ResourceService, MementoService
         IRI id = meta.getIdentifier();
         IRI ixnModel = meta.getInteractionModel();
         IRI container = meta.getContainer().orElse(null);
-        Instant now = now();
 
         Optional<BinaryMetadata> binary = meta.getBinary();
         IRI binaryIdentifier = binary.map(BinaryMetadata::getIdentifier).orElse(null);
         Long size = binary.flatMap(BinaryMetadata::getSize).orElse(null);
         String mimeType = binary.flatMap(BinaryMetadata::getMimeType).orElse(null);
+        Instant now = now();
 
         return cassandra.mutate(ixnModel, size, mimeType, now.truncatedTo(SECONDS), container, data, now,
                         binaryIdentifier, UUIDs.timeBased(), id);

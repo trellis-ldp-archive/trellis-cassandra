@@ -5,7 +5,9 @@ import static java.util.concurrent.Executors.newCachedThreadPool;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import com.datastax.driver.core.*;
+import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.Uninterruptibles;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -56,15 +58,9 @@ abstract class QueryContext {
         return session.execute(statement);
     }
 
-    protected <T> CompletableFuture<T> translate(ListenableFuture<T> result, Executor workers) {
-        return supplyAsync(() -> {
-            try {
-                return result.get();
-            } catch (InterruptedException | ExecutionException e) {
-                // we don't know that persistence failed but we can't assume that it succeeded
-                log.error("Error in persistence!", e.getCause());
-                throw new CompletionException(e.getCause());
-            }
-        }, workers);
+    protected <T> CompletableFuture<T> translate(ListenableFuture<T> f, Executor workers) {
+        CompletableFuture<T> result = new CompletableFuture<>();
+        f.addListener(() -> result.complete(Futures.getUnchecked(f)), workers);
+        return result;
     }
 }

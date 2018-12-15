@@ -63,7 +63,10 @@ public class CassandraBinary implements Binary {
             throw new UncheckedIOException(e);
         }
     }
-    
+
+    /**
+     * @return the length of chunk used by {@code this}
+     */
     public int chunkLength() {
         return chunkLength;
     }
