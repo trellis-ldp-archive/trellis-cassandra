@@ -41,7 +41,7 @@ public class CassandraBinary implements Binary {
     }
 
     @Override
-    public Long getSize() {
+    public long getSize() {
         return size;
     }
 

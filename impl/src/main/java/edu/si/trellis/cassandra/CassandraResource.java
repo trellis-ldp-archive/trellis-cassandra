@@ -95,7 +95,7 @@ class CassandraResource implements Resource {
     }
 
     @Override
-    public Boolean hasAcl() {
+    public boolean hasAcl() {
         return hasAcl;
     }
 

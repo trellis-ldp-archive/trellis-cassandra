@@ -1,6 +1,7 @@
 package edu.si.trellis.cassandra;
 
 import static edu.si.trellis.cassandra.CassandraBinaryService.CASSANDRA_CHUNK_HEADER_NAME;
+import static java.lang.Integer.parseInt;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.UUID.randomUUID;
 import static org.apache.commons.io.IOUtils.contentEquals;
@@ -13,7 +14,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -76,14 +76,12 @@ public class CassandraBinaryServiceIT extends CassandraServiceIT {
     }
 
     @Test
-    public void varyChunkSizeFromDefault()
-                    throws FileNotFoundException, IOException, InterruptedException, ExecutionException {
+    public void varyChunkSizeFromDefault() throws IOException, InterruptedException, ExecutionException {
         IRI id = createIRI();
-        int chunkSize = 10000000;
+        final String chunkSize = "10000000";
         final String md5sum = "89c4b71c69f59cde963ce8aa9dbe1617";
         try (FileInputStream testData = new FileInputStream("src/test/resources/test.jpg")) {
-            Map<String, List<String>> hints = ImmutableMap.of(CASSANDRA_CHUNK_HEADER_NAME,
-                            ImmutableList.of(Integer.toString(chunkSize)));
+            Map<String, List<String>> hints = ImmutableMap.of(CASSANDRA_CHUNK_HEADER_NAME, ImmutableList.of(chunkSize));
             connection.binaryService.setContent(builder(id).build(), testData, hints).get();
         }
 
@@ -101,7 +99,7 @@ public class CassandraBinaryServiceIT extends CassandraServiceIT {
             assertEquals(md5sum, digest);
         }
 
-        assertEquals(chunkSize, ((CassandraBinary) binary).chunkLength());
+        assertEquals(parseInt(chunkSize), ((CassandraBinary) binary).chunkLength());
     }
 
     private IRI createIRI() {
