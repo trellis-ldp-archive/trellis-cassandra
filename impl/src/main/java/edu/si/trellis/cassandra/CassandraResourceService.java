@@ -79,34 +79,33 @@ public class CassandraResourceService implements ResourceService, MementoService
         }
     }
 
-    private Function<? super ResultSet, ? extends Resource> buildResource(IRI id) {
-        return rows -> {
-            final Row metadata = rows.one();
-            boolean wasFound = metadata != null;
-            log.debug("Resource {} was {}found", id, wasFound ? "" : "not ");
-            if (!wasFound) return MISSING_RESOURCE;
-
-            log.trace("Computing metadata for resource {}", id);
-            IRI ixnModel = metadata.get("interactionModel", IRI.class);
-            log.debug("Found interactionModel = {} for resource {}", ixnModel, id);
-            boolean hasAcl = metadata.getBool("hasAcl");
-            log.debug("Found hasAcl = {} for resource {}", hasAcl, id);
-            IRI binaryId = metadata.get("binaryIdentifier", IRI.class);
-            log.debug("Found binaryIdentifier = {} for resource {}", binaryId, id);
-            String mimeType = metadata.getString("mimetype");
-            log.debug("Found mimeType = {} for resource {}", mimeType, id);
-            long size = metadata.getLong("size");
-            log.debug("Found size = {} for resource {}", size, id);
-            IRI container = metadata.get("container", IRI.class);
-            log.debug("Found container = {} for resource {}", container, id);
-            Instant modified = metadata.get("modified", Instant.class);
-            log.debug("Found modified = {} for resource {}", modified, id);
-            UUID created = metadata.getUUID("created");
-            log.debug("Found created = {} for resource {}", created, id);
-            return new CassandraResource(id, ixnModel, hasAcl, binaryId, mimeType, size, container, modified, created,
-                            cassandra);
-        };
-    }
+    private Resource buildResource(ResultSet rows) {
+        final Row metadata;
+        if ((metadata = rows.one()) == null) {
+            log.debug("Resource was not found");
+            return MISSING_RESOURCE;
+        }
+        IRI id = metadata.get("identifier", IRI.class);
+        log.debug("Resource {} was found, computing metadata.", id);
+        IRI ixnModel = metadata.get("interactionModel", IRI.class);
+        log.debug("Found interactionModel = {} for resource {}", ixnModel, id);
+        boolean hasAcl = metadata.getBool("hasAcl");
+        log.debug("Found hasAcl = {} for resource {}", hasAcl, id);
+        IRI binaryId = metadata.get("binaryIdentifier", IRI.class);
+        log.debug("Found binaryIdentifier = {} for resource {}", binaryId, id);
+        String mimeType = metadata.getString("mimetype");
+        log.debug("Found mimeType = {} for resource {}", mimeType, id);
+        long size = metadata.getLong("size");
+        log.debug("Found size = {} for resource {}", size, id);
+        IRI container = metadata.get("container", IRI.class);
+        log.debug("Found container = {} for resource {}", container, id);
+        Instant modified = metadata.get("modified", Instant.class);
+        log.debug("Found modified = {} for resource {}", modified, id);
+        UUID created = metadata.getUUID("created");
+        log.debug("Found created = {} for resource {}", created, id);
+        return new CassandraResource(id, ixnModel, hasAcl, binaryId, mimeType, size, container, modified, created,
+                        cassandra);
+    };
 
     @Override
     public CompletableFuture<? extends Resource> get(final IRI id) {
@@ -115,7 +114,8 @@ public class CassandraResourceService implements ResourceService, MementoService
 
     @Override
     public CompletableFuture<Resource> get(final IRI id, Instant time) {
-        return cassandra.get(id, time).thenApply(buildResource(id));
+        log.debug("Retrieving: {} at {}", id, time);
+        return cassandra.get(id, time).thenApply(this::buildResource);
     }
 
     @Override
