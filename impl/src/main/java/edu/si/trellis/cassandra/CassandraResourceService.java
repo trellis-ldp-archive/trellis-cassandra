@@ -95,15 +95,13 @@ public class CassandraResourceService implements ResourceService, MementoService
         log.debug("Found binaryIdentifier = {} for resource {}", binaryId, id);
         String mimeType = metadata.getString("mimetype");
         log.debug("Found mimeType = {} for resource {}", mimeType, id);
-        long size = metadata.getLong("size");
-        log.debug("Found size = {} for resource {}", size, id);
         IRI container = metadata.get("container", IRI.class);
         log.debug("Found container = {} for resource {}", container, id);
         Instant modified = metadata.get("modified", Instant.class);
         log.debug("Found modified = {} for resource {}", modified, id);
         UUID created = metadata.getUUID("created");
         log.debug("Found created = {} for resource {}", created, id);
-        return new CassandraResource(id, ixnModel, hasAcl, binaryId, mimeType, size, container, modified, created,
+        return new CassandraResource(id, ixnModel, hasAcl, binaryId, mimeType, container, modified, created,
                         cassandra);
     };
 
@@ -177,11 +175,10 @@ public class CassandraResourceService implements ResourceService, MementoService
 
         Optional<BinaryMetadata> binary = meta.getBinary();
         IRI binaryIdentifier = binary.map(BinaryMetadata::getIdentifier).orElse(null);
-        Long size = binary.flatMap(BinaryMetadata::getSize).orElse(null);
         String mimeType = binary.flatMap(BinaryMetadata::getMimeType).orElse(null);
         Instant now = now();
 
-        return cassandra.mutate(ixnModel, size, mimeType, now.truncatedTo(SECONDS), container, data, now,
+        return cassandra.mutate(ixnModel, mimeType, now.truncatedTo(SECONDS), container, data, now,
                         binaryIdentifier, UUIDs.timeBased(), id);
     }
 

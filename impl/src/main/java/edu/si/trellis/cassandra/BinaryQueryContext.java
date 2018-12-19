@@ -19,10 +19,10 @@ class BinaryQueryContext extends QueryContext {
     private static final Logger log = getLogger(BinaryQueryContext.class);
 
     private static final String INSERT_QUERY = "INSERT INTO " + BINARY_TABLENAME
-                    + " (identifier, size, chunkSize, chunkIndex, chunk) VALUES (:identifier, :size, :chunkSize,"
+                    + " (identifier, chunkSize, chunkIndex, chunk) VALUES (:identifier, :chunkSize,"
                     + ":chunkIndex, :chunk)";
 
-    private static final String RETRIEVE_QUERY = "SELECT size, chunkSize FROM " + BINARY_TABLENAME
+    private static final String RETRIEVE_QUERY = "SELECT chunkSize FROM " + BINARY_TABLENAME
                     + " WHERE identifier = ? LIMIT 1;";
 
     private static final String DELETE_QUERY = "DELETE FROM " + BINARY_TABLENAME + " WHERE identifier = ?;";
@@ -55,8 +55,8 @@ class BinaryQueryContext extends QueryContext {
         return executeWrite(deleteStatement.bind(id));
     }
 
-    CompletableFuture<Void> insert(IRI id, Long size, int chunkSize, int chunkIndex, InputStream chunk) {
-        return executeWrite(insertStatement.bind(id, size, chunkSize, chunkIndex, chunk));
+    CompletableFuture<Void> insert(IRI id, int chunkSize, int chunkIndex, InputStream chunk) {
+        return executeWrite(insertStatement.bind(id, chunkSize, chunkIndex, chunk));
     }
 
     InputStream read(IRI id) {
