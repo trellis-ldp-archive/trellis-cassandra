@@ -43,7 +43,7 @@ class CassandraResource implements Resource {
 
     private final BinaryMetadata binary;
 
-    public CassandraResource(IRI id, IRI ixnModel, boolean hasAcl, IRI binaryIdentifier, String mimeType, long size,
+    public CassandraResource(IRI id, IRI ixnModel, boolean hasAcl, IRI binaryIdentifier, String mimeType,
                     IRI container, Instant modified, UUID created, ResourceQueryContext queries) {
         this.identifier = id;
         this.interactionModel = ixnModel;
@@ -54,7 +54,7 @@ class CassandraResource implements Resource {
         log.trace("Resource is {}a container.", !isContainer ? "not " : "");
         this.modified = modified;
         boolean isBinary = NonRDFSource.equals(getInteractionModel());
-        this.binary = isBinary ? builder(binaryIdentifier).mimeType(mimeType).size(size).build() : null;
+        this.binary = isBinary ? builder(binaryIdentifier).mimeType(mimeType).build() : null;
         log.trace("Resource is {}a NonRDFSource.", !isBinary ? "not " : "");
         this.created = created;
         this.queries = queries;

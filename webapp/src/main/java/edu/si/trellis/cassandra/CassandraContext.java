@@ -46,7 +46,7 @@ public class CassandraContext {
 
     @Inject
     @Config(value = { "cassandra.maxChunkSize", "CASSANDRA_MAX_CHUNK_SIZE" }, defaultValue = "1048576")
-    private String maxChunkSize;
+    private String defaultChunkSize;
 
     @Inject
     @Config(value = { "cassandra.binaryReadConsistency", "CASSANDRA_BINARY_READ_CONSISTENCY" }, defaultValue = "ONE")
@@ -65,12 +65,12 @@ public class CassandraContext {
     private ConsistencyLevel rdfWriteConsistency;
 
     /**
-     * @return the maximum size of chunk for a {@link CassandraBinaryService}
+     * @return the default size of chunk for a {@link CassandraBinaryService}
      */
     @Produces
-    @MaxChunkSize
-    public int maxChunkSize() {
-        return parseInt(maxChunkSize);
+    @DefaultChunkSize
+    public int defaultChunkSize() {
+        return parseInt(defaultChunkSize);
     }
 
     /**

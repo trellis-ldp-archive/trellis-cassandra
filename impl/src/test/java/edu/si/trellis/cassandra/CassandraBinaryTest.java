@@ -4,9 +4,8 @@ import static com.datastax.driver.core.ConsistencyLevel.ONE;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 import com.datastax.driver.core.*;
@@ -21,7 +20,6 @@ import org.apache.commons.rdf.simple.SimpleRDF;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.trellisldp.api.RuntimeTrellisException;
 
@@ -30,8 +28,6 @@ import org.trellisldp.api.RuntimeTrellisException;
 public class CassandraBinaryTest {
 
     private final RDF factory = new SimpleRDF();
-
-    private long testSize;
 
     private int testChunkSize;
 
@@ -58,14 +54,6 @@ public class CassandraBinaryTest {
     private InputStream mockInputStream;
 
     @Test
-    public void correctSize() {
-        when(mockSession.prepare(anyString())).thenReturn(mockPreparedStatement1);
-        BinaryQueryContext testContext = new BinaryQueryContext(mockSession, ONE, ONE);
-        CassandraBinary testCassandraBinary = new CassandraBinary(testId, testSize, testContext, testChunkSize);
-        assertSame(testSize, testCassandraBinary.getSize());
-    }
-
-    @Test
     public void noContent() {
         when(mockSession.prepare(anyString())).thenReturn(mockPreparedStatement1);
         when(mockPreparedStatement1.bind(testId)).thenReturn(mockBoundStatement1);
@@ -75,7 +63,7 @@ public class CassandraBinaryTest {
         testSpliterator = new TestRowSpliterator(0, mockRow);
         when(mockResultSet1.spliterator()).thenReturn(testSpliterator);
 
-        CassandraBinary testCassandraBinary = new CassandraBinary(testId, testSize, testContext, testChunkSize);
+        CassandraBinary testCassandraBinary = new CassandraBinary(testId, testContext, testChunkSize);
 
         try {
             testCassandraBinary.getContent();

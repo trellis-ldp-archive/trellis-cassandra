@@ -31,8 +31,8 @@ class ResourceQueryContext extends QueryContext {
                     + " (identifier, quads, created) VALUES (?,?,?)";
 
     private static final String MUTABLE_INSERT_QUERY = "INSERT INTO " + MUTABLE_TABLENAME
-                    + " (interactionModel, size, mimeType, createdSeconds, container, quads, modified, binaryIdentifier, created, identifier)"
-                    + " VALUES (?,?,?,?,?,?,?,?,?,?)";
+                    + " (interactionModel, mimeType, createdSeconds, container, quads, modified, binaryIdentifier, created, identifier)"
+                    + " VALUES (?,?,?,?,?,?,?,?,?)";
 
     private static final String TOUCH_QUERY = "UPDATE " + MUTABLE_TABLENAME
                     + " SET modified=? WHERE created=? AND identifier=?";
@@ -87,9 +87,9 @@ class ResourceQueryContext extends QueryContext {
         return executeRead(mementosStatement.bind(id));
     }
 
-    CompletableFuture<Void> mutate(IRI ixnModel, Long size, String mimeType, Instant createdSeconds, IRI container,
+    CompletableFuture<Void> mutate(IRI ixnModel, String mimeType, Instant createdSeconds, IRI container,
                     Dataset data, Instant modified, IRI binaryIdentifier, UUID creation, IRI id) {
-        return executeWrite(mutableInsertStatement.bind(ixnModel, size, mimeType, createdSeconds, container, data,
+        return executeWrite(mutableInsertStatement.bind(ixnModel, mimeType, createdSeconds, container, data,
                         modified, binaryIdentifier, creation, id));
     }
 

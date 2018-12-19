@@ -56,7 +56,7 @@ public class CassandraBinaryService implements BinaryService {
      * @param queryContext the Cassandra context for queries
      */
     @Inject
-    public CassandraBinaryService(IdentifierService idService, @MaxChunkSize int chunkLength,
+    public CassandraBinaryService(IdentifierService idService, @DefaultChunkSize int chunkLength,
                     BinaryQueryContext queryContext) {
         this.idService = idService;
         this.defaultChunkLength = chunkLength;
@@ -69,7 +69,7 @@ public class CassandraBinaryService implements BinaryService {
         log.debug("Retrieving binary content from: {}", id);
         return cassandra.get(id).thenApply(
                         rows -> requireNonNull(rows.one(), () -> "Binary not found under IRI: " + id.getIRIString()))
-                        .thenApply(r -> new CassandraBinary(id, r.getLong("size"), cassandra, r.getInt("chunkSize")));
+                        .thenApply(r -> new CassandraBinary(id, cassandra, r.getInt("chunkSize")));
     }
 
     @Override
@@ -93,7 +93,6 @@ public class CassandraBinaryService implements BinaryService {
     private CompletableFuture<Long> setChunk(BinaryMetadata meta, InputStream data, AtomicInteger chunkIndex,
                     int chunkLength) {
         IRI id = meta.getIdentifier();
-        Long size = meta.getSize().orElse(null);
         log.debug("Recording chunk {} of binary content under: {}", chunkIndex.get(), id);
 
         try (NoopCloseCountingInputStream countingChunk = new NoopCloseCountingInputStream(
@@ -101,7 +100,7 @@ public class CassandraBinaryService implements BinaryService {
             @SuppressWarnings("cast")
             // upcast to match this object with InputStreamCodec
             InputStream chunk = (InputStream) countingChunk;
-            return cassandra.insert(id, size, chunkLength, chunkIndex.getAndIncrement(), chunk)
+            return cassandra.insert(id, chunkLength, chunkIndex.getAndIncrement(), chunk)
                             .thenApply(x -> countingChunk.getByteCount())
                             .thenComposeAsync(bytesStored -> bytesStored == chunkLength
                                             ? setChunk(meta, data, chunkIndex, chunkLength)

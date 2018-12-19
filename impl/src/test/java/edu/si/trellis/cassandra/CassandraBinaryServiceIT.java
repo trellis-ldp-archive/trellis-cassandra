@@ -11,7 +11,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.BinaryMetadata.builder;
-import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -44,7 +43,7 @@ public class CassandraBinaryServiceIT extends CassandraServiceIT {
         log.debug("Using identifier: {} for testSetAndGetSmallContent", id);
         String content = "This is only a short test, but it has meaning";
         try (InputStream testInput = IOUtils.toInputStream(content, UTF_8)) {
-            connection.binaryService.setContent(builder(id).size(45L).build(), testInput, emptyMap()).get();
+            connection.binaryService.setContent(builder(id).build(), testInput, emptyMap()).get();
         }
 
         try (InputStream got = connection.binaryService.get(id).get().getContent()) {

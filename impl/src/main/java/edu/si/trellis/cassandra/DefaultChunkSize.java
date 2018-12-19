@@ -8,16 +8,9 @@ import java.lang.annotation.Retention;
 import javax.inject.Qualifier;
 
 /**
- * The maximum size of any chunk in this service.
+ * The default size of any chunk in this service.
  */
 @Documented
 @Retention(RUNTIME)
 @Qualifier
-public @interface MaxChunkSize {
-
-    /**
-     * Use 1MB for default max chunk size.
-     */
-    public static final int DEFAULT_MAX_CHUNK_SIZE = 1024 * 1024;
-
-}
+public @interface DefaultChunkSize {}

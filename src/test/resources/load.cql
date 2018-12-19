@@ -6,7 +6,7 @@ USE trellis;
 -- Main data tables
 
 CREATE TABLE IF NOT EXISTS mutabledata (identifier text, quads text, interactionModel text,
-    hasAcl boolean, binaryIdentifier text, mimeType text, size bigint, container text, created timeuuid,
+    hasAcl boolean, binaryIdentifier text, mimeType text, container text, created timeuuid,
     modified timestamp, createdSeconds timestamp, PRIMARY KEY ((identifier), created))
     WITH CLUSTERING ORDER BY (created DESC);
 
