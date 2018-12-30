@@ -11,13 +11,6 @@
   <artifactId>impl</artifactId>
   <name>Trellis/Cassandra Integration</name>
 
-  <properties>
-    <cassandra.driver.version>3.6.0</cassandra.driver.version>
-    <jena.version>3.9.0</jena.version>
-    <commons.rdf.version>0.5.0</commons.rdf.version>
-
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>org.trellisldp</groupId>

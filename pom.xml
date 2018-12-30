@@ -39,12 +39,14 @@
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
 
-
     <trellis.version>0.8.0-SNAPSHOT</trellis.version>
-    <cassandra.test.version>3.11.2</cassandra.test.version>
 
+    <cassandra.test.version>3.11.3</cassandra.test.version>
+    <cassandra.driver.version>3.6.0</cassandra.driver.version>
+    <jena.version>3.9.0</jena.version>
+    <commons.rdf.version>0.5.0</commons.rdf.version>
     <thorntail.version>2.2.1.Final</thorntail.version>
-
+    <tamaya.version>0.4-incubating-SNAPSHOT</tamaya.version>
     <logback.version>1.2.3</logback.version>
 
   </properties>
