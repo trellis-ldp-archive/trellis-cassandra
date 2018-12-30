@@ -29,7 +29,7 @@
 
   <logger name="org.wildfly" level="WARN"/>
 
-  <logger name="org.apache.tamaya" level="WARN"/>
+  <logger name="org.apache.tamaya" level="ERROR"/>
 
 <!--   <logger name="com.datastax.driver.core.QueryLogger" level="TRACE"/> -->
   <logger name="org.apache.cassandra" level="ERROR"/>
