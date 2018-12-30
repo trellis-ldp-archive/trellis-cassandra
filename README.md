@@ -32,7 +32,7 @@ Trellis/Cassandra uses Logback for logging. To enable and configure logging, con
 ```
 -Dorg.jboss.logging.provider=slf4j  -Dlogback.configurationFile=/your/logback/config
 ```
-Because Trellis/Cassandra lifts `java.util.logging` over SLF4j, any Logback configuration should use Logback's `LevelChangePropagator`. You can do this in an XML Logback configuration file via:
+Because Trellis/Cassandra lifts `java.util.logging` over SLF4j, any Logback configuration [should use Logback's `LevelChangePropagator`](https://logback.qos.ch/manual/configuration.html#LevelChangePropagator). You can do this in an XML Logback configuration file via:
 ```
   <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator"/>
 ```
