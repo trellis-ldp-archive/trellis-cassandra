@@ -1,5 +1,5 @@
 # Trellis/Cassandra
-The rich, delicious ice cream of [Trellis LDP](https://github.com/trellis-ldp/trellis) laced with tasty [Apache Cassandra](https://cassandra.apache.org/) ribbons.
+Rich, delicious [Trellis LDP](https://github.com/trellis-ldp/trellis) ice cream laced with tasty [Apache Cassandra](https://cassandra.apache.org/) ribbons.
 
 1. Clean separation of mutable and immutable (e.g. audit) data in separate tables.
 2. Storage of RDF in the standard and easily-parsed [N-Quads](https://www.w3.org/TR/n-quads/) serialization.
