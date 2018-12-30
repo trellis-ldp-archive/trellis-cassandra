@@ -18,6 +18,14 @@
     <url>https://travis-ci.org/ajs6f/trellis-cassandra/</url>
   </ciManagement>
 
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+      <comments>Copyright (c) 2018-2019 Smithsonian Institution</comments>
+    </license>
+  </licenses>
+
   <modules>
     <module>impl</module>
     <module>webapp</module>
@@ -134,7 +142,7 @@
               <portName>cassandra.storagePort</portName>
               <portName>cassandra.stopPort</portName>
               <portName>cassandra.nativeTransportPort</portName>
-              <portName>cassandra.jmx.local.port</portName>
+              <portName>cassandra.jmxPort</portName>
             </portNames>
           </configuration>
           <executions>
@@ -154,12 +162,19 @@
           <configuration>
             <startNativeTransport>true</startNativeTransport>
             <addTestClasspath>true</addTestClasspath>
+            <!-- Because of the naming of these Maven properties, we need not explicitly link them here but we do
+              for trace-ability. See http://www.mojohaus.org/cassandra-maven-plugin/start-mojo.html -->
+            <nativeTransportPort>${cassandra.nativeTransportPort}</nativeTransportPort>
+            <jmxPort>${cassandra.jmxPort}</jmxPort>
+            <rpcPort>${cassandra.rpcPort}</rpcPort>
+            <stopPort>${cassandra.stopPort}</stopPort>
+            <storagePort>${cassandra.storagePort}</storagePort>
+
             <systemPropertyVariables>
               <log4j.configurationFile>${project.build.directory}/test-classes/log4j2-test.xml</log4j.configurationFile>
-              <cassandra.jmx.local.port>${cassandra.jmx.local.port}</cassandra.jmx.local.port>
             </systemPropertyVariables>
-            <!-- use a load script after resource filtering -->
-            <!-- this path is relative to the working module directory at buildtime -->
+            <!-- Use a load script (after resource filtering). This path is relative to the working module directory
+              at a given moment during build. -->
             <script>${project.basedir}/../src/test/resources/load.cql</script>
           </configuration>
           <dependencies>
@@ -198,7 +213,7 @@
     <plugins>
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>1.4.1</version>
+        <version>3.0.0-M2</version>
         <executions>
           <execution>
             <id>enforce-maven</id>
