@@ -1,25 +1,26 @@
 package edu.si.trellis;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.jena.atlas.io.IO.closeSilent;
 import static org.apache.jena.riot.Lang.NQUADS;
 import static org.apache.jena.riot.RDFDataMgr.read;
 import static org.apache.jena.riot.RDFDataMgr.writeQuads;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.nio.ByteBuffer;
-
-import org.apache.commons.rdf.api.Dataset;
-import org.apache.commons.rdf.jena.JenaRDF;
-import org.apache.jena.query.DatasetFactory;
-import org.apache.jena.riot.RiotException;
 
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.TypeCodec;
 import com.datastax.driver.core.exceptions.InvalidTypeException;
 import com.datastax.driver.core.utils.Bytes;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.ByteBuffer;
+
+import org.apache.commons.rdf.api.Dataset;
+import org.apache.commons.rdf.jena.JenaRDF;
+import org.apache.jena.query.DatasetFactory;
+import org.apache.jena.riot.RiotException;
 
 class DatasetCodec extends TypeCodec<Dataset> {
     
@@ -38,15 +39,14 @@ class DatasetCodec extends TypeCodec<Dataset> {
     }
 
     private byte[] toNQuads(Dataset dataset) {
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        try {
+        try (ByteArrayOutputStream bytes = new ByteArrayOutputStream()) {
             writeQuads(bytes, dataset.stream().map(rdf::asJenaQuad).iterator());
             return bytes.toByteArray();
         } catch (RiotException e) {
             throw new InvalidTypeException("Dataset is impossible to serialize!", e);
-        } finally {
-            closeSilent(bytes);
-        }
+        } catch (IOException e) {
+            throw new UncheckedIOException("Dataset could not be serialized!", e);
+        } 
     }
 
     @Override
@@ -75,5 +75,4 @@ class DatasetCodec extends TypeCodec<Dataset> {
         if (dataset == null || dataset.size() == 0) return null;
         return new String(toNQuads(dataset), UTF_8);
     }
-
 }

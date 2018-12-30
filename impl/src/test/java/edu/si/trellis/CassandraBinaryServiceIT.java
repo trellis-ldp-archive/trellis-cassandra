@@ -3,7 +3,6 @@ package edu.si.trellis;
 import static edu.si.trellis.CassandraBinaryService.CASSANDRA_CHUNK_HEADER_NAME;
 import static java.lang.Integer.parseInt;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Collections.emptyMap;
 import static java.util.UUID.randomUUID;
 import static org.apache.commons.io.IOUtils.contentEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -14,8 +13,6 @@ import static org.trellisldp.api.BinaryMetadata.builder;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-
-import edu.si.trellis.CassandraBinary;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -45,7 +42,7 @@ public class CassandraBinaryServiceIT extends CassandraServiceIT {
         log.debug("Using identifier: {} for testSetAndGetSmallContent", id);
         String content = "This is only a short test, but it has meaning";
         try (InputStream testInput = IOUtils.toInputStream(content, UTF_8)) {
-            connection.binaryService.setContent(builder(id).build(), testInput, emptyMap()).get();
+            connection.binaryService.setContent(builder(id).build(), testInput).get();
         }
 
         try (InputStream got = connection.binaryService.get(id).get().getContent()) {
@@ -75,7 +72,7 @@ public class CassandraBinaryServiceIT extends CassandraServiceIT {
         IRI id = createIRI();
         final String md5sum = "89c4b71c69f59cde963ce8aa9dbe1617";
         try (FileInputStream testData = new FileInputStream("src/test/resources/test.jpg")) {
-            connection.binaryService.setContent(builder(id).build(), testData, null).get();
+            connection.binaryService.setContent(builder(id).build(), testData).get();
         }
 
         CompletableFuture<Binary> got = connection.binaryService.get(id);
@@ -105,7 +102,7 @@ public class CassandraBinaryServiceIT extends CassandraServiceIT {
         final String md5sum = "89c4b71c69f59cde963ce8aa9dbe1617";
         try (FileInputStream testData = new FileInputStream("src/test/resources/test.jpg")) {
             Map<String, List<String>> hints = ImmutableMap.of(CASSANDRA_CHUNK_HEADER_NAME, ImmutableList.of(chunkSize));
-            connection.binaryService.setContent(builder(id).build(), testData, hints).get();
+            connection.binaryService.setContent(builder(id).hints(hints).build(), testData).get();
         }
 
         CompletableFuture<Binary> got = connection.binaryService.get(id);
@@ -128,7 +125,7 @@ public class CassandraBinaryServiceIT extends CassandraServiceIT {
             Map<String, List<String>> hints = ImmutableMap.of(CASSANDRA_CHUNK_HEADER_NAME,
                             ImmutableList.of(chunkSize, chunkSize + 1000));
             try {
-                connection.binaryService.setContent(builder(id).build(), testData, hints).get();
+                connection.binaryService.setContent(builder(id).hints(hints).build(), testData).get();
                 fail();
             } catch (Exception e) {
                 assertTrue(e instanceof RuntimeTrellisException);

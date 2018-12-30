@@ -13,7 +13,6 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.security.MessageDigest;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -73,13 +72,12 @@ public class CassandraBinaryService implements BinaryService {
     }
 
     @Override
-    public CompletableFuture<Void> setContent(BinaryMetadata meta, InputStream stream,
-                    Map<String, List<String>> hints) {
+    public CompletableFuture<Void> setContent(BinaryMetadata meta, InputStream stream) {
         log.debug("Recording binary content under: {}", meta.getIdentifier());
         final int chunkSize;
-        if (hints == null) chunkSize = defaultChunkLength;
+        if (meta.getHints() == null) chunkSize = defaultChunkLength;
         else {
-            List<String> headers = hints.get(CASSANDRA_CHUNK_HEADER_NAME);
+            List<String> headers = meta.getHints().get(CASSANDRA_CHUNK_HEADER_NAME);
             if (headers == null) chunkSize = defaultChunkLength;
             else if (headers.size() > 1)
                 throw new RuntimeTrellisException("Too many " + CASSANDRA_CHUNK_HEADER_NAME + " headers!");
@@ -114,10 +112,10 @@ public class CassandraBinaryService implements BinaryService {
     }
 
     @Override
-    public CompletableFuture<byte[]> calculateDigest(IRI identifier, MessageDigest algorithm) {
+    public CompletableFuture<MessageDigest> calculateDigest(IRI identifier, MessageDigest algorithm) {
         return get(identifier).thenApply(Binary::getContent).thenApplyAsync(in -> {
             try (InputStream stream = in) {
-                return updateDigest(algorithm, stream).digest();
+                return updateDigest(algorithm, stream);
             } catch (final IOException e) {
                 throw new UncheckedIOException(e);
             }
