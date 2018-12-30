@@ -1,4 +1,4 @@
-# trellis-cassandra
+# Trellis/Cassandra
 The rich, delicious ice cream of [Trellis LDP](https://github.com/trellis-ldp/trellis) laced with tasty [Apache Cassandra](https://cassandra.apache.org/) ribbons.
 
 1. Clean separation of mutable and immutable (e.g. audit) data in separate tables.
@@ -28,9 +28,13 @@ with `OPTS` set to whatever runtime properties for configuration you may require
 
 To configure the connection to Cassandra, you must provide the location and port of an initial contact node in your Cassandra cluster. This cluster must be configured (by some other means) with a minimal schema in the `Trellis` keyspace such as is shown in `src/test/resources/load.cql`. The connection can be configured via environment properties (or Java system properties). Use the names `CASSANDRA_CONTACT_PORT`(`cassandra.contactPort`) and `CASSANDRA_CONTACT_ADDRESS`(`cassandra.contactAddress`) (subject to change < 1.0). These default to `localhost` and `9042`. Additionally, you may configure the size (in bytes) of chunk used for binary storage as `CASSANDRA_MAX_CHUNK_SIZE`(`cassandra.maxChunkSize`).
 
-Trellis-Cassandra uses Logback for logging. To enable and configure logging, configure Logback via:
+Trellis/Cassandra uses Logback for logging. To enable and configure logging, configure Logback via:
 ```
 -Dorg.jboss.logging.provider=slf4j  -Dlogback.configurationFile=/your/logback/config
+```
+Because Trellis/Cassandra lifts `java.util.logging` over SLF4j, any Logback configuration should use Logback's `LevelChangePropagator`. You can do this in an XML Logback configuration file via:
+```
+  <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator"/>
 ```
 
 In some containerized deployments, you may receive an error like `java.net.SocketException: Protocol family unavailable`, which indicates that the appplication is trying to bind to an IPv6 port. You can prevent this if needed via
