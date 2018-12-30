@@ -1,8 +1,9 @@
 # Trellis/Cassandra
-Rich, delicious [Trellis LDP](https://github.com/trellis-ldp/trellis) ice cream laced with tasty [Apache Cassandra](https://cassandra.apache.org/) ribbons.
+Rich, delicious [TrellisLDP](https://github.com/trellis-ldp/trellis) ice cream laced with tasty [Apache Cassandra](https://cassandra.apache.org/) ribbons.
 
-1. Clean separation of mutable and immutable (e.g. audit) data in separate tables.
-2. Storage of RDF in the standard and easily-parsed [N-Quads](https://www.w3.org/TR/n-quads/) serialization.
+1. Clean separation of mutable and immutable (e.g. audit) RDF data in separate tables.
+2. Immutable binary data.
+2. RDF stored in the standard and transparent [N-Quads](https://www.w3.org/TR/n-quads/) serialization.
 3. The renowned distribution and scaling characteristics of Apache Cassandra.
 
 [![CircleCI](https://circleci.com/gh/ajs6f/trellis-cassandra/tree/master.svg?style=svg)](https://circleci.com/gh/ajs6f/trellis-cassandra/tree/master)
@@ -12,7 +13,7 @@ Use
 ```
 mvn clean install
 ```
-to build with a bundled Cassandra instance for testing. See Maven profiles in `webapp/pom.xml` for packaging options. Use
+to build with a bundled Cassandra instance for testing. See Maven profiles for packaging options. Use
 ```
 mvn -Dcassandra.skip -Dcassandra.contactAddress=$NODE -Dcassandra.nativeTransportPort=$PORT clean install
 ```
