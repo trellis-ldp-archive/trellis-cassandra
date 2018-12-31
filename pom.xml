@@ -9,14 +9,11 @@
   <name>Trellis/Cassandra</name>
 
   <scm>
-    <url>git@github.com:ajs6f/trellis-cassandra.git</url>
+    <url>git@github.com:trellis-ldp/trellis-cassandra.git</url>
   </scm>
   <issueManagement>
-    <url>https://github.com/ajs6f/trellis-cassandra/issues</url>
+    <url>https://github.com/trellis-ldp/trellis-cassandra/issues</url>
   </issueManagement>
-  <ciManagement>
-    <url>https://travis-ci.org/ajs6f/trellis-cassandra/</url>
-  </ciManagement>
 
   <licenses>
     <license>
