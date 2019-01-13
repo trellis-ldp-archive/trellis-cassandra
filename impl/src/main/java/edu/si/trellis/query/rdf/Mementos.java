@@ -13,13 +13,20 @@ import javax.inject.Inject;
 
 import org.apache.commons.rdf.api.IRI;
 
+/**
+ * A query to retrieve a list of the Mementos of a resource.
+ */
 public class Mementos extends CassandraQuery {
-    
+
     @Inject
     public Mementos(Session session, @RdfReadConsistency ConsistencyLevel consistency) {
         super(session, "SELECT modified FROM " + MUTABLE_TABLENAME + " WHERE identifier = ?", consistency);
     }
 
+    /**
+     * @param id the {@link IRI} of the resource the Mementos of which are to be cataloged
+     * @return TODO
+     */
     public CompletableFuture<ResultSet> execute(IRI id) {
         return executeRead(preparedStatement().bind(id));
     }

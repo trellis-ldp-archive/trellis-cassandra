@@ -28,7 +28,7 @@ public class Insert extends CassandraQuery implements Executor {
      * @param chunkSize size of chunk to use for this binary
      * @param chunkIndex which chunk this is
      * @param chunk the bytes of this chunk
-     * @return a {@link CompletableFuture} indicating the success of this insertion
+     * @return whether and when it has been inserted
      */
     public CompletableFuture<Void> execute(IRI id, int chunkSize, int chunkIndex, InputStream chunk) {
         BoundStatement boundStatement = preparedStatement().bind().set("identifier", id, IRI.class)

@@ -12,6 +12,9 @@ import javax.inject.Inject;
 
 import org.apache.commons.rdf.api.IRI;
 
+/**
+ * A query to delete a resource.
+ */
 public class Delete extends CassandraQuery {
 
     @Inject
@@ -19,6 +22,10 @@ public class Delete extends CassandraQuery {
         super(session, "DELETE FROM " + MUTABLE_TABLENAME + " WHERE identifier = ? ", consistency);
     }
 
+    /**
+     * @param id the {@link IRI} of the resource to delete
+     * @return whether and when it has been deleted
+     */
     public CompletableFuture<Void> execute(IRI id) {
         return executeWrite(preparedStatement().bind(id));
     }

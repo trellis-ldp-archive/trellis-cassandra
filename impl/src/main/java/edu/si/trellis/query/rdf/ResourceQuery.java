@@ -14,16 +14,19 @@ import java.util.stream.StreamSupport;
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.Quad;
 
+/**
+ * A query for use by individual resources to retrieve their contents.
+ *
+ */
 public abstract class ResourceQuery extends CassandraQuery {
 
     public ResourceQuery(Session session, String queryString, ConsistencyLevel consistency) {
         super(session, queryString, consistency);
     }
 
-    protected Stream<Quad> quadStreamFromQuery(final Statement boundStatement) {
+    protected Stream<Quad> quads(final Statement boundStatement) {
         final Spliterator<Row> rows = executeSyncRead(boundStatement).spliterator();
         Stream<Dataset> datasets = StreamSupport.stream(rows, false).map(r -> r.get("quads", Dataset.class));
         return datasets.flatMap(Dataset::stream);
     }
-
 }

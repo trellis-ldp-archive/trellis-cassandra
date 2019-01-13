@@ -12,14 +12,25 @@ import javax.inject.Inject;
 
 import org.apache.commons.rdf.api.IRI;
 
-public class ReadRange extends ReadQuery {
+/**
+ * Reads a range of bytes from a binary to an {@link InputStream}
+ *
+ */
+public class ReadRange extends BinaryReadQuery {
 
     @Inject
     public ReadRange(Session session, @BinaryReadConsistency ConsistencyLevel consistency) {
         super(session, "SELECT chunkIndex FROM " + BINARY_TABLENAME
-                        + " WHERE identifier = :identifier and chunkIndex >= :start and chunkIndex <= :end;", consistency);
+                        + " WHERE identifier = :identifier and chunkIndex >= :start and chunkIndex <= :end;",
+                        consistency);
     }
 
+    /**
+     * @param id the {@link IRI} of a binary to read
+     * @param first which byte to begin reading on
+     * @param last which byte to end reading on
+     * @return an {@link InputStream} of bytes as requested
+     */
     public InputStream execute(IRI id, int first, int last) {
         BoundStatement bound = preparedStatement().bind().set("identifier", id, IRI.class).setInt("start", first)
                         .setInt("end", last);

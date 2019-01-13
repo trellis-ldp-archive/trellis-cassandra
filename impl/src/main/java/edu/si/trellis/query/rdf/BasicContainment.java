@@ -10,14 +10,21 @@ import javax.inject.Inject;
 
 import org.apache.commons.rdf.api.IRI;
 
+/**
+ * A query to retrieve basic containment information.
+ */
 public class BasicContainment extends ResourceQuery {
 
     @Inject
     public BasicContainment(Session session, @RdfReadConsistency ConsistencyLevel consistency) {
-        super(session, "SELECT identifier AS contained FROM " + BASIC_CONTAINMENT_TABLENAME + " WHERE container = ? ;",
+        super(session, "SELECT identifier AS contained FROM " + BASIC_CONTAINMENT_TABLENAME + " WHERE container = :container ;",
                         consistency);
     }
 
+    /**
+     * @param id the {@link IRI} of the container 
+     * @return TODO
+     */
     public ResultSet execute(IRI id) {
         return executeSyncRead(preparedStatement().bind(id));
     }

@@ -13,6 +13,10 @@ import javax.inject.Inject;
 
 import org.apache.commons.rdf.api.IRI;
 
+/**
+ * A query to retrieve the chunk size metadata for a binary.
+ *
+ */
 public class Get extends CassandraQuery {
 
     @Inject
@@ -21,6 +25,10 @@ public class Get extends CassandraQuery {
                         consistency);
     }
 
+    /**
+     * @param id the {@link IRI} of the binary to retrieve
+     * @return TODO make this makee more sense
+     */
     public CompletableFuture<ResultSet> execute(IRI id) {
         return executeRead(preparedStatement().bind(id));
     }

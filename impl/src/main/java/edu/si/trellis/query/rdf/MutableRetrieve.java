@@ -12,6 +12,9 @@ import javax.inject.Inject;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 
+/**
+ * A query to retrieve mutable data about a resource from Cassandra.
+ */
 public class MutableRetrieve extends ResourceQuery {
 
     @Inject
@@ -20,7 +23,12 @@ public class MutableRetrieve extends ResourceQuery {
                         + "  WHERE identifier = ? AND createdSeconds <= ? LIMIT 1 ALLOW FILTERING;", consistency);
     }
 
+    /**
+     * @param id the {@link IRI} of the resource, the mutable data of which is to be retrieved
+     * @param time the time (version) at which to find this data
+     * @return the RDF retrieved
+     */
     public Stream<Quad> execute(IRI id, Long time) {
-        return quadStreamFromQuery(preparedStatement().bind(id, time));
+        return quads(preparedStatement().bind(id, time));
     }
 }

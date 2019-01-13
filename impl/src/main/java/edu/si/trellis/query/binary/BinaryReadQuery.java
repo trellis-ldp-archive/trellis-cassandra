@@ -20,16 +20,19 @@ import org.apache.commons.rdf.api.IRI;
 import org.slf4j.Logger;
 import org.trellisldp.api.RuntimeTrellisException;
 
-abstract class ReadQuery extends CassandraQuery {
+/**
+ * A query that reads binary data from Cassandra.
+ */
+abstract class BinaryReadQuery extends CassandraQuery {
 
-    private static final Logger log = getLogger(ReadQuery.class);
+    private static final Logger log = getLogger(BinaryReadQuery.class);
 
     private static final String READ_CHUNK_QUERY = "SELECT chunk FROM " + BINARY_TABLENAME
                     + " WHERE identifier = :identifier and chunkIndex = :chunkIndex;";
 
     private final PreparedStatement readChunkStatement;
 
-    public ReadQuery(Session session, String queryString, ConsistencyLevel consistency) {
+    public BinaryReadQuery(Session session, String queryString, ConsistencyLevel consistency) {
         super(session, queryString, consistency);
         this.readChunkStatement = session.prepare(READ_CHUNK_QUERY);
     }
