@@ -28,8 +28,6 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Function;
-
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 

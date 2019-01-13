@@ -121,8 +121,9 @@ public class CassandraBinaryService implements BinaryService {
             // upcast to match this object with InputStreamCodec
             InputStream chunk = (InputStream) countingChunk;
             return insert.execute(id, chunkLength, chunkIndex.getAndIncrement(), chunk)
-                            .thenApply(x -> countingChunk.getByteCount())
-                            .thenComposeAsync(bytesStored -> bytesStored == chunkLength
+                            // TODO possible to avoid this boxing?
+                            .thenApply(dummy -> countingChunk.getByteCount())
+                            .thenComposeAsync(bytesStored -> bytesStored.intValue() == chunkLength
                                             ? setChunk(meta, data, chunkIndex, chunkLength)
                                             : DONE, insert);
         }
