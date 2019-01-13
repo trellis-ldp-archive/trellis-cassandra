@@ -1,11 +1,9 @@
-package edu.si.trellis;
+package edu.si.trellis.query.binary;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-
-import edu.si.trellis.SequenceInputStream;
-
+import edu.si.trellis.query.binary.ReadQuery.SequenceInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,7 +11,7 @@ import java.io.InputStream;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
 
-public class SequenceInputStreamTest {
+public class ReadQueryTest {
 
     @Test
     public void shouldConcatStreams() throws IOException {

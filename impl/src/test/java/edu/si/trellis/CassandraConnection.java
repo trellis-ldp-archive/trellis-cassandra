@@ -11,15 +11,14 @@ import com.datastax.driver.core.*;
 import com.datastax.driver.extras.codecs.date.SimpleTimestampCodec;
 import com.datastax.driver.extras.codecs.jdk8.InstantCodec;
 
-import edu.si.trellis.BinaryQueryContext;
 import edu.si.trellis.CassandraBinaryService;
 import edu.si.trellis.CassandraResourceService;
-import edu.si.trellis.ResourceQueryContext;
 
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.slf4j.Logger;
+import org.trellisldp.api.IdentifierService;
 
 class CassandraConnection implements AfterAllCallback, BeforeAllCallback {
 
@@ -55,9 +54,23 @@ class CassandraConnection implements AfterAllCallback, BeforeAllCallback {
         QueryLogger queryLogger = QueryLogger.builder().build();
         cluster.register(queryLogger);
         this.session = cluster.connect("trellis");
-        this.resourceService = new CassandraResourceService(new ResourceQueryContext(session, ONE, ONE));
+        ConsistencyLevel consistency = ONE;
+        this.resourceService = new CassandraResourceService(new edu.si.trellis.query.rdf.Delete(session, ONE),
+                        new edu.si.trellis.query.rdf.Get(session, ONE),
+                        new edu.si.trellis.query.rdf.ImmutableInsert(session, consistency),
+                        new edu.si.trellis.query.rdf.MutableInsert(session, consistency),
+                        new edu.si.trellis.query.rdf.Mementos(session, consistency),
+                        new edu.si.trellis.query.rdf.Touch(session, consistency),
+                        new edu.si.trellis.query.rdf.MutableRetrieve(session, consistency),
+                        new edu.si.trellis.query.rdf.ImmutableRetrieve(session, consistency),
+                        new edu.si.trellis.query.rdf.BasicContainment(session, consistency));
         resourceService.initializeQueriesAndRoot();
-        this.binaryService = new CassandraBinaryService(null, 1024 * 1024, new BinaryQueryContext(session, ONE, ONE));
+        this.binaryService = new CassandraBinaryService((IdentifierService) null, 1024 * 1024,
+                        new edu.si.trellis.query.binary.Get(session, consistency),
+                        new edu.si.trellis.query.binary.Insert(session, consistency),
+                        new edu.si.trellis.query.binary.Delete(session, consistency),
+                        new edu.si.trellis.query.binary.Read(session, consistency),
+                        new edu.si.trellis.query.binary.ReadRange(session, consistency));
         if (cleanBefore) cleanOut();
     }
 

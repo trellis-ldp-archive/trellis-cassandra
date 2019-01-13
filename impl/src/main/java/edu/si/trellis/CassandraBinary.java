@@ -1,6 +1,7 @@
 package edu.si.trellis;
 
-import static org.slf4j.LoggerFactory.getLogger;
+import edu.si.trellis.query.binary.Read;
+import edu.si.trellis.query.binary.ReadRange;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,7 +9,6 @@ import java.io.UncheckedIOException;
 
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.rdf.api.IRI;
-import org.slf4j.Logger;
 import org.trellisldp.api.Binary;
 
 /**
@@ -17,28 +17,30 @@ import org.trellisldp.api.Binary;
  */
 public class CassandraBinary implements Binary {
 
-    private static final Logger log = getLogger(CassandraBinary.class);
-
     private final IRI id;
-
-    private final BinaryQueryContext context;
 
     private final int chunkLength;
 
+    private final Read read;
+
+    private final ReadRange readRange;
+
     /**
      * @param id identifier for this {@link Binary}
-     * @param c context for queries
+     * @param read a {@link Read} query to use
+     * @param readRange a {@link ReadRange} query to use
      * @param chunkLength the length of chunk to use reading bits from Cassandra
      */
-    public CassandraBinary(IRI id, BinaryQueryContext c, int chunkLength) {
+    public CassandraBinary(IRI id, Read read, ReadRange readRange, int chunkLength) {
         this.id = id;
-        this.context = c;
+        this.read = read;
+        this.readRange = readRange;
         this.chunkLength = chunkLength;
     }
 
     @Override
     public InputStream getContent() {
-        return context.read(id);
+        return read.execute(id);
     }
 
     @Override
@@ -47,7 +49,7 @@ public class CassandraBinary implements Binary {
         int lastChunk = to / chunkLength;
         int chunkStreamStart = from % chunkLength;
         int rangeSize = to - from + 1; // +1 because range is inclusive
-        try (InputStream retrieve = context.readRange(id, firstChunk, lastChunk)) {
+        try (InputStream retrieve = readRange.execute(id, firstChunk, lastChunk)) {
             retrieve.skip(chunkStreamStart); // skip to fulfill lower end of range
             return new BoundedInputStream(retrieve, rangeSize); // apply limit for upper end of range
         } catch (IOException e) {

@@ -2,11 +2,14 @@ package edu.si.trellis;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.concurrent.Executors.newCachedThreadPool;
 import static org.apache.commons.codec.digest.DigestUtils.updateDigest;
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.*;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import com.google.common.collect.ImmutableSet;
+
+import edu.si.trellis.query.binary.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,6 +18,7 @@ import java.security.MessageDigest;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.inject.Inject;
@@ -43,32 +47,50 @@ public class CassandraBinaryService implements BinaryService {
     // package-private for testing
     static final String CASSANDRA_CHUNK_HEADER_NAME = "Cassandra-Chunk-Size";
 
-    private final BinaryQueryContext cassandra;
-
     private final IdentifierService idService;
 
     private final int defaultChunkLength;
 
+    private final Get get;
+
+    private final Insert insert;
+
+    private final Delete delete;
+
+    private final Read read;
+
+    private final ReadRange readRange;
+
+    private final Executor digestWorkers = newCachedThreadPool();
+
     /**
      * @param idService {@link IdentifierService} to use for binaries
      * @param chunkLength the maximum size of any chunk in this service
-     * @param queryContext the Cassandra context for queries
+     * @param get a {@link Get} query to use
+     * @param insert a {@link Insert} query to use
+     * @param delete a {@link Delete} query to use
+     * @param read a {@link Read} query to use
+     * @param readRange a {@link ReadRange} query to use
      */
     @Inject
-    public CassandraBinaryService(IdentifierService idService, @DefaultChunkSize int chunkLength,
-                    BinaryQueryContext queryContext) {
+    public CassandraBinaryService(IdentifierService idService, @DefaultChunkSize int chunkLength, Get get,
+                    Insert insert, Delete delete, Read read, ReadRange readRange) {
         this.idService = idService;
         this.defaultChunkLength = chunkLength;
         log.info("Using configured default chunk length: {}", chunkLength);
-        this.cassandra = queryContext;
+        this.get = get;
+        this.insert = insert;
+        this.delete = delete;
+        this.read = read;
+        this.readRange = readRange;
     }
 
     @Override
     public CompletableFuture<Binary> get(IRI id) {
         log.debug("Retrieving binary content from: {}", id);
-        return cassandra.get(id).thenApply(
+        return get.execute(id).thenApply(
                         rows -> requireNonNull(rows.one(), () -> "Binary not found under IRI: " + id.getIRIString()))
-                        .thenApply(r -> new CassandraBinary(id, cassandra, r.getInt("chunkSize")));
+                        .thenApply(r -> new CassandraBinary(id, read, readRange, r.getInt("chunkSize")));
     }
 
     @Override
@@ -98,17 +120,17 @@ public class CassandraBinaryService implements BinaryService {
             @SuppressWarnings("cast")
             // upcast to match this object with InputStreamCodec
             InputStream chunk = (InputStream) countingChunk;
-            return cassandra.insert(id, chunkLength, chunkIndex.getAndIncrement(), chunk)
+            return insert.execute(id, chunkLength, chunkIndex.getAndIncrement(), chunk)
                             .thenApply(x -> countingChunk.getByteCount())
                             .thenComposeAsync(bytesStored -> bytesStored == chunkLength
                                             ? setChunk(meta, data, chunkIndex, chunkLength)
-                                            : DONE, cassandra.writeWorkers);
+                                            : DONE, insert);
         }
     }
 
     @Override
     public CompletableFuture<Void> purgeContent(IRI identifier) {
-        return cassandra.delete(identifier);
+        return delete.execute(identifier);
     }
 
     @Override
@@ -119,7 +141,7 @@ public class CassandraBinaryService implements BinaryService {
             } catch (final IOException e) {
                 throw new UncheckedIOException(e);
             }
-        }, cassandra.readWorkers);
+        }, digestWorkers );
     }
 
     @Override

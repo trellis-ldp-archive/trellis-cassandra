@@ -1,0 +1,26 @@
+package edu.si.trellis.query.binary;
+
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.ConsistencyLevel;
+import com.datastax.driver.core.Session;
+
+import edu.si.trellis.BinaryReadConsistency;
+
+import java.io.InputStream;
+
+import javax.inject.Inject;
+
+import org.apache.commons.rdf.api.IRI;
+
+public class Read extends ReadQuery {
+
+    @Inject
+    public Read(Session session, @BinaryReadConsistency ConsistencyLevel consistency) {
+        super(session, "SELECT chunkIndex FROM " + BINARY_TABLENAME + " WHERE identifier = :identifier;", consistency);
+    }
+
+    public InputStream execute(IRI id) {
+        BoundStatement bound = preparedStatement().bind(id);
+        return retrieve(id, bound);
+    }
+}

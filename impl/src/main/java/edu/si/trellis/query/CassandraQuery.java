@@ -1,11 +1,9 @@
-package edu.si.trellis;
+package edu.si.trellis.query;
 
 import static java.util.concurrent.Executors.newCachedThreadPool;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.*;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -18,9 +16,9 @@ import org.slf4j.Logger;
  * A context for queries run against Cassandra. All requests to Cassandra should go through a subclass.
  *
  */
-abstract class QueryContext {
+public abstract class CassandraQuery {
 
-    private static final Logger log = getLogger(QueryContext.class);
+    private static final Logger log = getLogger(CassandraQuery.class);
 
     protected static final String MUTABLE_TABLENAME = "mutabledata";
 
@@ -34,11 +32,20 @@ abstract class QueryContext {
 
     protected final Executor writeWorkers = newCachedThreadPool(), readWorkers = newCachedThreadPool();
 
+    private final PreparedStatement preparedStatement;
+
+    protected PreparedStatement preparedStatement() {
+        return preparedStatement;
+    }
+
     /**
      * @param session a {@link Session} to the Cassandra cluster
+     * @param queryString the CQL string for this query
+     * @param consistency the {@link ConsistencyLevel} to use for executions of this query
      */
-    public QueryContext(Session session) {
+    public CassandraQuery(Session session, String queryString, ConsistencyLevel consistency) {
         this.session = session;
+        preparedStatement = session.prepare(queryString).setConsistencyLevel(consistency);
     }
 
     protected CompletableFuture<Void> executeWrite(Statement statement) {

@@ -22,6 +22,8 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.core.utils.UUIDs;
 import com.google.common.collect.ImmutableSet;
 
+import edu.si.trellis.query.rdf.*;
+
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -50,16 +52,46 @@ public class CassandraResourceService implements ResourceService, MementoService
 
     private static final Logger log = getLogger(CassandraResourceService.class);
 
-    private final ResourceQueryContext cassandra;
+    private final Delete delete;
+
+    private final Get get;
+
+    private final ImmutableInsert immutableInsert;
+
+    private final MutableInsert mutableInsert;
+
+    private final Mementos mementos;
+
+    private final Touch touch;
+
+    private final BasicContainment bcontainment;
+
+    private final MutableRetrieve mutableRetrieve;
+
+    private final ImmutableRetrieve immutableRetrieve;
 
     /**
      * Constructor.
      * 
-     * @param queryContext the Cassandra context for queries
+     * @param delete the {@link Delete} query to use
+     * @param get the {@link Get} query to use
+     * @param immutableInsert the {@link ImmutableInsert} query to use
+     * @param mutableInsert the {@link MutableInsert} query to use
+     * @param mementos the {@link Mementos} query to use
+     * @param touch the {@link Touch} query to use
      */
     @Inject
-    public CassandraResourceService(ResourceQueryContext queryContext) {
-        this.cassandra = queryContext;
+    public CassandraResourceService(Delete delete, Get get, ImmutableInsert immutableInsert,
+                    MutableInsert mutableInsert, Mementos mementos, Touch touch, MutableRetrieve mutableRetrieve, ImmutableRetrieve immutableRetrieve, BasicContainment bcontainment) {
+        this.delete = delete;
+        this.get = get;
+        this.immutableInsert = immutableInsert;
+        this.mutableInsert = mutableInsert;
+        this.mementos = mementos;
+        this.touch = touch;
+        this.immutableRetrieve = immutableRetrieve;
+        this.mutableRetrieve = mutableRetrieve;
+        this.bcontainment = bcontainment;
     }
 
     /**
@@ -102,7 +134,7 @@ public class CassandraResourceService implements ResourceService, MementoService
         UUID created = metadata.getUUID("created");
         log.debug("Found created = {} for resource {}", created, id);
         return new CassandraResource(id, ixnModel, hasAcl, binaryId, mimeType, container, modified, created,
-                        cassandra);
+                        immutableRetrieve, mutableRetrieve, bcontainment);
     };
 
     @Override
@@ -113,7 +145,7 @@ public class CassandraResourceService implements ResourceService, MementoService
     @Override
     public CompletableFuture<Resource> get(final IRI id, Instant time) {
         log.debug("Retrieving: {} at {}", id, time);
-        return cassandra.get(id, time).thenApply(this::buildResource);
+        return get.execute(id, time).thenApply(this::buildResource);
     }
 
     @Override
@@ -124,7 +156,7 @@ public class CassandraResourceService implements ResourceService, MementoService
     @Override
     public CompletableFuture<Void> add(final IRI id, final Dataset dataset) {
         log.debug("Adding immutable data to {}", id);
-        return cassandra.immutate(id, dataset, now());
+        return immutableInsert.execute(id, dataset, now());
     }
 
     @Override
@@ -142,7 +174,7 @@ public class CassandraResourceService implements ResourceService, MementoService
     @Override
     public CompletableFuture<Void> delete(Metadata meta) {
         log.debug("Deleting {}", meta.getIdentifier());
-        return cassandra.delete(meta.getIdentifier());
+        return delete.execute(meta.getIdentifier());
     }
 
     /*
@@ -151,7 +183,7 @@ public class CassandraResourceService implements ResourceService, MementoService
     @Override
     public CompletableFuture<Void> touch(IRI id) {
         return get(id).thenApply(CassandraResource.class::cast).thenApply(CassandraResource::getCreated)
-                        .thenCompose(created -> cassandra.touch(now(), created, id));
+                        .thenCompose(created -> touch.execute(now(), created, id));
     }
 
     @Override
@@ -162,7 +194,7 @@ public class CassandraResourceService implements ResourceService, MementoService
 
     @Override
     public CompletableFuture<SortedSet<Instant>> mementos(IRI id) {
-        return cassandra.mementos(id)
+        return mementos.execute(id)
                         .thenApply(results -> stream(results::spliterator, NONNULL + DISTINCT, false)
                                         .map(r -> r.get("modified", Instant.class))
                                         .map(time -> time.truncatedTo(SECONDS)).collect(toCollection(TreeSet::new)));
@@ -178,8 +210,8 @@ public class CassandraResourceService implements ResourceService, MementoService
         String mimeType = binary.flatMap(BinaryMetadata::getMimeType).orElse(null);
         Instant now = now();
 
-        return cassandra.mutate(ixnModel, mimeType, now.truncatedTo(SECONDS), container, data, now,
-                        binaryIdentifier, UUIDs.timeBased(), id);
+        return mutableInsert.execute(ixnModel, mimeType, now.truncatedTo(SECONDS), container, data, now, binaryIdentifier,
+                        UUIDs.timeBased(), id);
     }
 
     @Override

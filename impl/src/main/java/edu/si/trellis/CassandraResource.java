@@ -9,6 +9,10 @@ import static org.trellisldp.vocabulary.LDP.*;
 
 import com.datastax.driver.core.Row;
 
+import edu.si.trellis.query.rdf.BasicContainment;
+import edu.si.trellis.query.rdf.ImmutableRetrieve;
+import edu.si.trellis.query.rdf.MutableRetrieve;
+
 import java.time.Instant;
 import java.util.Optional;
 import java.util.Spliterator;
@@ -39,12 +43,17 @@ class CassandraResource implements Resource {
 
     private final UUID created;
 
-    private final ResourceQueryContext queries;
-
     private final BinaryMetadata binary;
 
-    public CassandraResource(IRI id, IRI ixnModel, boolean hasAcl, IRI binaryIdentifier, String mimeType,
-                    IRI container, Instant modified, UUID created, ResourceQueryContext queries) {
+    private final ImmutableRetrieve immutable;
+
+    private final MutableRetrieve mutable;
+
+    private final BasicContainment bcontainment;
+
+    public CassandraResource(IRI id, IRI ixnModel, boolean hasAcl, IRI binaryIdentifier, String mimeType, IRI container,
+                    Instant modified, UUID created, ImmutableRetrieve immutable, MutableRetrieve mutable,
+                    BasicContainment bcontainment) {
         this.identifier = id;
         this.interactionModel = ixnModel;
         this.isContainer = Container.equals(getInteractionModel())
@@ -57,7 +66,9 @@ class CassandraResource implements Resource {
         this.binary = isBinary ? builder(binaryIdentifier).mimeType(mimeType).build() : null;
         log.trace("Resource is {}a NonRDFSource.", !isBinary ? "not " : "");
         this.created = created;
-        this.queries = queries;
+        this.mutable = mutable;
+        this.immutable = immutable;
+        this.bcontainment = bcontainment;
     }
 
     @Override
@@ -108,8 +119,8 @@ class CassandraResource implements Resource {
     public Stream<Quad> stream() {
         log.trace("Retrieving quad stream for resource {}", getIdentifier());
         Long createdMs = unixTimestamp(getCreated());
-        Stream<Quad> mutableQuads = queries.mutableQuadStream(getIdentifier(), createdMs);
-        Stream<Quad> immutableQuads = queries.immutableQuadStream(getIdentifier());
+        Stream<Quad> mutableQuads = mutable.execute(getIdentifier(), createdMs);
+        Stream<Quad> immutableQuads = immutable.execute(getIdentifier());
         Stream<Quad> quads = concat(mutableQuads, immutableQuads);
         if (isContainer) {
             Stream<Quad> containmentQuadsInContainment = basicContainmentTriples().map(toQuad(PreferContainment));
@@ -121,7 +132,7 @@ class CassandraResource implements Resource {
 
     private Stream<Triple> basicContainmentTriples() {
         RDF rdfFactory = TrellisUtils.getInstance();
-        final Spliterator<Row> rows = queries.containment(getIdentifier()).spliterator();
+        final Spliterator<Row> rows = bcontainment.execute(getIdentifier()).spliterator();
         Stream<IRI> contained = StreamSupport.stream(rows, false).map(r -> r.get("contained", IRI.class));
         return contained.map(cont -> rdfFactory.createTriple(getIdentifier(), LDP.contains, cont))
                         .peek(t -> log.trace("Built containment triple: {}", t));
