@@ -49,7 +49,7 @@ jobs:
         when: always
     - run: 
         name: upload Sonar info
-        command: mvn sonar:sonar 
+        command: mvn sonar:sonar -Dsonar.login=$SONAR_LOGIN
         when: on_success
     - run:
         name: Spool test results 
