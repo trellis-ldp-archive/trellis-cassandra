@@ -47,6 +47,10 @@ jobs:
           find . -type f -regex ".*/target/surefire-reports/.*txt" -exec cp {} ~/junit/ \;
           find . -type f -regex ".*/target/failsafe-reports/.*txt" -exec cp {} ~/junit/ \;
         when: always
+    - run: 
+        name: upload Sonar info
+        command: mvn sonar:sonar 
+        when: on_success
     - run:
         name: Spool test results 
         command: find ~/junit -name *.txt | xargs cat

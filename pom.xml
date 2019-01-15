@@ -207,8 +207,14 @@
             </execution>
           </executions>
         </plugin>
+        <plugin>
+          <groupId>org.sonarsource.scanner.maven</groupId>
+          <artifactId>sonar-maven-plugin</artifactId>
+          <version>3.6.0.1398</version>
+        </plugin>
       </plugins>
     </pluginManagement>
+
     <plugins>
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
@@ -246,5 +252,19 @@
       </plugin>
     </plugins>
   </build>
-
+  <profiles>
+    <profile>
+      <id>sonar</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+        <sonar.jacoco.reportPaths>impl/target/jacoco.exec</sonar.jacoco.reportPaths>
+        <sonar.junit.reportPaths>impl/target/surefire-reports</sonar.junit.reportPaths>
+        <sonar.organization>trellis-ldp</sonar.organization>
+        <sonar.projectKey>org.trellisldp:trellis-cassandra</sonar.projectKey>
+      </properties>
+    </profile>
+  </profiles>
 </project>
