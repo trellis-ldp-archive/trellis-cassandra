@@ -1,6 +1,7 @@
 package edu.si.trellis;
 
-import static java.util.Objects.requireNonNull;
+import static java.lang.Float.valueOf;
+import static java.lang.System.getProperty;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.Executors.newCachedThreadPool;
 import static org.apache.commons.codec.digest.DigestUtils.updateDigest;
@@ -41,8 +42,17 @@ public class CassandraBinaryService implements BinaryService {
 
     private static final String SHA = "SHA";
 
-    // TODO JDK9 supports SHA3 algorithms (SHA3_256, SHA3_384, SHA3_512)
-    private static final Set<String> algorithms = ImmutableSet.of(MD5, MD2, SHA, SHA_1, SHA_256, SHA_384, SHA_512);
+    private static final ImmutableSet<String> JAVA_PRE_9_DIGEST_ALGORITHMS = ImmutableSet.of(MD5, MD2, SHA, SHA_1,
+                    SHA_256, SHA_384, SHA_512);
+
+    private static final ImmutableSet<String> JAVA_POST_9_DIGEST_ALGORITHMS = ImmutableSet.<String>builder()
+                    .addAll(JAVA_PRE_9_DIGEST_ALGORITHMS).add(SHA3_256, SHA3_384, SHA3_512).build();
+
+    // Java 9 introduced SHA3 algorithms
+    private static final Set<String> algorithms = valueOf(getProperty("java.vm.specification.version"))
+                    .floatValue() >= 9 // Too simple a test?
+                                    ? JAVA_POST_9_DIGEST_ALGORITHMS
+                                    : JAVA_PRE_9_DIGEST_ALGORITHMS;
 
     // package-private for testing
     static final String CASSANDRA_CHUNK_HEADER_NAME = "Cassandra-Chunk-Size";
@@ -88,9 +98,7 @@ public class CassandraBinaryService implements BinaryService {
     @Override
     public CompletableFuture<Binary> get(IRI id) {
         log.debug("Retrieving binary content from: {}", id);
-        return get.execute(id).thenApply(
-                        rows -> requireNonNull(rows.one(), () -> "Binary not found under IRI: " + id.getIRIString()))
-                        .thenApply(r -> new CassandraBinary(id, read, readRange, r.getInt("chunkSize")));
+        return get.execute(id).thenApply(r -> new CassandraBinary(id, read, readRange, r.getInt("chunkSize")));
     }
 
     @Override
@@ -121,9 +129,7 @@ public class CassandraBinaryService implements BinaryService {
             // upcast to match this object with InputStreamCodec
             InputStream chunk = (InputStream) countingChunk;
             return insert.execute(id, chunkLength, chunkIndex.getAndIncrement(), chunk)
-                            // TODO possible to avoid this boxing?
-                            .thenApply(dummy -> countingChunk.getByteCount())
-                            .thenComposeAsync(bytesStored -> bytesStored.intValue() == chunkLength
+                            .thenComposeAsync(dummy -> countingChunk.getByteCount() == chunkLength
                                             ? setChunk(meta, data, chunkIndex, chunkLength)
                                             : DONE, insert);
         }
@@ -142,7 +148,7 @@ public class CassandraBinaryService implements BinaryService {
             } catch (final IOException e) {
                 throw new UncheckedIOException(e);
             }
-        }, digestWorkers );
+        }, digestWorkers);
     }
 
     @Override

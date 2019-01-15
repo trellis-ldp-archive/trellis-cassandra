@@ -2,12 +2,9 @@ package edu.si.trellis;
 
 import static java.time.Instant.now;
 import static java.time.temporal.ChronoUnit.SECONDS;
-import static java.util.Spliterator.DISTINCT;
-import static java.util.Spliterator.NONNULL;
 import static java.util.UUID.randomUUID;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toCollection;
-import static java.util.stream.StreamSupport.stream;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Metadata.builder;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
@@ -28,6 +25,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
@@ -80,7 +78,8 @@ public class CassandraResourceService implements ResourceService, MementoService
      */
     @Inject
     public CassandraResourceService(Delete delete, Get get, ImmutableInsert immutableInsert,
-                    MutableInsert mutableInsert, Mementos mementos, Touch touch, MutableRetrieve mutableRetrieve, ImmutableRetrieve immutableRetrieve, BasicContainment bcontainment) {
+                    MutableInsert mutableInsert, Mementos mementos, Touch touch, MutableRetrieve mutableRetrieve,
+                    ImmutableRetrieve immutableRetrieve, BasicContainment bcontainment) {
         this.delete = delete;
         this.get = get;
         this.immutableInsert = immutableInsert;
@@ -190,13 +189,16 @@ public class CassandraResourceService implements ResourceService, MementoService
         return completedFuture(null);
     }
 
+    //@formatter:off
     @Override
     public CompletableFuture<SortedSet<Instant>> mementos(IRI id) {
-        return mementos.execute(id)
-                        .thenApply(results -> stream(results::spliterator, NONNULL + DISTINCT, false)
-                                        .map(r -> r.get("modified", Instant.class))
-                                        .map(time -> time.truncatedTo(SECONDS)).collect(toCollection(TreeSet::new)));
+        return mementos.execute(id).thenApply(
+                        results -> results.all().stream()
+                                        .map(row -> row.get("modified", Instant.class))
+                                        .map(time -> time.truncatedTo(SECONDS))
+                                        .collect(toCollection(TreeSet::new)));
     }
+    //@formatter:on
 
     private CompletableFuture<Void> write(Metadata meta, Dataset data) {
         IRI id = meta.getIdentifier();
@@ -208,8 +210,8 @@ public class CassandraResourceService implements ResourceService, MementoService
         String mimeType = binary.flatMap(BinaryMetadata::getMimeType).orElse(null);
         Instant now = now();
 
-        return mutableInsert.execute(ixnModel, mimeType, now.truncatedTo(SECONDS), container, data, now, binaryIdentifier,
-                        UUIDs.timeBased(), id);
+        return mutableInsert.execute(ixnModel, mimeType, now.truncatedTo(SECONDS), container, data, now,
+                        binaryIdentifier, UUIDs.timeBased(), id);
     }
 
     @Override

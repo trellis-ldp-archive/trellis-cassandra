@@ -1,13 +1,19 @@
 package edu.si.trellis.query.rdf;
 
+import static java.util.Spliterator.DISTINCT;
+import static java.util.Spliterator.NONNULL;
+import static java.util.stream.StreamSupport.stream;
+
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 
 import edu.si.trellis.RdfReadConsistency;
 import edu.si.trellis.query.CassandraQuery;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
@@ -25,7 +31,8 @@ public class Mementos extends CassandraQuery {
 
     /**
      * @param id the {@link IRI} of the resource the Mementos of which are to be cataloged
-     * @return TODO
+     * @return A {@link ResultSet} with the modified-dates of any Mementos for this resource. There will be at least one
+     *         (the most recent one).
      */
     public CompletableFuture<ResultSet> execute(IRI id) {
         return executeRead(preparedStatement().bind(id));
