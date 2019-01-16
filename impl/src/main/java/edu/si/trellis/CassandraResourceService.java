@@ -93,7 +93,8 @@ public class CassandraResourceService implements ResourceService, MementoService
 
     /**
      * Build a root container.
-     * @throws Exception 
+     * 
+     * @throws Exception
      */
     @PostConstruct
     void initializeQueriesAndRoot() {
@@ -104,8 +105,10 @@ public class CassandraResourceService implements ResourceService, MementoService
                 Metadata rootResource = builder(rootIri).interactionModel(BasicContainer).build();
                 create(rootResource, null).get();
             }
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+            throw new InterruptedStartupException("Interrupted while building repository root!", e);
+        } catch (ExecutionException e) {
             throw new RuntimeTrellisException(e);
         }
     }
@@ -181,7 +184,7 @@ public class CassandraResourceService implements ResourceService, MementoService
      */
     @Override
     public CompletableFuture<Void> touch(IRI id) {
-        return get(id).thenApply(CassandraResource.class::cast).thenApply(CassandraResource::getCreated)
+        return get(id).thenApply(resource -> ((CassandraResource) resource).getCreated())
                         .thenCompose(created -> touch.execute(now(), created, id));
     }
 

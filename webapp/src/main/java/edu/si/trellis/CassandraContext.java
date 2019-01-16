@@ -26,7 +26,6 @@ import javax.inject.Inject;
 
 import org.apache.tamaya.inject.api.Config;
 import org.slf4j.Logger;
-import org.trellisldp.api.RuntimeTrellisException;
 
 /**
  * Provides a Cassandra {@link Session} and other context for operating Cassandra-based services.
@@ -171,8 +170,9 @@ public class CassandraContext {
         try {
             sessionInitialized.await();
         } catch (InterruptedException e) {
+            close();
             Thread.currentThread().interrupt();
-            throw new RuntimeTrellisException(e);
+            throw new InterruptedStartupException("Interrupted while connectin to Cassandra!", e);
         }
         return session;
     }

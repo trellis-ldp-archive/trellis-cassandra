@@ -4,10 +4,10 @@ import static java.util.concurrent.Executors.newCachedThreadPool;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import com.datastax.driver.core.*;
-import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
 import org.slf4j.Logger;
@@ -62,9 +62,18 @@ public abstract class CassandraQuery {
         return session.execute(statement);
     }
 
-    protected <T> CompletableFuture<T> translate(ListenableFuture<T> f, Executor workers) {
+    protected <T> CompletableFuture<T> translate(ListenableFuture<T> future, Executor workers) {
         CompletableFuture<T> result = new CompletableFuture<>();
-        f.addListener(() -> result.complete(Futures.getUnchecked(f)), workers);
+        future.addListener(() -> {
+            try {
+                result.complete(future.get()); // future::get will not block; see ListenableFuture#addListener
+            } catch (InterruptedException e) {
+                result.completeExceptionally(e);
+                Thread.currentThread().interrupt();
+            } catch (ExecutionException e) {
+                result.completeExceptionally(e.getCause());
+            }
+        }, workers);
         return result;
     }
 }
