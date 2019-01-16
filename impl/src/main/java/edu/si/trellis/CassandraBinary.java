@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.rdf.api.IRI;
 import org.trellisldp.api.Binary;
@@ -50,7 +51,8 @@ public class CassandraBinary implements Binary {
         int chunkStreamStart = from % chunkLength;
         int rangeSize = to - from + 1; // +1 because range is inclusive
         try (InputStream retrieve = readRange.execute(id, firstChunk, lastChunk)) {
-            retrieve.skip(chunkStreamStart); // skip to fulfill lower end of range
+            // skip to fulfill lower end of range
+            retrieve.skip(chunkStreamStart); // we needn't check the result; see BinaryReadQuery#retrieve
             return new BoundedInputStream(retrieve, rangeSize); // apply limit for upper end of range
         } catch (IOException e) {
             throw new UncheckedIOException(e);

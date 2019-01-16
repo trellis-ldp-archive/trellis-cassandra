@@ -38,6 +38,12 @@ abstract class BinaryReadQuery extends CassandraQuery {
     }
 
     //@formatter:off
+    /**
+     * @param id an {@link IRI} for a binary 
+     * @param statement a CQL query that retrieves the chunk indexes of chunks for {@code id}
+     * @return An {@link InputStream} of bytes as requested. The {@code skip} method of this {@code InputStream} is
+     *         guaranteed to skip as many bytes as asked.
+     */
     protected InputStream retrieve(IRI id, Statement statement) {
         return stream(executeSyncRead(statement).spliterator(), false)
                         .mapToInt(r -> r.getInt("chunkIndex"))
@@ -100,7 +106,7 @@ abstract class BinaryReadQuery extends CassandraQuery {
         }
 
         @Override
-        public int read(byte b[], int offset, int length) throws IOException {
+        public int read(byte[] b, int offset, int length) throws IOException {
             if (offset < 0 || length < 0 || length > b.length - offset) throw new IndexOutOfBoundsException();
             if (length == 0) return 0;
             if (current == null) return -1;

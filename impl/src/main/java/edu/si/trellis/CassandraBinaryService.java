@@ -1,6 +1,6 @@
 package edu.si.trellis;
 
-import static java.lang.Float.valueOf;
+import static java.lang.Float.parseFloat;
 import static java.lang.System.getProperty;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.Executors.newCachedThreadPool;
@@ -49,8 +49,8 @@ public class CassandraBinaryService implements BinaryService {
                     .addAll(JAVA_PRE_9_DIGEST_ALGORITHMS).add(SHA3_256, SHA3_384, SHA3_512).build();
 
     // Java 9 introduced SHA3 algorithms
-    private static final Set<String> algorithms = valueOf(getProperty("java.vm.specification.version"))
-                    .floatValue() >= 9 // Too simple a test?
+    private static final Set<String> algorithms = parseFloat(getProperty("java.vm.specification.version"))
+                     >= 9 // Too simple a test?
                                     ? JAVA_POST_9_DIGEST_ALGORITHMS
                                     : JAVA_PRE_9_DIGEST_ALGORITHMS;
 

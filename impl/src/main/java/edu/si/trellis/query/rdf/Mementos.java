@@ -1,19 +1,13 @@
 package edu.si.trellis.query.rdf;
 
-import static java.util.Spliterator.DISTINCT;
-import static java.util.Spliterator.NONNULL;
-import static java.util.stream.StreamSupport.stream;
-
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 
 import edu.si.trellis.RdfReadConsistency;
 import edu.si.trellis.query.CassandraQuery;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Stream;
 
 import javax.inject.Inject;
 

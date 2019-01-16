@@ -25,7 +25,10 @@ public class Read extends BinaryReadQuery {
 
     /**
      * @param id the {@link IRI} for a binary
-     * @return an {@link InputStream} of content from that binary
+     * @return An {@link InputStream} of bytes as requested. The {@code skip} method of this {@code InputStream} is
+     *         guaranteed to skip as many bytes as asked.
+     * 
+     * @see BinaryReadQuery#retrieve(IRI, com.datastax.driver.core.Statement)
      */
     public InputStream execute(IRI id) {
         BoundStatement bound = preparedStatement().bind(id);

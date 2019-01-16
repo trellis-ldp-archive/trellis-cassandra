@@ -20,7 +20,7 @@ public abstract class LazyFilterInputStream extends InputStream {
     /**
      * Implementations of this method should use {@link #wrap(InputStream)} to fill {@link #wrapped}.
      */
-    abstract protected void initialize();
+    protected abstract void initialize();
 
     protected void wrap(InputStream w) {
         this.wrapped = w;

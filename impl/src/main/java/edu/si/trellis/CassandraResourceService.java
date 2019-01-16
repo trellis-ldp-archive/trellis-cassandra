@@ -93,6 +93,7 @@ public class CassandraResourceService implements ResourceService, MementoService
 
     /**
      * Build a root container.
+     * @throws Exception 
      */
     @PostConstruct
     void initializeQueriesAndRoot() {
@@ -104,6 +105,7 @@ public class CassandraResourceService implements ResourceService, MementoService
                 create(rootResource, null).get();
             }
         } catch (InterruptedException | ExecutionException e) {
+            Thread.currentThread().interrupt();
             throw new RuntimeTrellisException(e);
         }
     }
@@ -132,7 +134,7 @@ public class CassandraResourceService implements ResourceService, MementoService
         log.debug("Found created = {} for resource {}", created, id);
         return new CassandraResource(id, ixnModel, hasAcl, binaryId, mimeType, container, modified, created,
                         immutableRetrieve, mutableRetrieve, bcontainment);
-    };
+    }
 
     @Override
     public CompletableFuture<? extends Resource> get(final IRI id) {

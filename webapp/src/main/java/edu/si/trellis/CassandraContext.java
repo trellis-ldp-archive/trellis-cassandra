@@ -26,6 +26,7 @@ import javax.inject.Inject;
 
 import org.apache.tamaya.inject.api.Config;
 import org.slf4j.Logger;
+import org.trellisldp.api.RuntimeTrellisException;
 
 /**
  * Provides a Cassandra {@link Session} and other context for operating Cassandra-based services.
@@ -152,8 +153,7 @@ public class CassandraContext {
     }
 
     private static boolean isPortOpen(String ip, String port) {
-        try {
-            Socket socket = new Socket();
+        try (Socket socket = new Socket()) {
             socket.connect(new InetSocketAddress(ip, parseInt(port)), POLL_TIMEOUT);
             socket.close();
             return true;
@@ -171,7 +171,8 @@ public class CassandraContext {
         try {
             sessionInitialized.await();
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            Thread.currentThread().interrupt();
+            throw new RuntimeTrellisException(e);
         }
         return session;
     }

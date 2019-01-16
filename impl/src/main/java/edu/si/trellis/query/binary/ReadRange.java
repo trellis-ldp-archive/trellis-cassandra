@@ -29,7 +29,10 @@ public class ReadRange extends BinaryReadQuery {
      * @param id the {@link IRI} of a binary to read
      * @param first which byte to begin reading on
      * @param last which byte to end reading on
-     * @return an {@link InputStream} of bytes as requested
+     * @return An {@link InputStream} of bytes as requested. The {@code skip} method of this {@code InputStream} is
+     *         guaranteed to skip as many bytes as asked.
+     * 
+     * @see BinaryReadQuery#retrieve(IRI, com.datastax.driver.core.Statement)
      */
     public InputStream execute(IRI id, int first, int last) {
         BoundStatement bound = preparedStatement().bind().set("identifier", id, IRI.class).setInt("start", first)
