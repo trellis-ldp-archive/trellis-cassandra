@@ -56,6 +56,5 @@ It is also possible to adjust consistency settings for read and write for binary
 and values are drawn from the usual [Cassandra options](https://cassandra.apache.org/doc/latest/architecture/dynamo.html#tunable-consistency). The default value for each consistency level is `ONE`.
 ## Persistent configuration
 You may also use a JSON document for these settings. Use `TRELLIS_CONFIG_FILE` (`configurationFile`) to use a file or `TRELLIS_CONFIG_URL` (`configurationUrl`) to use a document loaded from an arbitrary URL. The document should be a simple object with keys named as system properties shown above (`cassandra.contactPort`, `cassandra.contactAddress`, etc.).
-
-
-
+## Special HTTP headers
+Trellis/Cassandra offers some special HTTP request headers to enable customization of workflows and persistence. The most important is `Cassandra-Chunk-Size`, which, when applied to a request to persist binary data, will set the size of chunk (in bytes) that is used to chunk out the bitstream. This is particularly important if you expect to distribute computation across your Cassandra cluster. You will want to set this value high enough that a given distributed task will be able to complete on any resource to which it is applied without requiring data from more than one node.
