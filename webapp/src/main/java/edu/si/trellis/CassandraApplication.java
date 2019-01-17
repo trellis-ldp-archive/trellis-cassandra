@@ -12,6 +12,7 @@ import java.io.UncheckedIOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -56,13 +57,17 @@ public class CassandraApplication extends Application {
         additionalConfigFile.map(this::toUrl).ifPresent(this::addConfig);
         additionalConfigUrl.ifPresent(this::addConfig);
         log.debug("Using system properties:");
-        System.getProperties().forEach((k, v) -> log.debug("{} : {}", k, v));
+        log(System.getProperties());
         log.debug("Using ENV vars:");
-        System.getenv().forEach((k, v) -> log.debug("{} : {}", k, v));
+        log(System.getenv());
         log.debug("Using Tamaya configuration sources:");
-        current().getContext().getPropertySources().forEach(s -> log.debug("{}", s));
+        current().getContext().getPropertySources().stream().map(PropertySource::getName).forEach(log::debug);
         log.debug("Using Tamaya configuration:");
-        current().getProperties().forEach((k, v) -> log.debug("{} : {}", k, v));
+        log(current().getProperties());
+    }
+
+    private static <K,V> void log(Map<K, V> config) {
+        config.forEach((k, v) -> log.debug("{} : {}", k, v));
     }
 
     private URL toUrl(File f) {
