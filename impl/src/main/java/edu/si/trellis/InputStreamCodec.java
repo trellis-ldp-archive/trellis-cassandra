@@ -5,7 +5,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.TypeCodec;
-import com.datastax.driver.core.exceptions.InvalidTypeException;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -38,7 +37,7 @@ class InputStreamCodec extends TypeCodec<InputStream> {
     }
 
     @Override
-    public InputStream parse(String value) throws InvalidTypeException {
+    public InputStream parse(String value) {
         return new ByteArrayInputStream(value.getBytes(UTF_8));
     }
 
@@ -51,7 +50,7 @@ class InputStreamCodec extends TypeCodec<InputStream> {
     }
     
     @Override
-    public String format(InputStream in) throws InvalidTypeException {
+    public String format(InputStream in) {
         return new String(toBytes(in), UTF_8);
     }
 }

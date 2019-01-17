@@ -117,18 +117,45 @@
           <artifactId>maven-surefire-plugin</artifactId>
           <version>2.22.1</version>
           <configuration>
+            <!-- for JaCoCo -->
+            <argLine>@{surefireArgLine}</argLine>
             <!-- https://issues.apache.org/jira/browse/SUREFIRE-1588 -->
             <useSystemClassLoader>false</useSystemClassLoader>
+            <systemProperties>
+              <project.build.directory>${project.build.directory}</project.build.directory>
+            </systemProperties>
           </configuration>
         </plugin>
         <plugin>
           <artifactId>maven-failsafe-plugin</artifactId>
           <version>2.22.1</version>
           <configuration>
+            <!-- for JaCoCo -->
+            <argLine>@{failsafeArgLine}</argLine>
             <!-- https://issues.apache.org/jira/browse/SUREFIRE-1588 -->
             <useSystemClassLoader>false</useSystemClassLoader>
             <trimStackTrace>false</trimStackTrace>
+            <systemProperties>
+              <cassandra.nativeTransportPort>${cassandra.nativeTransportPort}</cassandra.nativeTransportPort>
+              <trellis.port>${trellis.port}</trellis.port>
+              <project.build.directory>${project.build.directory}</project.build.directory>
+              <logback.configurationFile>${project.build.directory}/test-classes/logback-test.xml</logback.configurationFile>
+            </systemProperties>
           </configuration>
+          <executions>
+            <execution>
+              <id>integration-test</id>
+              <goals>
+                <goal>integration-test</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>verify</id>
+              <goals>
+                <goal>verify</goal>
+              </goals>
+            </execution>
+          </executions>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
@@ -208,27 +235,61 @@
           </executions>
         </plugin>
         <plugin>
+          <groupId>com.github.spotbugs</groupId>
+          <artifactId>spotbugs-maven-plugin</artifactId>
+          <version>3.1.10</version>
+          <configuration>
+            <effort>Max</effort>
+            <threshold>Low</threshold>
+            <failOnError>false</failOnError>
+            <plugins>
+              <plugin>
+                <groupId>com.h3xstream.findsecbugs</groupId>
+                <artifactId>findsecbugs-plugin</artifactId>
+                <version>1.8.0</version>
+              </plugin>
+            </plugins>
+          </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-pmd-plugin</artifactId>
+          <configuration>
+            <aggregate>true</aggregate>
+          </configuration>
+          <version>3.11.0</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>pmd</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
           <version>0.8.2</version>
+          <configuration>
+            <append>true</append>
+          </configuration>
           <executions>
             <execution>
               <id>default-prepare-agent</id>
               <goals>
                 <goal>prepare-agent</goal>
               </goals>
+              <configuration>
+                <propertyName>surefireArgLine</propertyName>
+              </configuration>
             </execution>
             <execution>
-              <id>default-report</id>
+              <id>default-prepare-agent-integration</id>
               <goals>
-                <goal>report</goal>
+                <goal>prepare-agent-integration</goal>
               </goals>
-            </execution>
-            <execution>
-              <id>integration-tests</id>
-              <goals>
-                <goal>report-integration</goal>
-              </goals>
+              <configuration>
+                <propertyName>failsafeArgLine</propertyName>
+              </configuration>
             </execution>
             <execution>
               <id>default-check</id>
@@ -236,8 +297,8 @@
                 <goal>check</goal>
               </goals>
               <configuration>
-                <append>true</append>
-                <destFile>${jacoco.destFile}</destFile>
+                <haltOnFailure>false</haltOnFailure>
+                <!-- <dataFile>${jacoco.destFile}}</dataFile> -->
                 <rules>
                   <rule>
                     <element>BUNDLE</element>
@@ -263,6 +324,12 @@
     </pluginManagement>
 
     <plugins>
+      <plugin>
+        <artifactId>maven-pmd-plugin</artifactId>
+        <configuration>
+          <aggregate>true</aggregate>
+        </configuration>
+      </plugin>
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
         <version>3.0.0-M2</version>
@@ -297,8 +364,75 @@
           </dynamicDependencies>
         </configuration>
       </plugin>
+      <plugin>
+        <artifactId>maven-site-plugin</artifactId>
+        <version>3.7.1</version>
+      </plugin>
     </plugins>
   </build>
+  <reporting>
+    <plugins>
+      <plugin>
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+        <version>3.0.0</version>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>ci-management</report>
+              <report>dependencies</report>
+              <report>dependency-convergence</report>
+              <report>dependency-info</report>
+              <!-- blocked because Thorntail plugin shows all fractions as dependencies -->
+              <!-- also maven-dependency-plugin:analyze-report offers superior analysis -->
+              <!-- <report>dependency-management</report> -->
+              <report>distribution-management</report>
+              <report>index</report>
+              <report>issue-management</report>
+              <report>licenses</report>
+              <report>mailing-lists</report>
+              <report>modules</report>
+              <report>plugin-management</report>
+              <report>plugins</report>
+              <report>scm</report>
+              <report>summary</report>
+              <report>team</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.1.1</version>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>analyze-report</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+      <plugin>
+        <artifactId>maven-jxr-plugin</artifactId>
+        <version>3.0.0</version>
+      </plugin>
+      <plugin>
+        <artifactId>maven-pmd-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>report</report>
+              <report>report-integration</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+    </plugins>
+  </reporting>
+
   <profiles>
     <profile>
       <id>sonar</id>
@@ -309,9 +443,11 @@
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <sonar.language>java</sonar.language>
         <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
-        <sonar.jacoco.reportMissing.force.zero>true</sonar.jacoco.reportMissing.force.zero>
-        <jacoco.destFile>${maven.multiModuleProjectDirectory}/target/jacoco.exec</jacoco.destFile>
-        <sonar.jacoco.reportPath>${jacoco.destFile}</sonar.jacoco.reportPath>
+        <jacoco.destFile>${maven.multiModuleProjectDirectory}/target/jacoco-all.exec</jacoco.destFile>
+        <pmd.destFile>${maven.multiModuleProjectDirectory}/target/pmd.xml</pmd.destFile>
+
+        <sonar.java.pmd.reportPaths>${pmd.destFile}</sonar.java.pmd.reportPaths>
+        <sonar.jacoco.reportPaths>${jacoco.destFile}</sonar.jacoco.reportPaths>
         <sonar.organization>trellis-ldp</sonar.organization>
       </properties>
     </profile>

@@ -33,14 +33,14 @@ class IRICodec extends TypeCodec<IRI> {
      */
     static final IRICodec iriCodec = new IRICodec();
 
-    protected static final int cacheConcurrencyLevel = 16;
+    protected static final int CACHE_CONCURRENCY_LEVEL = 16;
 
-    protected static final long cacheMaximumSize = 10 ^ 6;
+    protected static final long CACHE_MAXIMUM_SIZE = 10 ^ 6;
 
     protected static final RDF rdf = TrellisUtils.getInstance();
 
-    private final LoadingCache<String, IRI> cache = newBuilder().concurrencyLevel(cacheConcurrencyLevel)
-                    .maximumSize(cacheMaximumSize).build(from(this::deserialize));
+    private final LoadingCache<String, IRI> cache = newBuilder().concurrencyLevel(CACHE_CONCURRENCY_LEVEL)
+                    .maximumSize(CACHE_MAXIMUM_SIZE).build(from(this::deserialize));
 
     /**
      * Default constructor.
@@ -64,12 +64,12 @@ class IRICodec extends TypeCodec<IRI> {
     }
 
     @Override
-    public IRI deserialize(ByteBuffer bytes, ProtocolVersion protocolVersion) throws InvalidTypeException {
+    public IRI deserialize(ByteBuffer bytes, ProtocolVersion protocolVersion) {
         return bytes == null ? null : parse(new String(Bytes.getArray(bytes), UTF_8));
     }
 
     @Override
-    public IRI parse(String v) throws InvalidTypeException {
+    public IRI parse(String v) {
         if (v == null || v.isEmpty()) return null;
         try {
             return cache.get(v);

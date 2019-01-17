@@ -154,7 +154,6 @@ public class CassandraContext {
     private static boolean isPortOpen(String ip, String port) {
         try (Socket socket = new Socket()) {
             socket.connect(new InetSocketAddress(ip, parseInt(port)), POLL_TIMEOUT);
-            socket.close();
             return true;
         } catch (@SuppressWarnings("unused") IOException e) {
             return false;

@@ -29,7 +29,6 @@ import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.TrellisUtils;
-import org.trellisldp.vocabulary.LDP;
 
 class CassandraResource implements Resource {
 
@@ -118,7 +117,7 @@ class CassandraResource implements Resource {
     @Override
     public Stream<Quad> stream() {
         log.trace("Retrieving quad stream for resource {}", getIdentifier());
-        Long createdMs = unixTimestamp(getCreated());
+        long createdMs = unixTimestamp(getCreated());
         Stream<Quad> mutableQuads = mutable.execute(getIdentifier(), createdMs);
         Stream<Quad> immutableQuads = immutable.execute(getIdentifier());
         Stream<Quad> quads = concat(mutableQuads, immutableQuads);
@@ -134,7 +133,7 @@ class CassandraResource implements Resource {
         RDF rdfFactory = TrellisUtils.getInstance();
         final Spliterator<Row> rows = bcontainment.execute(getIdentifier()).spliterator();
         Stream<IRI> contained = StreamSupport.stream(rows, false).map(r -> r.get("contained", IRI.class));
-        return contained.map(cont -> rdfFactory.createTriple(getIdentifier(), LDP.contains, cont))
+        return contained.map(cont -> rdfFactory.createTriple(getIdentifier(), contains, cont))
                         .peek(t -> log.trace("Built containment triple: {}", t));
     }
 }
