@@ -19,7 +19,7 @@ import org.apache.commons.io.IOUtils;
  *
  */
 class InputStreamCodec extends TypeCodec<InputStream> {
-    
+
     public static final InputStreamCodec inputStreamCodec = new InputStreamCodec();
 
     private InputStreamCodec() {
@@ -28,17 +28,17 @@ class InputStreamCodec extends TypeCodec<InputStream> {
 
     @Override
     public ByteBuffer serialize(InputStream value, ProtocolVersion protocolVersion) {
-        return ByteBuffer.wrap(toBytes(value));
+        return value == null ? null : ByteBuffer.wrap(toBytes(value));
     }
 
     @Override
     public InputStream deserialize(ByteBuffer bytes, ProtocolVersion protocolVersion) {
-        return new ByteBufferInputStream(bytes);
+        return bytes == null ? null : new ByteBufferInputStream(bytes);
     }
 
     @Override
     public InputStream parse(String value) {
-        return new ByteArrayInputStream(value.getBytes(UTF_8));
+        return value == null ? null : new ByteArrayInputStream(value.getBytes(UTF_8));
     }
 
     private static byte[] toBytes(InputStream in) {
@@ -48,9 +48,9 @@ class InputStreamCodec extends TypeCodec<InputStream> {
             throw new UncheckedIOException(e);
         }
     }
-    
+
     @Override
     public String format(InputStream in) {
-        return new String(toBytes(in), UTF_8);
+        return in == null ? null : new String(toBytes(in), UTF_8);
     }
 }

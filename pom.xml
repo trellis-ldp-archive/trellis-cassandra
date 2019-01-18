@@ -242,6 +242,8 @@
             <effort>Max</effort>
             <threshold>Low</threshold>
             <failOnError>false</failOnError>
+            <xmlOutput>true</xmlOutput>
+            <xmlOutputDirectory>target</xmlOutputDirectory>
             <plugins>
               <plugin>
                 <groupId>com.h3xstream.findsecbugs</groupId>
@@ -430,6 +432,10 @@
           </reportSet>
         </reportSets>
       </plugin>
+      <plugin>
+        <groupId>com.github.spotbugs</groupId>
+        <artifactId>spotbugs-maven-plugin</artifactId>
+      </plugin>
     </plugins>
   </reporting>
 
@@ -445,7 +451,7 @@
         <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
         <jacoco.destFile>${maven.multiModuleProjectDirectory}/target/jacoco-all.exec</jacoco.destFile>
         <pmd.destFile>${maven.multiModuleProjectDirectory}/target/pmd.xml</pmd.destFile>
-
+        <sonar.java.spotbugs.reportPaths>impl/target/spotbugsXml.xml,webapp/target/spotbugsXml.xml</sonar.java.spotbugs.reportPaths>
         <sonar.java.pmd.reportPaths>${pmd.destFile}</sonar.java.pmd.reportPaths>
         <sonar.jacoco.reportPaths>${jacoco.destFile}</sonar.jacoco.reportPaths>
         <sonar.organization>trellis-ldp</sonar.organization>

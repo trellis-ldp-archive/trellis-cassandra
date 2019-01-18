@@ -67,7 +67,7 @@ class DatasetCodec extends TypeCodec<Dataset> {
     @Override
     public Dataset parse(String quads) {
         if (quads == null || quads.isEmpty()) return rdf.createDataset();
-        return fromNQuads(quads.getBytes());
+        return fromNQuads(quads.getBytes(UTF_8));
     }
 
     @Override
