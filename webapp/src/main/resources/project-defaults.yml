@@ -20,4 +20,6 @@ swarm:
 java:
   net:
     preferIPv4Stack: true
+resteasy:
+  preferJacksonOverJsonB: false
 
