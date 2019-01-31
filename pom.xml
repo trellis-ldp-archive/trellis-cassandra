@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>edu.si.trellis</groupId>
   <artifactId>trellis-cassandra</artifactId>
-  <version>0.8-SNAPSHOT</version>
+  <version>0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Trellis/Cassandra</name>
@@ -36,7 +36,7 @@
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
 
-    <trellis.version>0.8.0-SNAPSHOT</trellis.version>
+    <trellis.version>0.8.0</trellis.version>
 
     <cassandra.test.version>3.11.3</cassandra.test.version>
     <cassandra.driver.version>3.6.0</cassandra.driver.version>
