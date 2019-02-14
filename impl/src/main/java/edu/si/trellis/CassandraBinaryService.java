@@ -1,25 +1,13 @@
 package edu.si.trellis;
 
-import static java.lang.Float.parseFloat;
-import static java.lang.System.getProperty;
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static java.util.concurrent.Executors.newCachedThreadPool;
-import static org.apache.commons.codec.digest.DigestUtils.updateDigest;
-import static org.apache.commons.codec.digest.MessageDigestAlgorithms.*;
 import static org.slf4j.LoggerFactory.getLogger;
-
-import com.google.common.collect.ImmutableSet;
 
 import edu.si.trellis.query.binary.*;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.UncheckedIOException;
-import java.security.MessageDigest;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.inject.Inject;
@@ -40,20 +28,6 @@ public class CassandraBinaryService implements BinaryService {
     @SuppressWarnings("boxing")
     private static final CompletableFuture<Long> DONE = completedFuture(-1L);
 
-    private static final String SHA = "SHA";
-
-    private static final ImmutableSet<String> JAVA_PRE_9_DIGEST_ALGORITHMS = ImmutableSet.of(MD5, MD2, SHA, SHA_1,
-                    SHA_256, SHA_384, SHA_512);
-
-    private static final ImmutableSet<String> JAVA_POST_9_DIGEST_ALGORITHMS = ImmutableSet.<String>builder()
-                    .addAll(JAVA_PRE_9_DIGEST_ALGORITHMS).add(SHA3_256, SHA3_384, SHA3_512).build();
-
-    // Java 9 introduced SHA3 algorithms
-    private static final Set<String> algorithms = parseFloat(getProperty("java.vm.specification.version"))
-                     >= 9 // Too simple a test?
-                                    ? JAVA_POST_9_DIGEST_ALGORITHMS
-                                    : JAVA_PRE_9_DIGEST_ALGORITHMS;
-
     // package-private for testing
     static final String CASSANDRA_CHUNK_HEADER_NAME = "Cassandra-Chunk-Size";
 
@@ -70,8 +44,6 @@ public class CassandraBinaryService implements BinaryService {
     private final Read read;
 
     private final ReadRange readRange;
-
-    private final Executor digestWorkers = newCachedThreadPool();
 
     /**
      * @param idService {@link IdentifierService} to use for binaries
@@ -138,22 +110,6 @@ public class CassandraBinaryService implements BinaryService {
     @Override
     public CompletableFuture<Void> purgeContent(IRI identifier) {
         return delete.execute(identifier);
-    }
-
-    @Override
-    public CompletableFuture<MessageDigest> calculateDigest(IRI identifier, MessageDigest algorithm) {
-        return get(identifier).thenApply(Binary::getContent).thenApplyAsync(in -> {
-            try (InputStream stream = in) {
-                return updateDigest(algorithm, stream);
-            } catch (final IOException e) {
-                throw new UncheckedIOException(e);
-            }
-        }, digestWorkers);
-    }
-
-    @Override
-    public Set<String> supportedAlgorithms() {
-        return algorithms;
     }
 
     @Override

@@ -17,13 +17,11 @@ import com.google.common.collect.ImmutableMap;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.MessageDigest;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.rdf.api.IRI;
@@ -32,12 +30,12 @@ import org.slf4j.Logger;
 import org.trellisldp.api.Binary;
 import org.trellisldp.api.RuntimeTrellisException;
 
-public class CassandraBinaryServiceIT extends CassandraServiceIT {
+class CassandraBinaryServiceIT extends CassandraServiceIT {
 
     private static final Logger log = getLogger(CassandraBinaryServiceIT.class);
 
     @Test
-    public void setAndGetSmallContent() throws Exception {
+    void setAndGetSmallContent() throws Exception {
         IRI id = createIRI();
         log.debug("Using identifier: {} for testSetAndGetSmallContent", id);
         String content = "This is only a short test, but it has meaning";
@@ -68,7 +66,7 @@ public class CassandraBinaryServiceIT extends CassandraServiceIT {
     }
 
     @Test
-    public void setAndGetMultiChunkContent() throws Exception {
+    void setAndGetMultiChunkContent() throws Exception {
         IRI id = createIRI();
         final String md5sum = "89c4b71c69f59cde963ce8aa9dbe1617";
         try (FileInputStream testData = new FileInputStream("src/test/resources/test.jpg")) {
@@ -88,15 +86,10 @@ public class CassandraBinaryServiceIT extends CassandraServiceIT {
             String digest = DigestUtils.md5Hex(content);
             assertEquals(md5sum, digest);
         }
-
-        String md5 = "d41d8cd98f00b204e9800998ecf8427e";
-        MessageDigest d = DigestUtils.getMd5Digest();
-        connection.binaryService.calculateDigest(id, d);
-        assertEquals(md5, Hex.encodeHexString(d.digest()));
     }
 
     @Test
-    public void varyChunkSizeFromDefault() throws IOException, InterruptedException, ExecutionException {
+    void varyChunkSizeFromDefault() throws IOException, InterruptedException, ExecutionException {
         IRI id = createIRI();
         final String chunkSize = "10000000";
         final String md5sum = "89c4b71c69f59cde963ce8aa9dbe1617";
