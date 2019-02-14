@@ -36,7 +36,7 @@
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
 
-    <trellis.version>0.8.0</trellis.version>
+    <trellis.version>0.9.0-SNAPSHOT</trellis.version>
 
     <cassandra.test.version>3.11.3</cassandra.test.version>
     <cassandra.driver.version>3.6.0</cassandra.driver.version>
