@@ -22,7 +22,7 @@ import org.apache.http.util.EntityUtils;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
-public class BasicOperationIT {
+class BasicOperationIT {
 
     private static final Logger log = getLogger(BasicOperationIT.class);
 
@@ -33,7 +33,7 @@ public class BasicOperationIT {
     private static final String trellisUri = "http://localhost:" + port + "/";
 
     @Test
-    public void smokeTest() throws MalformedURLException, IOException {
+    void smokeTest() throws MalformedURLException, IOException {
         UUID slug = randomUUID();
         String id;
         log.info("Using Slug {} to smoke test webapp.", slug);

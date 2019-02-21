@@ -140,6 +140,7 @@
               <trellis.port>${trellis.port}</trellis.port>
               <project.build.directory>${project.build.directory}</project.build.directory>
               <logback.configurationFile>${project.build.directory}/test-classes/logback-test.xml</logback.configurationFile>
+              <project.build.directory>${project.build.directory}</project.build.directory>
             </systemProperties>
           </configuration>
           <executions>
@@ -169,6 +170,7 @@
               <portName>cassandra.stopPort</portName>
               <portName>cassandra.nativeTransportPort</portName>
               <portName>cassandra.jmxPort</portName>
+              <portName>thorntail.management.http.port</portName>
             </portNames>
           </configuration>
           <executions>
