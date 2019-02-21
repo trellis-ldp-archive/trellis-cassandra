@@ -41,7 +41,7 @@ Because Trellis/Cassandra lifts `java.util.logging` over SLF4j, any Logback conf
 #### Containerization
 In some containerized deployments, you may receive an error like `java.net.SocketException: Protocol family unavailable`, which indicates that the appplication is trying to bind to an IPv6 port. You can prevent this if needed via
 ```
--Djava.net.preferIPv4Stack=true`
+-Djava.net.preferIPv4Stack=true
 ```
 #### Connecting to Cassandra
 To configure the connection to Cassandra, you must provide the location and port of an initial contact node in your Cassandra cluster. This can be done via environment properties (or Java system properties). Use the names `CASSANDRA_CONTACT_PORT`(`cassandra.contactPort`) and `CASSANDRA_CONTACT_ADDRESS`(`cassandra.contactAddress`) (subject to change < 1.0). These default to `localhost` and `9042`. Additionally, you may configure the size (in bytes) of chunk used for binary storage as `CASSANDRA_MAX_CHUNK_SIZE`(`cassandra.maxChunkSize`).

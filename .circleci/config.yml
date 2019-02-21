@@ -56,12 +56,12 @@ jobs:
         command: find ~/junit -name *.txt | xargs cat
         when: on_fail
     - run:
-        name: Spool logs 
+        name: Spool logs
         command: find . -type f -regex ".*/target/system.log" -exec cat {} \;
         when: on_fail
     - run:
         name: Spool itest logs 
-        command: cat integration-tests/target/logs/system.log
+        command: cat integration-tests/target/system.log
         when: on_fail
     - store_test_results:
         path: ~/junit
