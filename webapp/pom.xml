@@ -149,6 +149,10 @@
       <groupId>io.thorntail</groupId>
       <artifactId>management</artifactId>
     </dependency>
+    <dependency>
+      <groupId>io.thorntail</groupId>
+      <artifactId>management-console</artifactId>
+    </dependency>
 
     <!-- logging -->
     <dependency>
