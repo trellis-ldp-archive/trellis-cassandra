@@ -1,20 +1,13 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
+
   <groupId>edu.si.trellis</groupId>
   <artifactId>trellis-cassandra</artifactId>
   <version>0.8.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Trellis/Cassandra</name>
-
-  <scm>
-    <url>git@github.com:trellis-ldp/trellis-cassandra.git</url>
-  </scm>
-  <issueManagement>
-    <url>https://github.com/trellis-ldp/trellis-cassandra/issues</url>
-  </issueManagement>
-
   <licenses>
     <license>
       <name>Apache License, Version 2.0</name>
@@ -28,6 +21,13 @@
     <module>webapp</module>
     <module>integration-tests</module>
   </modules>
+
+  <scm>
+    <url>git@github.com:trellis-ldp/trellis-cassandra.git</url>
+  </scm>
+  <issueManagement>
+    <url>https://github.com/trellis-ldp/trellis-cassandra/issues</url>
+  </issueManagement>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -47,37 +47,6 @@
     <logback.version>1.2.3</logback.version>
 
   </properties>
-
-  <repositories>
-    <repository>
-      <id>apache-snapshots</id>
-      <name>Apache Central Repository</name>
-      <url>https://repository.apache.org/content/groups/public</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>sonatype-snapshots</id>
-      <name>Sonatype Snapshots Repository</name>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>jboss-public-repository</id>
-      <name>JBoss Public Repository</name>
-      <!-- for Thorntail plugin and dependencies -->
-      <url>https://repository.jboss.org/nexus/content/groups/public/</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-  </repositories>
 
   <dependencyManagement>
     <dependencies>
@@ -109,6 +78,37 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
+
+  <repositories>
+    <repository>
+      <id>apache-snapshots</id>
+      <name>Apache Central Repository</name>
+      <url>https://repository.apache.org/content/groups/public</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>sonatype-snapshots</id>
+      <name>Sonatype Snapshots Repository</name>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>jboss-public-repository</id>
+      <name>JBoss Public Repository</name>
+      <!-- for Thorntail plugin and dependencies -->
+      <url>https://repository.jboss.org/nexus/content/groups/public/</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
 
   <build>
     <pluginManagement>
@@ -324,7 +324,6 @@
         </plugin>
       </plugins>
     </pluginManagement>
-
     <plugins>
       <plugin>
         <artifactId>maven-pmd-plugin</artifactId>
@@ -372,6 +371,7 @@
       </plugin>
     </plugins>
   </build>
+
   <reporting>
     <plugins>
       <plugin>
