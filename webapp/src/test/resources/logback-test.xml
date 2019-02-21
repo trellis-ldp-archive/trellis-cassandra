@@ -2,7 +2,7 @@
 
   <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator"/>
 
-  <property name="log.dir" value="${project.build.directory}/logs"/>
+  <property name="log.dir" value="${project.build.directory:-logs}"/>
 
   <appender name="FILE" class="ch.qos.logback.core.FileAppender">
     <file>${log.dir}/system.log</file>

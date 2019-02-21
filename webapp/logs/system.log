@@ -1,0 +1,822 @@
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,939 CassandraApplication.java:59 - Using system properties:
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,944 CassandraApplication.java:70 - jboss.server.name : ocio-lparkj
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,946 CassandraApplication.java:70 - jboss.host.name : ocio-lparkj
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,946 CassandraApplication.java:70 - thorntail.app.artifact : webapp-0.8.1-SNAPSHOT.war
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,947 CassandraApplication.java:70 - java.specification.version : 1.8
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,947 CassandraApplication.java:70 - file.encoding : UTF-8
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,947 CassandraApplication.java:70 - thorntail.ajp.enable : false
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,949 CassandraApplication.java:70 - java.security.auth.login.config : jar:file:/var/folders/x3/v3kmyfkx6p30cwnwvxnfs8cr0000gq/T/thorntailpicketbox-5.0.3.Final5804719310992899380.jar!/auth.conf
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,949 CassandraApplication.java:70 - jboss.server.base.dir : /Users/ajs6f/Documents/trellis/trellis-cassandra/webapp
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,950 CassandraApplication.java:70 - java.vm.name : Java HotSpot(TM) 64-Bit Server VM
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,950 CassandraApplication.java:70 - line.separator : 
+
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,951 CassandraApplication.java:70 - thorntail.bundled.dependencies : true
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,951 CassandraApplication.java:70 - thorntail.logging.loggers.[org.wildfly].level : WARN
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,952 CassandraApplication.java:70 - thorntail.logging.loggers.[org.jboss].level : WARN
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,952 CassandraApplication.java:70 - user.dir : /Users/ajs6f/Documents/trellis/trellis-cassandra/webapp
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,952 CassandraApplication.java:70 - java.ext.dirs : /Users/ajs6f/Library/Java/Extensions:/Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/lib/ext:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,953 CassandraApplication.java:70 - os.arch : x86_64
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,953 CassandraApplication.java:70 - java.awt.graphicsenv : sun.awt.CGraphicsEnvironment
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,954 CassandraApplication.java:70 - swarm.http.port : 52581
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,954 CassandraApplication.java:70 - jboss.server.data.dir : /var/folders/x3/v3kmyfkx6p30cwnwvxnfs8cr0000gq/T/thorntailwildfly-self-contained6925329314706020726.d
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,954 CassandraApplication.java:70 - thorntail.http.port : 52581
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,955 CassandraApplication.java:70 - java.vendor.url.bug : http://bugreport.sun.com/bugreport/
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,955 CassandraApplication.java:70 - maven.multiModuleProjectDirectory : /Users/ajs6f/Documents/trellis/trellis-cassandra
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,956 CassandraApplication.java:70 - java.io.tmpdir : /var/folders/x3/v3kmyfkx6p30cwnwvxnfs8cr0000gq/T/
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,956 CassandraApplication.java:70 - sun.cpu.endian : little
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,957 CassandraApplication.java:70 - sun.os.patch.level : unknown
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,957 CassandraApplication.java:70 - java.vm.specification.version : 1.8
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,958 CassandraApplication.java:70 - thorntail.logging.loggers.[org.xnio].level : ERROR
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,958 CassandraApplication.java:70 - java.vm.specification.name : Java Virtual Machine Specification
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,958 CassandraApplication.java:70 - jboss.server.log.dir : /Users/ajs6f/Documents/trellis/trellis-cassandra/webapp
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,959 CassandraApplication.java:70 - org.jboss.security.context.ThreadLocal : true
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,959 CassandraApplication.java:70 - sun.java.command : /Users/ajs6f/Documents/trellis/trellis-cassandra/webapp/target/webapp-0.8.1-SNAPSHOT-thorntail.jar
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,960 CassandraApplication.java:70 - java.class.path : /Users/ajs6f/Documents/trellis/trellis-cassandra/webapp/target/webapp-0.8.1-SNAPSHOT-thorntail.jar
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,960 CassandraApplication.java:70 - maven.home : /usr/local/Cellar/maven/3.5.3/libexec
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,960 CassandraApplication.java:70 - java.runtime.name : Java(TM) SE Runtime Environment
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,961 CassandraApplication.java:70 - java.vm.vendor : Oracle Corporation
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,961 CassandraApplication.java:70 - gopherProxySet : false
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,961 CassandraApplication.java:70 - org.jboss.resolver.warning : true
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,962 CassandraApplication.java:70 - java.library.path : /Users/ajs6f/Library/Java/Extensions:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java:.
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,962 CassandraApplication.java:70 - java.vendor.url : http://java.oracle.com/
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,963 CassandraApplication.java:70 - java.specification.vendor : Oracle Corporation
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,963 CassandraApplication.java:70 - user.home : /Users/ajs6f
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,963 CassandraApplication.java:70 - java.naming.factory.url.pkgs : org.jboss.as.naming.interfaces
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,964 CassandraApplication.java:70 - jboss.server.temp.dir : /var/folders/x3/v3kmyfkx6p30cwnwvxnfs8cr0000gq/T/thorntailwildfly-swarm6401321570198094480.d
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,964 CassandraApplication.java:70 - ftp.nonProxyHosts : local|*.local|169.254/16|*.169.254/16
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,965 CassandraApplication.java:70 - socksNonProxyHosts : local|*.local|169.254/16|*.169.254/16
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,965 CassandraApplication.java:70 - awt.toolkit : sun.lwawt.macosx.LWCToolkit
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,966 CassandraApplication.java:70 - sun.io.unicode.encoding : UnicodeBig
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,966 CassandraApplication.java:70 - org.wildfly.swarm.mainProcessFile : /var/folders/x3/v3kmyfkx6p30cwnwvxnfs8cr0000gq/T/thorntail-process-file6324608042654859268.tmp
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,967 CassandraApplication.java:70 - java.awt.printerjob : sun.lwawt.macosx.CPrinterJob
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,967 CassandraApplication.java:70 - java.protocol.handler.pkgs : org.jboss.net.protocol|org.jboss.vfs.protocol
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,968 CassandraApplication.java:70 - org.jboss.logging.provider : slf4j
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,968 CassandraApplication.java:70 - java.vm.version : 25.65-b01
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,969 CassandraApplication.java:70 - path.separator : :
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,969 CassandraApplication.java:70 - logback.configurationFile : /Users/ajs6f/Documents/trellis/trellis-cassandra/webapp/target/test-classes/logback-test.xml
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,970 CassandraApplication.java:70 - thorntail.logging.loggers.[org.jboss.weld].level : WARN
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,971 CassandraApplication.java:70 - os.version : 10.13.6
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,971 CassandraApplication.java:70 - java.vm.info : mixed mode
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,972 CassandraApplication.java:70 - java.home : /Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,972 CassandraApplication.java:70 - user.country : US
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,973 CassandraApplication.java:70 - remote.maven.repo : https://repository.apache.org/content/groups/public,https://oss.sonatype.org/content/repositories/snapshots,https://repository.jboss.org/nexus/content/groups/public/,https://repo.maven.apache.org/maven2
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,974 CassandraApplication.java:70 - java.class.version : 52.0
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,974 CassandraApplication.java:70 - thorntail.logging.root-logger.level : WARN
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,974 CassandraApplication.java:70 - file.separator : /
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,976 CassandraApplication.java:70 - java.specification.name : Java Platform API Specification
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,976 CassandraApplication.java:70 - maven.conf : /usr/local/Cellar/maven/3.5.3/libexec/conf
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,977 CassandraApplication.java:70 - resteasy.preferJacksonOverJsonB : false
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,980 CassandraApplication.java:70 - sun.cpu.isalist : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,981 CassandraApplication.java:70 - sun.jnu.encoding : UTF-8
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,981 CassandraApplication.java:70 - file.encoding.pkg : sun.io
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,981 CassandraApplication.java:70 - http.nonProxyHosts : local|*.local|169.254/16|*.169.254/16
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,982 CassandraApplication.java:70 - java.endorsed.dirs : /Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/lib/endorsed
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,982 CassandraApplication.java:70 - thorntail.current.deployment : webapp-0.8.1-SNAPSHOT.war
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,982 CassandraApplication.java:70 - thorntail.uberjar.build.user : ajs6f
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,983 CassandraApplication.java:70 - sun.arch.data.model : 64
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,983 CassandraApplication.java:70 - java.net.preferIPv4Stack : true
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,984 CassandraApplication.java:70 - user.timezone : America/New_York
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,984 CassandraApplication.java:70 - java.version : 1.8.0_65
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,985 CassandraApplication.java:70 - java.util.logging.manager : org.jboss.logmanager.LogManager
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,985 CassandraApplication.java:70 - thorntail.logging.loggers.[org.hibernate].level : ERROR
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,986 CassandraApplication.java:70 - sun.boot.library.path : /Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/lib
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,986 CassandraApplication.java:70 - user.language : en
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,986 CassandraApplication.java:70 - jboss.home.dir : /Users/ajs6f/Documents/trellis/trellis-cassandra/webapp
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,987 CassandraApplication.java:70 - jboss.server.management.uuid : a07cfe41-1f4d-42e4-9c2c-f1b5d18ac3bd
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,987 CassandraApplication.java:70 - jboss.node.name : ocio-lparkj
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,987 CassandraApplication.java:70 - user.name : ajs6f
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,988 CassandraApplication.java:70 - boot.module.loader : org.wildfly.swarm.bootstrap.modules.BootModuleLoader
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,988 CassandraApplication.java:70 - java.runtime.version : 1.8.0_65-b17
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,989 CassandraApplication.java:70 - java.vm.specification.vendor : Oracle Corporation
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,989 CassandraApplication.java:70 - thorntail.isuberjar : true
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,989 CassandraApplication.java:70 - jboss.server.persist.config : false
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,990 CassandraApplication.java:70 - sun.boot.class.path : /Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/lib/resources.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/lib/rt.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/lib/sunrsasign.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/lib/jsse.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/lib/jce.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/lib/charsets.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/lib/jfr.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/classes
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,990 CassandraApplication.java:70 - thorntail.default.deployment.type : war
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,991 CassandraApplication.java:70 - os.name : Mac OS X
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,991 CassandraApplication.java:70 - sun.nio.ch.bugLevel : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,991 CassandraApplication.java:70 - sun.management.compiler : HotSpot 64-Bit Tiered Compilers
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,992 CassandraApplication.java:70 - sun.java.launcher : SUN_STANDARD
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,992 CassandraApplication.java:70 - jboss.qualified.host.name : ocio-lparkj
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,992 CassandraApplication.java:70 - java.vendor : Oracle Corporation
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,993 CassandraApplication.java:61 - Using ENV vars:
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,994 CassandraApplication.java:70 - IRBRC : /Users/ajs6f/.rvm/rubies/ruby-2.3.0/.irbrc
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,995 CassandraApplication.java:70 - PATH : /Users/ajs6f/.rvm/gems/ruby-2.3.0/bin:/Users/ajs6f/.rvm/gems/ruby-2.3.0@global/bin:/Users/ajs6f/.rvm/rubies/ruby-2.3.0/bin:/usr/local/opt/scala@2.11/bin:/Users/ajs6f/.m2/mvn/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/opt/X11/bin:/Users/ajs6f/bin:/usr/local/bin:/usr/libexec:/Users/ajs6f/.rvm/bin
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,995 CassandraApplication.java:70 - rvm_silent_flag : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,995 CassandraApplication.java:70 - rvm_quiet_flag : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,996 CassandraApplication.java:70 - rvm_bin_flag : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,996 CassandraApplication.java:70 - COLORTERM : truecolor
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,997 CassandraApplication.java:70 - rvm_ruby_mode : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,997 CassandraApplication.java:70 - rvm_ruby_make_install : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,997 CassandraApplication.java:70 - rvm_niceness : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,998 CassandraApplication.java:70 - LOGNAME : ajs6f
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,998 CassandraApplication.java:70 - rvm_version : 1.27.0 (latest)
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,998 CassandraApplication.java:70 - TERM_PROGRAM_VERSION : 3.2.7
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,999 CassandraApplication.java:70 - PWD : /Users/ajs6f/Documents/trellis/trellis-cassandra
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:05,999 CassandraApplication.java:70 - rvm_proxy : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,000 CassandraApplication.java:70 - SHELL : /bin/zsh
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,000 CassandraApplication.java:70 - PAGER : less
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,001 CassandraApplication.java:70 - rvm_hook : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,001 CassandraApplication.java:70 - rvm_wrapper_name : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,002 CassandraApplication.java:70 - MY_RUBY_HOME : /Users/ajs6f/.rvm/rubies/ruby-2.3.0
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,002 CassandraApplication.java:70 - OLDPWD : /Users/ajs6f/Documents/trellis/trellis-cassandra
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,002 CassandraApplication.java:70 - rvm_sdk : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,003 CassandraApplication.java:70 - GEM_HOME : /Users/ajs6f/.rvm/gems/ruby-2.3.0
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,003 CassandraApplication.java:70 - rvm_nightly_flag : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,004 CassandraApplication.java:70 - ZSH : /Users/ajs6f/.oh-my-zsh
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,004 CassandraApplication.java:70 - TMPDIR : /var/folders/x3/v3kmyfkx6p30cwnwvxnfs8cr0000gq/T/
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,005 CassandraApplication.java:70 - rvm_path : /Users/ajs6f/.rvm
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,005 CassandraApplication.java:70 - ITERM_PROFILE : Default
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,005 CassandraApplication.java:70 - rvm_use_flag : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,006 CassandraApplication.java:70 - XPC_FLAGS : 0x0
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,006 CassandraApplication.java:70 - RUBY_VERSION : ruby-2.3.0
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,006 CassandraApplication.java:70 - TERM_SESSION_ID : w0t1p0:BB22699E-E91A-4123-8704-DDE5DBDA23F7
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,007 CassandraApplication.java:70 - _system_name : OSX
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,007 CassandraApplication.java:70 - __CF_USER_TEXT_ENCODING : 0x1F7:0x0:0x0
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,007 CassandraApplication.java:70 - Apple_PubSub_Socket_Render : /private/tmp/com.apple.launchd.QpXpK0oCPs/Render
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,008 CassandraApplication.java:70 - LESS : -R
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,008 CassandraApplication.java:70 - JAVA_MAIN_CLASS_30741 : org.wildfly.swarm.bootstrap.Main
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,008 CassandraApplication.java:70 - COLORFGBG : 0;15
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,009 CassandraApplication.java:70 - LC_CTYPE : en_US.UTF-8
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,009 CassandraApplication.java:70 - SHLVL : 1
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,009 CassandraApplication.java:70 - rvm_gemstone_package_file : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,010 CassandraApplication.java:70 - _system_arch : x86_64
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,010 CassandraApplication.java:70 - rvm_bin_path : /Users/ajs6f/.rvm/bin
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,010 CassandraApplication.java:70 - JAVA_HOME : /Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,011 CassandraApplication.java:70 - TERM : xterm-color
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,011 CassandraApplication.java:70 - rvm_prefix : /Users/ajs6f
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,011 CassandraApplication.java:70 - rvm_only_path_flag : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,011 CassandraApplication.java:70 - CASSANDRA_CONTACT_PORT : 52579
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,012 CassandraApplication.java:70 - LANG : en_US.UTF-8
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,012 CassandraApplication.java:70 - UPDATE_ZSH_DAYS : 6
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,013 CassandraApplication.java:70 - rvm_script_name : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,013 CassandraApplication.java:70 - DISPLAY : /private/tmp/com.apple.launchd.JnRdM0wrrx/org.macosforge.xquartz:0
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,013 CassandraApplication.java:70 - rvm_ruby_make : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,014 CassandraApplication.java:70 - ITERM_SESSION_ID : w0t1p0:BB22699E-E91A-4123-8704-DDE5DBDA23F7
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,014 CassandraApplication.java:70 - rvm_gemstone_url : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,014 CassandraApplication.java:70 - rvm_docs_type : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,015 CassandraApplication.java:70 - XPC_SERVICE_NAME : 0
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,015 CassandraApplication.java:70 - CASSANDRA_CONTACT_ADDRESS : localhost
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,016 CassandraApplication.java:70 - MAVEN_CMD_LINE_ARGS :  clean install
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,016 CassandraApplication.java:70 - TERM_PROGRAM : iTerm.app
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,016 CassandraApplication.java:70 - _system_type : Darwin
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,017 CassandraApplication.java:70 - LSCOLORS : Gxfxcxdxbxegedabagacad
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,017 CassandraApplication.java:70 - MAVEN_PROJECTBASEDIR : /Users/ajs6f/Documents/trellis/trellis-cassandra
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,017 CassandraApplication.java:70 - _system_version : 10.13
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,018 CassandraApplication.java:70 - USER : ajs6f
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,018 CassandraApplication.java:70 - rvm_ruby_file : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,019 CassandraApplication.java:70 - rvm_alias_expanded : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,019 CassandraApplication.java:70 - rvm_ruby_bits : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,020 CassandraApplication.java:70 - SSH_AUTH_SOCK : /private/tmp/com.apple.launchd.KTV5T5WABb/Listeners
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,020 CassandraApplication.java:70 - GEM_PATH : /Users/ajs6f/.rvm/gems/ruby-2.3.0:/Users/ajs6f/.rvm/gems/ruby-2.3.0@global
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,021 CassandraApplication.java:70 - JAVA_MAIN_CLASS_30602 : org.codehaus.plexus.classworlds.launcher.Launcher
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,021 CassandraApplication.java:70 - HOME : /Users/ajs6f
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,022 CassandraApplication.java:63 - Using Tamaya configuration sources:
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,023 ForEachOps.java:184 - CLI
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,024 ForEachOps.java:184 - environment-properties
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,024 ForEachOps.java:184 - resource:META-INF/javaconfiguration.*
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,024 ForEachOps.java:184 - system-properties
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,024 CassandraApplication.java:65 - Using Tamaya configuration:
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,031 CassandraApplication.java:70 - IRBRC : /Users/ajs6f/.rvm/rubies/ruby-2.3.0/.irbrc
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,031 CassandraApplication.java:70 - PATH : /Users/ajs6f/.rvm/gems/ruby-2.3.0/bin:/Users/ajs6f/.rvm/gems/ruby-2.3.0@global/bin:/Users/ajs6f/.rvm/rubies/ruby-2.3.0/bin:/usr/local/opt/scala@2.11/bin:/Users/ajs6f/.m2/mvn/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/opt/X11/bin:/Users/ajs6f/bin:/usr/local/bin:/usr/libexec:/Users/ajs6f/.rvm/bin
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,032 CassandraApplication.java:70 - rvm_silent_flag : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,032 CassandraApplication.java:70 - awt.toolkit : sun.lwawt.macosx.LWCToolkit
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,033 CassandraApplication.java:70 - rvm_quiet_flag : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,033 CassandraApplication.java:70 - java.specification.version : 1.8
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,033 CassandraApplication.java:70 - sun.cpu.isalist : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,034 CassandraApplication.java:70 - remote.maven.repo : https://repository.apache.org/content/groups/public,https://oss.sonatype.org/content/repositories/snapshots,https://repository.jboss.org/nexus/content/groups/public/,https://repo.maven.apache.org/maven2
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,034 CassandraApplication.java:70 - sun.jnu.encoding : UTF-8
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,035 CassandraApplication.java:70 - sun.arch.data.model : 64
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,035 CassandraApplication.java:70 - org.jboss.resolver.warning : true
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,035 CassandraApplication.java:70 - java.vendor.url : http://java.oracle.com/
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,036 CassandraApplication.java:70 - thorntail.logging.loggers.[org.wildfly].level : WARN
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,036 CassandraApplication.java:70 - COLORTERM : truecolor
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,036 CassandraApplication.java:70 - rvm_ruby_make_install : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,037 CassandraApplication.java:70 - rvm_niceness : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,037 CassandraApplication.java:70 - rvm_version : 1.27.0 (latest)
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,037 CassandraApplication.java:70 - TERM_PROGRAM_VERSION : 3.2.7
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,038 CassandraApplication.java:70 - PWD : /Users/ajs6f/Documents/trellis/trellis-cassandra
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,038 CassandraApplication.java:70 - sun.boot.library.path : /Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/lib
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,038 CassandraApplication.java:70 - sun.java.command : /Users/ajs6f/Documents/trellis/trellis-cassandra/webapp/target/webapp-0.8.1-SNAPSHOT-thorntail.jar
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,039 CassandraApplication.java:70 - maven.home : /usr/local/Cellar/maven/3.5.3/libexec
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,039 CassandraApplication.java:70 - PAGER : less
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,040 CassandraApplication.java:70 - rvm_hook : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,040 CassandraApplication.java:70 - rvm_wrapper_name : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,041 CassandraApplication.java:70 - MY_RUBY_HOME : /Users/ajs6f/.rvm/rubies/ruby-2.3.0
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,041 CassandraApplication.java:70 - java.specification.vendor : Oracle Corporation
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,041 CassandraApplication.java:70 - java.naming.factory.url.pkgs : org.jboss.as.naming.interfaces
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,042 CassandraApplication.java:70 - rvm_nightly_flag : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,042 CassandraApplication.java:70 - java.home : /Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,042 CassandraApplication.java:70 - ZSH : /Users/ajs6f/.oh-my-zsh
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,043 CassandraApplication.java:70 - rvm_path : /Users/ajs6f/.rvm
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,043 CassandraApplication.java:70 - ITERM_PROFILE : Default
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,044 CassandraApplication.java:70 - jboss.server.persist.config : false
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,044 CassandraApplication.java:70 - file.separator : /
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,044 CassandraApplication.java:70 - swarm.http.port : 52581
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,045 CassandraApplication.java:70 - jboss.server.data.dir : /var/folders/x3/v3kmyfkx6p30cwnwvxnfs8cr0000gq/T/thorntailwildfly-self-contained6925329314706020726.d
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,045 CassandraApplication.java:70 - line.separator : 
+
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,045 CassandraApplication.java:70 - XPC_FLAGS : 0x0
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,046 CassandraApplication.java:70 - TERM_SESSION_ID : w0t1p0:BB22699E-E91A-4123-8704-DDE5DBDA23F7
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,046 CassandraApplication.java:70 - java.vm.specification.vendor : Oracle Corporation
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,046 CassandraApplication.java:70 - java.specification.name : Java Platform API Specification
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,047 CassandraApplication.java:70 - jboss.server.base.dir : /Users/ajs6f/Documents/trellis/trellis-cassandra/webapp
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,047 CassandraApplication.java:70 - thorntail.logging.loggers.[org.jboss].level : WARN
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,048 CassandraApplication.java:70 - Apple_PubSub_Socket_Render : /private/tmp/com.apple.launchd.QpXpK0oCPs/Render
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,048 CassandraApplication.java:70 - thorntail.logging.root-logger.level : WARN
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,048 CassandraApplication.java:70 - JAVA_MAIN_CLASS_30741 : org.wildfly.swarm.bootstrap.Main
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,049 CassandraApplication.java:70 - LC_CTYPE : en_US.UTF-8
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,049 CassandraApplication.java:70 - SHLVL : 1
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,049 CassandraApplication.java:70 - thorntail.default.deployment.type : war
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,050 CassandraApplication.java:70 - sun.boot.class.path : /Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/lib/resources.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/lib/rt.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/lib/sunrsasign.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/lib/jsse.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/lib/jce.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/lib/charsets.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/lib/jfr.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/classes
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,050 CassandraApplication.java:70 - thorntail.uberjar.build.user : ajs6f
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,051 CassandraApplication.java:70 - java.protocol.handler.pkgs : org.jboss.net.protocol|org.jboss.vfs.protocol
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,051 CassandraApplication.java:70 - sun.management.compiler : HotSpot 64-Bit Tiered Compilers
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,051 CassandraApplication.java:70 - org.wildfly.swarm.mainProcessFile : /var/folders/x3/v3kmyfkx6p30cwnwvxnfs8cr0000gq/T/thorntail-process-file6324608042654859268.tmp
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,052 CassandraApplication.java:70 - JAVA_HOME : /Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,053 CassandraApplication.java:70 - java.runtime.version : 1.8.0_65-b17
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,053 CassandraApplication.java:70 - user.name : ajs6f
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,054 CassandraApplication.java:70 - TERM : xterm-color
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,054 CassandraApplication.java:70 - UPDATE_ZSH_DAYS : 6
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,055 CassandraApplication.java:70 - rvm_script_name : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,055 CassandraApplication.java:70 - rvm_ruby_make : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,055 CassandraApplication.java:70 - file.encoding : UTF-8
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,056 CassandraApplication.java:70 - ITERM_SESSION_ID : w0t1p0:BB22699E-E91A-4123-8704-DDE5DBDA23F7
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,056 CassandraApplication.java:70 - rvm_docs_type : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,056 CassandraApplication.java:70 - CASSANDRA_CONTACT_ADDRESS : localhost
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,057 CassandraApplication.java:70 - java.io.tmpdir : /var/folders/x3/v3kmyfkx6p30cwnwvxnfs8cr0000gq/T/
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,057 CassandraApplication.java:70 - TERM_PROGRAM : iTerm.app
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,057 CassandraApplication.java:70 - java.version : 1.8.0_65
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,058 CassandraApplication.java:70 - MAVEN_PROJECTBASEDIR : /Users/ajs6f/Documents/trellis/trellis-cassandra
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,058 CassandraApplication.java:70 - java.vm.specification.name : Java Virtual Machine Specification
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,058 CassandraApplication.java:70 - thorntail.current.deployment : webapp-0.8.1-SNAPSHOT.war
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,059 CassandraApplication.java:70 - java.awt.printerjob : sun.lwawt.macosx.CPrinterJob
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,059 CassandraApplication.java:70 - thorntail.isuberjar : true
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,059 CassandraApplication.java:70 - jboss.host.name : ocio-lparkj
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,059 CassandraApplication.java:70 - org.jboss.security.context.ThreadLocal : true
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,060 CassandraApplication.java:70 - sun.os.patch.level : unknown
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,060 CassandraApplication.java:70 - rvm_alias_expanded : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,060 CassandraApplication.java:70 - rvm_ruby_bits : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,061 CassandraApplication.java:70 - GEM_PATH : /Users/ajs6f/.rvm/gems/ruby-2.3.0:/Users/ajs6f/.rvm/gems/ruby-2.3.0@global
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,062 CassandraApplication.java:70 - java.library.path : /Users/ajs6f/Library/Java/Extensions:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java:.
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,062 CassandraApplication.java:70 - jboss.server.name : ocio-lparkj
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,062 CassandraApplication.java:70 - java.vendor : Oracle Corporation
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,063 CassandraApplication.java:70 - JAVA_MAIN_CLASS_30602 : org.codehaus.plexus.classworlds.launcher.Launcher
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,063 CassandraApplication.java:70 - thorntail.logging.loggers.[org.jboss.weld].level : WARN
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,064 CassandraApplication.java:70 - sun.io.unicode.encoding : UnicodeBig
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,064 CassandraApplication.java:70 - jboss.server.temp.dir : /var/folders/x3/v3kmyfkx6p30cwnwvxnfs8cr0000gq/T/thorntailwildfly-swarm6401321570198094480.d
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,065 CassandraApplication.java:70 - socksNonProxyHosts : local|*.local|169.254/16|*.169.254/16
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,065 CassandraApplication.java:70 - gopherProxySet : false
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,066 CassandraApplication.java:70 - file.encoding.pkg : sun.io
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,066 CassandraApplication.java:70 - thorntail.bundled.dependencies : true
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,066 CassandraApplication.java:70 - java.class.path : /Users/ajs6f/Documents/trellis/trellis-cassandra/webapp/target/webapp-0.8.1-SNAPSHOT-thorntail.jar
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,067 CassandraApplication.java:70 - rvm_bin_flag : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,068 CassandraApplication.java:70 - java.vm.vendor : Oracle Corporation
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,068 CassandraApplication.java:70 - thorntail.ajp.enable : false
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,068 CassandraApplication.java:70 - resteasy.preferJacksonOverJsonB : false
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,069 CassandraApplication.java:70 - thorntail.logging.loggers.[org.xnio].level : ERROR
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,069 CassandraApplication.java:70 - user.timezone : America/New_York
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,069 CassandraApplication.java:70 - org.jboss.logging.provider : slf4j
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,069 CassandraApplication.java:70 - rvm_ruby_mode : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,070 CassandraApplication.java:70 - maven.conf : /usr/local/Cellar/maven/3.5.3/libexec/conf
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,070 CassandraApplication.java:70 - os.name : Mac OS X
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,070 CassandraApplication.java:70 - java.vm.specification.version : 1.8
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,071 CassandraApplication.java:70 - LOGNAME : ajs6f
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,071 CassandraApplication.java:70 - thorntail.app.artifact : webapp-0.8.1-SNAPSHOT.war
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,072 CassandraApplication.java:70 - sun.java.launcher : SUN_STANDARD
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,072 CassandraApplication.java:70 - user.country : US
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,073 CassandraApplication.java:70 - rvm_proxy : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,073 CassandraApplication.java:70 - http.nonProxyHosts : local|*.local|169.254/16|*.169.254/16
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,073 CassandraApplication.java:70 - SHELL : /bin/zsh
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,074 CassandraApplication.java:70 - sun.cpu.endian : little
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,074 CassandraApplication.java:70 - user.home : /Users/ajs6f
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,074 CassandraApplication.java:70 - user.language : en
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,074 CassandraApplication.java:70 - jboss.qualified.host.name : ocio-lparkj
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,075 CassandraApplication.java:70 - OLDPWD : /Users/ajs6f/Documents/trellis/trellis-cassandra
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,075 CassandraApplication.java:70 - rvm_sdk : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,075 CassandraApplication.java:70 - GEM_HOME : /Users/ajs6f/.rvm/gems/ruby-2.3.0
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,076 CassandraApplication.java:70 - TMPDIR : /var/folders/x3/v3kmyfkx6p30cwnwvxnfs8cr0000gq/T/
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,076 CassandraApplication.java:70 - rvm_use_flag : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,077 CassandraApplication.java:70 - thorntail.logging.loggers.[org.hibernate].level : ERROR
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,077 CassandraApplication.java:70 - RUBY_VERSION : ruby-2.3.0
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,077 CassandraApplication.java:70 - _system_name : OSX
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,077 CassandraApplication.java:70 - java.awt.graphicsenv : sun.awt.CGraphicsEnvironment
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,078 CassandraApplication.java:70 - __CF_USER_TEXT_ENCODING : 0x1F7:0x0:0x0
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,078 CassandraApplication.java:70 - LESS : -R
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,079 CassandraApplication.java:70 - COLORFGBG : 0;15
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,079 CassandraApplication.java:70 - boot.module.loader : org.wildfly.swarm.bootstrap.modules.BootModuleLoader
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,079 CassandraApplication.java:70 - logback.configurationFile : /Users/ajs6f/Documents/trellis/trellis-cassandra/webapp/target/test-classes/logback-test.xml
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,080 CassandraApplication.java:70 - rvm_gemstone_package_file : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,080 CassandraApplication.java:70 - _system_arch : x86_64
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,080 CassandraApplication.java:70 - rvm_bin_path : /Users/ajs6f/.rvm/bin
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,081 CassandraApplication.java:70 - ftp.nonProxyHosts : local|*.local|169.254/16|*.169.254/16
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,081 CassandraApplication.java:70 - java.net.preferIPv4Stack : true
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,081 CassandraApplication.java:70 - jboss.home.dir : /Users/ajs6f/Documents/trellis/trellis-cassandra/webapp
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,082 CassandraApplication.java:70 - rvm_prefix : /Users/ajs6f
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,082 CassandraApplication.java:70 - rvm_only_path_flag : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,082 CassandraApplication.java:70 - path.separator : :
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,083 CassandraApplication.java:70 - CASSANDRA_CONTACT_PORT : 52579
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,083 CassandraApplication.java:70 - LANG : en_US.UTF-8
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,084 CassandraApplication.java:70 - os.version : 10.13.6
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,084 CassandraApplication.java:70 - thorntail.http.port : 52581
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,084 CassandraApplication.java:70 - java.endorsed.dirs : /Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/lib/endorsed
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,085 CassandraApplication.java:70 - java.runtime.name : Java(TM) SE Runtime Environment
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,085 CassandraApplication.java:70 - DISPLAY : /private/tmp/com.apple.launchd.JnRdM0wrrx/org.macosforge.xquartz:0
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,086 CassandraApplication.java:70 - rvm_gemstone_url : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,086 CassandraApplication.java:70 - sun.nio.ch.bugLevel : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,087 CassandraApplication.java:70 - java.vm.name : Java HotSpot(TM) 64-Bit Server VM
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,087 CassandraApplication.java:70 - XPC_SERVICE_NAME : 0
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,088 CassandraApplication.java:70 - MAVEN_CMD_LINE_ARGS :  clean install
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,088 CassandraApplication.java:70 - java.security.auth.login.config : jar:file:/var/folders/x3/v3kmyfkx6p30cwnwvxnfs8cr0000gq/T/thorntailpicketbox-5.0.3.Final5804719310992899380.jar!/auth.conf
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,089 CassandraApplication.java:70 - jboss.server.log.dir : /Users/ajs6f/Documents/trellis/trellis-cassandra/webapp
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,089 CassandraApplication.java:70 - java.vendor.url.bug : http://bugreport.sun.com/bugreport/
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,090 CassandraApplication.java:70 - jboss.server.management.uuid : a07cfe41-1f4d-42e4-9c2c-f1b5d18ac3bd
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,090 CassandraApplication.java:70 - user.dir : /Users/ajs6f/Documents/trellis/trellis-cassandra/webapp
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,091 CassandraApplication.java:70 - _system_type : Darwin
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,092 CassandraApplication.java:70 - LSCOLORS : Gxfxcxdxbxegedabagacad
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,092 CassandraApplication.java:70 - os.arch : x86_64
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,093 CassandraApplication.java:70 - maven.multiModuleProjectDirectory : /Users/ajs6f/Documents/trellis/trellis-cassandra
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,093 CassandraApplication.java:70 - _system_version : 10.13
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,094 CassandraApplication.java:70 - USER : ajs6f
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,094 CassandraApplication.java:70 - rvm_ruby_file : 
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,094 CassandraApplication.java:70 - SSH_AUTH_SOCK : /private/tmp/com.apple.launchd.KTV5T5WABb/Listeners
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,095 CassandraApplication.java:70 - java.util.logging.manager : org.jboss.logmanager.LogManager
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,095 CassandraApplication.java:70 - java.vm.info : mixed mode
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,096 CassandraApplication.java:70 - java.vm.version : 25.65-b01
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,096 CassandraApplication.java:70 - java.ext.dirs : /Users/ajs6f/Library/Java/Extensions:/Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/lib/ext:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,097 CassandraApplication.java:70 - jboss.node.name : ocio-lparkj
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,098 CassandraApplication.java:70 - java.class.version : 52.0
+DEBUG [ServerService Thread Pool -- 8] 2019-02-21 13:38:06,098 CassandraApplication.java:70 - HOME : /Users/ajs6f
+INFO  [default task-1] 2019-02-21 13:39:48,659 CassandraContext.java:131 - Using Cassandra node address: localhost and port: 52579
+DEBUG [default task-1] 2019-02-21 13:39:48,663 CassandraContext.java:132 - Looking for connection...
+WARN  [default task-1] 2019-02-21 13:39:48,801 CodecRegistry.java:399 - Ignoring codec BigintCodec [bigint <-> java.lang.Long] because it collides with previously registered codec BigintCodec [bigint <-> java.lang.Long]
+DEBUG [default task-1] 2019-02-21 13:39:48,809 CassandraContext.java:139 - Connecting to Cassandra...
+WARN  [Cassandra Connection Maker] 2019-02-21 13:39:49,513 Cluster.java:2323 - You listed localhost/0:0:0:0:0:0:0:1:52579 in your contact points, but it wasn't found in the control host's system.peers at startup
+DEBUG [Cassandra Connection Maker] 2019-02-21 13:39:49,797 CassandraContext.java:145 - Connection made and keyspace set to 'trellis'.
+DEBUG [default task-1] 2019-02-21 13:39:49,929 CassandraResourceService.java:149 - Retrieving: <trellis:data/> at 2019-02-21T18:39:49.929Z
+DEBUG [pool-19-thread-1] 2019-02-21 13:39:49,977 CassandraResourceService.java:119 - Resource was not found
+DEBUG [default task-1] 2019-02-21 13:39:49,981 CassandraResourceService.java:166 - Creating <trellis:data/> with interaction model <http://www.w3.org/ns/ldp#BasicContainer>
+WARN  [default task-1] 2019-02-21 13:39:50,126 UUIDs.java:166 - PID returned through native call was 0, JNR versions incompatible?  Falling back to JMX.
+DEBUG [default task-1] 2019-02-21 13:39:50,128 CassandraQuery.java:52 - Executing CQL write: com.datastax.driver.core.BoundStatement@11043d59
+DEBUG [pool-22-thread-1] 2019-02-21 13:39:50,152 CassandraQuery.java:54 - Executed CQL write: com.datastax.driver.core.BoundStatement@11043d59
+WARN  [cluster1-worker-7] 2019-02-21 13:39:50,217 Cluster.java:2345 - Re-preparing already prepared query is generally an anti-pattern and will likely affect performance. Consider preparing the statement only once. Query='SELECT chunk FROM binarydata WHERE identifier = :identifier and chunkIndex = :chunkIndex;'
+INFO  [default task-1] 2019-02-21 13:39:50,220 CassandraBinaryService.java:62 - Using configured default chunk length: 1048576
+DEBUG [default task-1] 2019-02-21 13:39:50,272 CassandraResourceService.java:149 - Retrieving: <trellis:data/> at 2019-02-21T18:39:50.272Z
+DEBUG [default task-1] 2019-02-21 13:39:50,274 CassandraResourceService.java:149 - Retrieving: <trellis:data/e9bda2ab-0550-4844-b10b-6a5eb80e038f> at 2019-02-21T18:39:50.274Z
+DEBUG [pool-19-thread-1] 2019-02-21 13:39:50,277 CassandraResourceService.java:119 - Resource was not found
+DEBUG [pool-19-thread-1] 2019-02-21 13:39:50,284 CassandraResourceService.java:123 - Resource <trellis:data/> was found, computing metadata.
+DEBUG [pool-19-thread-1] 2019-02-21 13:39:50,285 CassandraResourceService.java:125 - Found interactionModel = <http://www.w3.org/ns/ldp#BasicContainer> for resource <trellis:data/>
+DEBUG [pool-19-thread-1] 2019-02-21 13:39:50,285 CassandraResourceService.java:127 - Found hasAcl = false for resource <trellis:data/>
+DEBUG [pool-19-thread-1] 2019-02-21 13:39:50,286 CassandraResourceService.java:129 - Found binaryIdentifier = null for resource <trellis:data/>
+DEBUG [pool-19-thread-1] 2019-02-21 13:39:50,286 CassandraResourceService.java:131 - Found mimeType = null for resource <trellis:data/>
+DEBUG [pool-19-thread-1] 2019-02-21 13:39:50,286 CassandraResourceService.java:133 - Found container = null for resource <trellis:data/>
+DEBUG [pool-19-thread-1] 2019-02-21 13:39:50,286 CassandraResourceService.java:135 - Found modified = 2019-02-21T18:39:49.984Z for resource <trellis:data/>
+DEBUG [pool-19-thread-1] 2019-02-21 13:39:50,287 CassandraResourceService.java:137 - Found created = 1201fff0-3608-11e9-a90c-9f14c07412f9 for resource <trellis:data/>
+DEBUG [pool-19-thread-1] 2019-02-21 13:39:50,410 CassandraResourceService.java:166 - Creating <trellis:data/e9bda2ab-0550-4844-b10b-6a5eb80e038f> with interaction model <http://www.w3.org/ns/ldp#RDFSource>
+DEBUG [pool-19-thread-1] 2019-02-21 13:39:50,420 CassandraQuery.java:52 - Executing CQL write: com.datastax.driver.core.BoundStatement@6ad55acd
+DEBUG [pool-19-thread-1] 2019-02-21 13:39:50,420 CassandraResourceService.java:160 - Adding immutable data to <trellis:data/e9bda2ab-0550-4844-b10b-6a5eb80e038f>
+DEBUG [pool-19-thread-1] 2019-02-21 13:39:50,421 CassandraQuery.java:52 - Executing CQL write: com.datastax.driver.core.BoundStatement@2e7fd05a
+DEBUG [pool-20-thread-1] 2019-02-21 13:39:50,424 CassandraQuery.java:54 - Executed CQL write: com.datastax.driver.core.BoundStatement@2e7fd05a
+DEBUG [pool-22-thread-1] 2019-02-21 13:39:50,436 CassandraQuery.java:54 - Executed CQL write: com.datastax.driver.core.BoundStatement@6ad55acd
+DEBUG [pool-22-thread-1] 2019-02-21 13:39:50,446 CassandraResourceService.java:149 - Retrieving: <trellis:data/> at 2019-02-21T18:39:50.446Z
+DEBUG [pool-19-thread-1] 2019-02-21 13:39:50,450 CassandraResourceService.java:123 - Resource <trellis:data/> was found, computing metadata.
+DEBUG [pool-19-thread-1] 2019-02-21 13:39:50,450 CassandraResourceService.java:125 - Found interactionModel = <http://www.w3.org/ns/ldp#BasicContainer> for resource <trellis:data/>
+DEBUG [pool-19-thread-1] 2019-02-21 13:39:50,451 CassandraResourceService.java:127 - Found hasAcl = false for resource <trellis:data/>
+DEBUG [pool-19-thread-1] 2019-02-21 13:39:50,452 CassandraResourceService.java:129 - Found binaryIdentifier = null for resource <trellis:data/>
+DEBUG [pool-19-thread-1] 2019-02-21 13:39:50,452 CassandraResourceService.java:131 - Found mimeType = null for resource <trellis:data/>
+DEBUG [pool-19-thread-1] 2019-02-21 13:39:50,452 CassandraResourceService.java:133 - Found container = null for resource <trellis:data/>
+DEBUG [pool-19-thread-1] 2019-02-21 13:39:50,453 CassandraResourceService.java:135 - Found modified = 2019-02-21T18:39:49.984Z for resource <trellis:data/>
+DEBUG [pool-19-thread-1] 2019-02-21 13:39:50,453 CassandraResourceService.java:137 - Found created = 1201fff0-3608-11e9-a90c-9f14c07412f9 for resource <trellis:data/>
+DEBUG [pool-19-thread-1] 2019-02-21 13:39:50,454 CassandraQuery.java:52 - Executing CQL write: com.datastax.driver.core.BoundStatement@5d1dd9c0
+DEBUG [pool-26-thread-1] 2019-02-21 13:39:50,457 CassandraQuery.java:54 - Executed CQL write: com.datastax.driver.core.BoundStatement@5d1dd9c0
+DEBUG [pool-26-thread-1] 2019-02-21 13:39:50,465 CassandraResourceService.java:149 - Retrieving: <trellis:data/e9bda2ab-0550-4844-b10b-6a5eb80e038f> at 2019-02-21T18:39:50.465Z
+DEBUG [pool-19-thread-1] 2019-02-21 13:39:50,472 CassandraResourceService.java:123 - Resource <trellis:data/e9bda2ab-0550-4844-b10b-6a5eb80e038f> was found, computing metadata.
+DEBUG [pool-19-thread-1] 2019-02-21 13:39:50,472 CassandraResourceService.java:125 - Found interactionModel = <http://www.w3.org/ns/ldp#RDFSource> for resource <trellis:data/e9bda2ab-0550-4844-b10b-6a5eb80e038f>
+DEBUG [pool-19-thread-1] 2019-02-21 13:39:50,473 CassandraResourceService.java:127 - Found hasAcl = false for resource <trellis:data/e9bda2ab-0550-4844-b10b-6a5eb80e038f>
+DEBUG [pool-19-thread-1] 2019-02-21 13:39:50,473 CassandraResourceService.java:129 - Found binaryIdentifier = null for resource <trellis:data/e9bda2ab-0550-4844-b10b-6a5eb80e038f>
+DEBUG [pool-19-thread-1] 2019-02-21 13:39:50,473 CassandraResourceService.java:131 - Found mimeType = null for resource <trellis:data/e9bda2ab-0550-4844-b10b-6a5eb80e038f>
+DEBUG [pool-19-thread-1] 2019-02-21 13:39:50,473 CassandraResourceService.java:133 - Found container = <trellis:data/> for resource <trellis:data/e9bda2ab-0550-4844-b10b-6a5eb80e038f>
+DEBUG [pool-19-thread-1] 2019-02-21 13:39:50,473 CassandraResourceService.java:135 - Found modified = 2019-02-21T18:39:50.411Z for resource <trellis:data/e9bda2ab-0550-4844-b10b-6a5eb80e038f>
+DEBUG [pool-19-thread-1] 2019-02-21 13:39:50,474 CassandraResourceService.java:137 - Found created = 122d55b0-3608-11e9-a90c-9f14c07412f9 for resource <trellis:data/e9bda2ab-0550-4844-b10b-6a5eb80e038f>
+DEBUG [default task-1] 2019-02-21 13:39:50,556 CassandraResourceService.java:149 - Retrieving: <trellis:data/e9bda2ab-0550-4844-b10b-6a5eb80e038f> at 2019-02-21T18:39:50.556Z
+DEBUG [pool-19-thread-1] 2019-02-21 13:39:50,577 CassandraResourceService.java:123 - Resource <trellis:data/e9bda2ab-0550-4844-b10b-6a5eb80e038f> was found, computing metadata.
+DEBUG [pool-19-thread-1] 2019-02-21 13:39:50,583 CassandraResourceService.java:125 - Found interactionModel = <http://www.w3.org/ns/ldp#RDFSource> for resource <trellis:data/e9bda2ab-0550-4844-b10b-6a5eb80e038f>
+DEBUG [pool-19-thread-1] 2019-02-21 13:39:50,583 CassandraResourceService.java:127 - Found hasAcl = false for resource <trellis:data/e9bda2ab-0550-4844-b10b-6a5eb80e038f>
+DEBUG [pool-19-thread-1] 2019-02-21 13:39:50,583 CassandraResourceService.java:129 - Found binaryIdentifier = null for resource <trellis:data/e9bda2ab-0550-4844-b10b-6a5eb80e038f>
+DEBUG [pool-19-thread-1] 2019-02-21 13:39:50,584 CassandraResourceService.java:131 - Found mimeType = null for resource <trellis:data/e9bda2ab-0550-4844-b10b-6a5eb80e038f>
+DEBUG [pool-19-thread-1] 2019-02-21 13:39:50,584 CassandraResourceService.java:133 - Found container = <trellis:data/> for resource <trellis:data/e9bda2ab-0550-4844-b10b-6a5eb80e038f>
+DEBUG [pool-19-thread-1] 2019-02-21 13:39:50,584 CassandraResourceService.java:135 - Found modified = 2019-02-21T18:39:50.411Z for resource <trellis:data/e9bda2ab-0550-4844-b10b-6a5eb80e038f>
+DEBUG [pool-19-thread-1] 2019-02-21 13:39:50,585 CassandraResourceService.java:137 - Found created = 122d55b0-3608-11e9-a90c-9f14c07412f9 for resource <trellis:data/e9bda2ab-0550-4844-b10b-6a5eb80e038f>
+ERROR [cluster1-reconnection-0] 2019-02-21 13:39:51,355 ControlConnection.java:182 - [Control connection] Cannot connect to any host, scheduling retry in 1000 milliseconds
+ERROR [cluster1-reconnection-0] 2019-02-21 13:39:52,359 ControlConnection.java:182 - [Control connection] Cannot connect to any host, scheduling retry in 2000 milliseconds
+ERROR [cluster1-reconnection-0] 2019-02-21 13:39:54,364 ControlConnection.java:182 - [Control connection] Cannot connect to any host, scheduling retry in 4000 milliseconds
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,185 CassandraApplication.java:59 - Using system properties:
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,187 CassandraApplication.java:70 - jboss.server.name : ocio-lparkj
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,189 CassandraApplication.java:70 - jboss.host.name : ocio-lparkj
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,189 CassandraApplication.java:70 - thorntail.app.artifact : webapp-0.8.1-SNAPSHOT.war
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,189 CassandraApplication.java:70 - java.specification.version : 1.8
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,189 CassandraApplication.java:70 - file.encoding : UTF-8
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,190 CassandraApplication.java:70 - thorntail.ajp.enable : false
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,190 CassandraApplication.java:70 - java.security.auth.login.config : jar:file:/var/folders/x3/v3kmyfkx6p30cwnwvxnfs8cr0000gq/T/thorntailpicketbox-5.0.3.Final6395139758420244986.jar!/auth.conf
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,190 CassandraApplication.java:70 - jboss.server.base.dir : /Users/ajs6f/Documents/trellis/trellis-cassandra/webapp
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,190 CassandraApplication.java:70 - java.vm.name : Java HotSpot(TM) 64-Bit Server VM
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,190 CassandraApplication.java:70 - line.separator : 
+
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,191 CassandraApplication.java:70 - thorntail.bundled.dependencies : true
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,191 CassandraApplication.java:70 - thorntail.logging.loggers.[org.wildfly].level : WARN
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,191 CassandraApplication.java:70 - thorntail.logging.loggers.[org.jboss].level : WARN
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,191 CassandraApplication.java:70 - user.dir : /Users/ajs6f/Documents/trellis/trellis-cassandra/webapp
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,192 CassandraApplication.java:70 - java.ext.dirs : /Users/ajs6f/Library/Java/Extensions:/Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/lib/ext:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,192 CassandraApplication.java:70 - os.arch : x86_64
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,192 CassandraApplication.java:70 - java.awt.graphicsenv : sun.awt.CGraphicsEnvironment
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,192 CassandraApplication.java:70 - swarm.http.port : 54100
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,193 CassandraApplication.java:70 - jboss.server.data.dir : /var/folders/x3/v3kmyfkx6p30cwnwvxnfs8cr0000gq/T/thorntailwildfly-self-contained7964911724859600810.d
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,193 CassandraApplication.java:70 - thorntail.http.port : 54100
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,193 CassandraApplication.java:70 - java.vendor.url.bug : http://bugreport.sun.com/bugreport/
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,193 CassandraApplication.java:70 - maven.multiModuleProjectDirectory : /Users/ajs6f/Documents/trellis/trellis-cassandra
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,193 CassandraApplication.java:70 - java.io.tmpdir : /var/folders/x3/v3kmyfkx6p30cwnwvxnfs8cr0000gq/T/
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,194 CassandraApplication.java:70 - sun.cpu.endian : little
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,194 CassandraApplication.java:70 - sun.os.patch.level : unknown
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,194 CassandraApplication.java:70 - java.vm.specification.version : 1.8
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,194 CassandraApplication.java:70 - thorntail.logging.loggers.[org.xnio].level : ERROR
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,195 CassandraApplication.java:70 - java.vm.specification.name : Java Virtual Machine Specification
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,195 CassandraApplication.java:70 - jboss.server.log.dir : /Users/ajs6f/Documents/trellis/trellis-cassandra/webapp
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,195 CassandraApplication.java:70 - org.jboss.security.context.ThreadLocal : true
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,195 CassandraApplication.java:70 - sun.java.command : /Users/ajs6f/Documents/trellis/trellis-cassandra/webapp/target/webapp-0.8.1-SNAPSHOT-thorntail.jar
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,195 CassandraApplication.java:70 - java.class.path : /Users/ajs6f/Documents/trellis/trellis-cassandra/webapp/target/webapp-0.8.1-SNAPSHOT-thorntail.jar
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,196 CassandraApplication.java:70 - maven.home : /usr/local/Cellar/maven/3.5.3/libexec
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,196 CassandraApplication.java:70 - java.runtime.name : Java(TM) SE Runtime Environment
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,196 CassandraApplication.java:70 - java.vm.vendor : Oracle Corporation
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,196 CassandraApplication.java:70 - gopherProxySet : false
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,197 CassandraApplication.java:70 - org.jboss.resolver.warning : true
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,197 CassandraApplication.java:70 - java.library.path : /Users/ajs6f/Library/Java/Extensions:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java:.
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,197 CassandraApplication.java:70 - java.vendor.url : http://java.oracle.com/
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,197 CassandraApplication.java:70 - java.specification.vendor : Oracle Corporation
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,197 CassandraApplication.java:70 - user.home : /Users/ajs6f
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,198 CassandraApplication.java:70 - java.naming.factory.url.pkgs : org.jboss.as.naming.interfaces
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,198 CassandraApplication.java:70 - jboss.server.temp.dir : /var/folders/x3/v3kmyfkx6p30cwnwvxnfs8cr0000gq/T/thorntailwildfly-swarm407645422278435830.d
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,198 CassandraApplication.java:70 - ftp.nonProxyHosts : local|*.local|169.254/16|*.169.254/16
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,198 CassandraApplication.java:70 - socksNonProxyHosts : local|*.local|169.254/16|*.169.254/16
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,198 CassandraApplication.java:70 - awt.toolkit : sun.lwawt.macosx.LWCToolkit
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,199 CassandraApplication.java:70 - sun.io.unicode.encoding : UnicodeBig
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,199 CassandraApplication.java:70 - org.wildfly.swarm.mainProcessFile : /var/folders/x3/v3kmyfkx6p30cwnwvxnfs8cr0000gq/T/thorntail-process-file3644573126052538787.tmp
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,199 CassandraApplication.java:70 - java.awt.printerjob : sun.lwawt.macosx.CPrinterJob
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,199 CassandraApplication.java:70 - java.protocol.handler.pkgs : org.jboss.net.protocol|org.jboss.vfs.protocol
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,200 CassandraApplication.java:70 - org.jboss.logging.provider : slf4j
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,200 CassandraApplication.java:70 - java.vm.version : 25.65-b01
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,200 CassandraApplication.java:70 - path.separator : :
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,200 CassandraApplication.java:70 - logback.configurationFile : /Users/ajs6f/Documents/trellis/trellis-cassandra/webapp/target/test-classes/logback-test.xml
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,201 CassandraApplication.java:70 - thorntail.logging.loggers.[org.jboss.weld].level : WARN
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,201 CassandraApplication.java:70 - os.version : 10.13.6
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,201 CassandraApplication.java:70 - java.vm.info : mixed mode
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,201 CassandraApplication.java:70 - java.home : /Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,201 CassandraApplication.java:70 - user.country : US
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,202 CassandraApplication.java:70 - remote.maven.repo : https://repository.apache.org/content/groups/public,https://oss.sonatype.org/content/repositories/snapshots,https://repository.jboss.org/nexus/content/groups/public/,https://repo.maven.apache.org/maven2
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,202 CassandraApplication.java:70 - java.class.version : 52.0
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,202 CassandraApplication.java:70 - thorntail.logging.root-logger.level : WARN
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,202 CassandraApplication.java:70 - file.separator : /
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,203 CassandraApplication.java:70 - java.specification.name : Java Platform API Specification
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,203 CassandraApplication.java:70 - maven.conf : /usr/local/Cellar/maven/3.5.3/libexec/conf
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,203 CassandraApplication.java:70 - resteasy.preferJacksonOverJsonB : false
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,203 CassandraApplication.java:70 - sun.cpu.isalist : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,204 CassandraApplication.java:70 - sun.jnu.encoding : UTF-8
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,204 CassandraApplication.java:70 - file.encoding.pkg : sun.io
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,204 CassandraApplication.java:70 - http.nonProxyHosts : local|*.local|169.254/16|*.169.254/16
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,204 CassandraApplication.java:70 - java.endorsed.dirs : /Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/lib/endorsed
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,204 CassandraApplication.java:70 - thorntail.current.deployment : webapp-0.8.1-SNAPSHOT.war
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,205 CassandraApplication.java:70 - thorntail.uberjar.build.user : ajs6f
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,205 CassandraApplication.java:70 - sun.arch.data.model : 64
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,205 CassandraApplication.java:70 - java.net.preferIPv4Stack : true
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,205 CassandraApplication.java:70 - user.timezone : America/New_York
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,205 CassandraApplication.java:70 - java.version : 1.8.0_65
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,206 CassandraApplication.java:70 - java.util.logging.manager : org.jboss.logmanager.LogManager
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,206 CassandraApplication.java:70 - thorntail.logging.loggers.[org.hibernate].level : ERROR
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,206 CassandraApplication.java:70 - sun.boot.library.path : /Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/lib
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,207 CassandraApplication.java:70 - user.language : en
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,207 CassandraApplication.java:70 - jboss.home.dir : /Users/ajs6f/Documents/trellis/trellis-cassandra/webapp
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,207 CassandraApplication.java:70 - jboss.server.management.uuid : ed1e4f3b-cfaa-4a7d-98dc-ccbe9b71d404
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,207 CassandraApplication.java:70 - jboss.node.name : ocio-lparkj
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,208 CassandraApplication.java:70 - user.name : ajs6f
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,208 CassandraApplication.java:70 - boot.module.loader : org.wildfly.swarm.bootstrap.modules.BootModuleLoader
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,208 CassandraApplication.java:70 - java.runtime.version : 1.8.0_65-b17
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,208 CassandraApplication.java:70 - java.vm.specification.vendor : Oracle Corporation
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,208 CassandraApplication.java:70 - thorntail.isuberjar : true
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,209 CassandraApplication.java:70 - jboss.server.persist.config : false
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,209 CassandraApplication.java:70 - sun.boot.class.path : /Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/lib/resources.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/lib/rt.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/lib/sunrsasign.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/lib/jsse.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/lib/jce.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/lib/charsets.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/lib/jfr.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/classes
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,209 CassandraApplication.java:70 - thorntail.default.deployment.type : war
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,209 CassandraApplication.java:70 - os.name : Mac OS X
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,210 CassandraApplication.java:70 - sun.nio.ch.bugLevel : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,210 CassandraApplication.java:70 - sun.management.compiler : HotSpot 64-Bit Tiered Compilers
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,210 CassandraApplication.java:70 - sun.java.launcher : SUN_STANDARD
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,210 CassandraApplication.java:70 - jboss.qualified.host.name : ocio-lparkj
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,210 CassandraApplication.java:70 - java.vendor : Oracle Corporation
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,211 CassandraApplication.java:61 - Using ENV vars:
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,211 CassandraApplication.java:70 - IRBRC : /Users/ajs6f/.rvm/rubies/ruby-2.3.0/.irbrc
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,212 CassandraApplication.java:70 - PATH : /Users/ajs6f/.rvm/gems/ruby-2.3.0/bin:/Users/ajs6f/.rvm/gems/ruby-2.3.0@global/bin:/Users/ajs6f/.rvm/rubies/ruby-2.3.0/bin:/usr/local/opt/scala@2.11/bin:/Users/ajs6f/.m2/mvn/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/opt/X11/bin:/Users/ajs6f/bin:/usr/local/bin:/usr/libexec:/Users/ajs6f/.rvm/bin
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,212 CassandraApplication.java:70 - rvm_silent_flag : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,212 CassandraApplication.java:70 - rvm_quiet_flag : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,212 CassandraApplication.java:70 - rvm_bin_flag : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,212 CassandraApplication.java:70 - COLORTERM : truecolor
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,213 CassandraApplication.java:70 - rvm_ruby_mode : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,213 CassandraApplication.java:70 - rvm_ruby_make_install : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,213 CassandraApplication.java:70 - rvm_niceness : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,213 CassandraApplication.java:70 - LOGNAME : ajs6f
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,214 CassandraApplication.java:70 - rvm_version : 1.27.0 (latest)
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,214 CassandraApplication.java:70 - TERM_PROGRAM_VERSION : 3.2.7
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,214 CassandraApplication.java:70 - PWD : /Users/ajs6f/Documents/trellis/trellis-cassandra
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,214 CassandraApplication.java:70 - rvm_proxy : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,215 CassandraApplication.java:70 - SHELL : /bin/zsh
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,215 CassandraApplication.java:70 - PAGER : less
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,215 CassandraApplication.java:70 - rvm_hook : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,215 CassandraApplication.java:70 - rvm_wrapper_name : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,216 CassandraApplication.java:70 - MY_RUBY_HOME : /Users/ajs6f/.rvm/rubies/ruby-2.3.0
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,216 CassandraApplication.java:70 - OLDPWD : /Users/ajs6f/Documents/trellis/trellis-cassandra
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,216 CassandraApplication.java:70 - rvm_sdk : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,216 CassandraApplication.java:70 - GEM_HOME : /Users/ajs6f/.rvm/gems/ruby-2.3.0
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,216 CassandraApplication.java:70 - rvm_nightly_flag : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,217 CassandraApplication.java:70 - ZSH : /Users/ajs6f/.oh-my-zsh
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,217 CassandraApplication.java:70 - TMPDIR : /var/folders/x3/v3kmyfkx6p30cwnwvxnfs8cr0000gq/T/
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,217 CassandraApplication.java:70 - rvm_path : /Users/ajs6f/.rvm
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,217 CassandraApplication.java:70 - ITERM_PROFILE : Default
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,218 CassandraApplication.java:70 - rvm_use_flag : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,218 CassandraApplication.java:70 - XPC_FLAGS : 0x0
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,218 CassandraApplication.java:70 - RUBY_VERSION : ruby-2.3.0
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,218 CassandraApplication.java:70 - TERM_SESSION_ID : w0t1p0:BB22699E-E91A-4123-8704-DDE5DBDA23F7
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,218 CassandraApplication.java:70 - _system_name : OSX
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,219 CassandraApplication.java:70 - __CF_USER_TEXT_ENCODING : 0x1F7:0x0:0x0
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,219 CassandraApplication.java:70 - Apple_PubSub_Socket_Render : /private/tmp/com.apple.launchd.QpXpK0oCPs/Render
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,219 CassandraApplication.java:70 - LESS : -R
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,219 CassandraApplication.java:70 - COLORFGBG : 0;15
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,219 CassandraApplication.java:70 - LC_CTYPE : en_US.UTF-8
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,220 CassandraApplication.java:70 - SHLVL : 1
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,220 CassandraApplication.java:70 - rvm_gemstone_package_file : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,220 CassandraApplication.java:70 - JAVA_MAIN_CLASS_31393 : org.codehaus.plexus.classworlds.launcher.Launcher
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,220 CassandraApplication.java:70 - _system_arch : x86_64
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,220 CassandraApplication.java:70 - rvm_bin_path : /Users/ajs6f/.rvm/bin
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,221 CassandraApplication.java:70 - JAVA_HOME : /Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,221 CassandraApplication.java:70 - TERM : xterm-color
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,221 CassandraApplication.java:70 - rvm_prefix : /Users/ajs6f
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,221 CassandraApplication.java:70 - rvm_only_path_flag : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,221 CassandraApplication.java:70 - CASSANDRA_CONTACT_PORT : 54097
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,222 CassandraApplication.java:70 - LANG : en_US.UTF-8
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,222 CassandraApplication.java:70 - UPDATE_ZSH_DAYS : 6
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,222 CassandraApplication.java:70 - rvm_script_name : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,222 CassandraApplication.java:70 - DISPLAY : /private/tmp/com.apple.launchd.JnRdM0wrrx/org.macosforge.xquartz:0
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,222 CassandraApplication.java:70 - rvm_ruby_make : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,222 CassandraApplication.java:70 - ITERM_SESSION_ID : w0t1p0:BB22699E-E91A-4123-8704-DDE5DBDA23F7
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,223 CassandraApplication.java:70 - rvm_gemstone_url : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,223 CassandraApplication.java:70 - rvm_docs_type : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,223 CassandraApplication.java:70 - JAVA_MAIN_CLASS_31543 : org.wildfly.swarm.bootstrap.Main
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,223 CassandraApplication.java:70 - XPC_SERVICE_NAME : 0
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,223 CassandraApplication.java:70 - CASSANDRA_CONTACT_ADDRESS : localhost
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,224 CassandraApplication.java:70 - MAVEN_CMD_LINE_ARGS :  clean install
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,224 CassandraApplication.java:70 - TERM_PROGRAM : iTerm.app
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,224 CassandraApplication.java:70 - _system_type : Darwin
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,224 CassandraApplication.java:70 - LSCOLORS : Gxfxcxdxbxegedabagacad
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,224 CassandraApplication.java:70 - MAVEN_PROJECTBASEDIR : /Users/ajs6f/Documents/trellis/trellis-cassandra
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,225 CassandraApplication.java:70 - _system_version : 10.13
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,225 CassandraApplication.java:70 - USER : ajs6f
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,225 CassandraApplication.java:70 - rvm_ruby_file : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,225 CassandraApplication.java:70 - rvm_alias_expanded : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,225 CassandraApplication.java:70 - rvm_ruby_bits : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,226 CassandraApplication.java:70 - SSH_AUTH_SOCK : /private/tmp/com.apple.launchd.KTV5T5WABb/Listeners
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,226 CassandraApplication.java:70 - GEM_PATH : /Users/ajs6f/.rvm/gems/ruby-2.3.0:/Users/ajs6f/.rvm/gems/ruby-2.3.0@global
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,226 CassandraApplication.java:70 - HOME : /Users/ajs6f
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,226 CassandraApplication.java:63 - Using Tamaya configuration sources:
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,227 ForEachOps.java:184 - CLI
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,227 ForEachOps.java:184 - environment-properties
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,228 ForEachOps.java:184 - resource:META-INF/javaconfiguration.*
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,228 ForEachOps.java:184 - system-properties
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,228 CassandraApplication.java:65 - Using Tamaya configuration:
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,232 CassandraApplication.java:70 - IRBRC : /Users/ajs6f/.rvm/rubies/ruby-2.3.0/.irbrc
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,232 CassandraApplication.java:70 - PATH : /Users/ajs6f/.rvm/gems/ruby-2.3.0/bin:/Users/ajs6f/.rvm/gems/ruby-2.3.0@global/bin:/Users/ajs6f/.rvm/rubies/ruby-2.3.0/bin:/usr/local/opt/scala@2.11/bin:/Users/ajs6f/.m2/mvn/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/opt/X11/bin:/Users/ajs6f/bin:/usr/local/bin:/usr/libexec:/Users/ajs6f/.rvm/bin
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,232 CassandraApplication.java:70 - rvm_silent_flag : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,233 CassandraApplication.java:70 - awt.toolkit : sun.lwawt.macosx.LWCToolkit
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,233 CassandraApplication.java:70 - rvm_quiet_flag : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,233 CassandraApplication.java:70 - java.specification.version : 1.8
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,233 CassandraApplication.java:70 - sun.cpu.isalist : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,233 CassandraApplication.java:70 - remote.maven.repo : https://repository.apache.org/content/groups/public,https://oss.sonatype.org/content/repositories/snapshots,https://repository.jboss.org/nexus/content/groups/public/,https://repo.maven.apache.org/maven2
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,234 CassandraApplication.java:70 - sun.jnu.encoding : UTF-8
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,234 CassandraApplication.java:70 - sun.arch.data.model : 64
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,234 CassandraApplication.java:70 - org.jboss.resolver.warning : true
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,234 CassandraApplication.java:70 - java.vendor.url : http://java.oracle.com/
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,234 CassandraApplication.java:70 - thorntail.logging.loggers.[org.wildfly].level : WARN
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,234 CassandraApplication.java:70 - COLORTERM : truecolor
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,235 CassandraApplication.java:70 - rvm_ruby_make_install : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,235 CassandraApplication.java:70 - rvm_niceness : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,235 CassandraApplication.java:70 - rvm_version : 1.27.0 (latest)
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,235 CassandraApplication.java:70 - TERM_PROGRAM_VERSION : 3.2.7
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,235 CassandraApplication.java:70 - PWD : /Users/ajs6f/Documents/trellis/trellis-cassandra
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,236 CassandraApplication.java:70 - sun.boot.library.path : /Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/lib
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,236 CassandraApplication.java:70 - sun.java.command : /Users/ajs6f/Documents/trellis/trellis-cassandra/webapp/target/webapp-0.8.1-SNAPSHOT-thorntail.jar
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,236 CassandraApplication.java:70 - maven.home : /usr/local/Cellar/maven/3.5.3/libexec
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,236 CassandraApplication.java:70 - PAGER : less
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,236 CassandraApplication.java:70 - rvm_hook : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,237 CassandraApplication.java:70 - rvm_wrapper_name : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,237 CassandraApplication.java:70 - MY_RUBY_HOME : /Users/ajs6f/.rvm/rubies/ruby-2.3.0
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,237 CassandraApplication.java:70 - java.specification.vendor : Oracle Corporation
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,237 CassandraApplication.java:70 - java.naming.factory.url.pkgs : org.jboss.as.naming.interfaces
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,237 CassandraApplication.java:70 - rvm_nightly_flag : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,238 CassandraApplication.java:70 - java.home : /Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,238 CassandraApplication.java:70 - ZSH : /Users/ajs6f/.oh-my-zsh
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,238 CassandraApplication.java:70 - rvm_path : /Users/ajs6f/.rvm
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,238 CassandraApplication.java:70 - ITERM_PROFILE : Default
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,238 CassandraApplication.java:70 - jboss.server.persist.config : false
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,238 CassandraApplication.java:70 - file.separator : /
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,239 CassandraApplication.java:70 - swarm.http.port : 54100
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,239 CassandraApplication.java:70 - jboss.server.data.dir : /var/folders/x3/v3kmyfkx6p30cwnwvxnfs8cr0000gq/T/thorntailwildfly-self-contained7964911724859600810.d
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,239 CassandraApplication.java:70 - line.separator : 
+
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,239 CassandraApplication.java:70 - XPC_FLAGS : 0x0
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,239 CassandraApplication.java:70 - TERM_SESSION_ID : w0t1p0:BB22699E-E91A-4123-8704-DDE5DBDA23F7
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,240 CassandraApplication.java:70 - java.vm.specification.vendor : Oracle Corporation
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,240 CassandraApplication.java:70 - java.specification.name : Java Platform API Specification
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,240 CassandraApplication.java:70 - jboss.server.base.dir : /Users/ajs6f/Documents/trellis/trellis-cassandra/webapp
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,240 CassandraApplication.java:70 - thorntail.logging.loggers.[org.jboss].level : WARN
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,240 CassandraApplication.java:70 - Apple_PubSub_Socket_Render : /private/tmp/com.apple.launchd.QpXpK0oCPs/Render
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,240 CassandraApplication.java:70 - thorntail.logging.root-logger.level : WARN
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,241 CassandraApplication.java:70 - LC_CTYPE : en_US.UTF-8
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,241 CassandraApplication.java:70 - SHLVL : 1
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,241 CassandraApplication.java:70 - thorntail.default.deployment.type : war
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,241 CassandraApplication.java:70 - JAVA_MAIN_CLASS_31393 : org.codehaus.plexus.classworlds.launcher.Launcher
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,241 CassandraApplication.java:70 - sun.boot.class.path : /Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/lib/resources.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/lib/rt.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/lib/sunrsasign.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/lib/jsse.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/lib/jce.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/lib/charsets.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/lib/jfr.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/classes
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,242 CassandraApplication.java:70 - thorntail.uberjar.build.user : ajs6f
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,242 CassandraApplication.java:70 - java.protocol.handler.pkgs : org.jboss.net.protocol|org.jboss.vfs.protocol
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,242 CassandraApplication.java:70 - sun.management.compiler : HotSpot 64-Bit Tiered Compilers
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,242 CassandraApplication.java:70 - org.wildfly.swarm.mainProcessFile : /var/folders/x3/v3kmyfkx6p30cwnwvxnfs8cr0000gq/T/thorntail-process-file3644573126052538787.tmp
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,242 CassandraApplication.java:70 - JAVA_HOME : /Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,242 CassandraApplication.java:70 - java.runtime.version : 1.8.0_65-b17
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,243 CassandraApplication.java:70 - user.name : ajs6f
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,243 CassandraApplication.java:70 - TERM : xterm-color
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,243 CassandraApplication.java:70 - UPDATE_ZSH_DAYS : 6
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,243 CassandraApplication.java:70 - rvm_script_name : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,243 CassandraApplication.java:70 - rvm_ruby_make : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,244 CassandraApplication.java:70 - file.encoding : UTF-8
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,244 CassandraApplication.java:70 - ITERM_SESSION_ID : w0t1p0:BB22699E-E91A-4123-8704-DDE5DBDA23F7
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,244 CassandraApplication.java:70 - rvm_docs_type : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,244 CassandraApplication.java:70 - JAVA_MAIN_CLASS_31543 : org.wildfly.swarm.bootstrap.Main
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,244 CassandraApplication.java:70 - CASSANDRA_CONTACT_ADDRESS : localhost
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,244 CassandraApplication.java:70 - java.io.tmpdir : /var/folders/x3/v3kmyfkx6p30cwnwvxnfs8cr0000gq/T/
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,245 CassandraApplication.java:70 - TERM_PROGRAM : iTerm.app
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,245 CassandraApplication.java:70 - java.version : 1.8.0_65
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,245 CassandraApplication.java:70 - MAVEN_PROJECTBASEDIR : /Users/ajs6f/Documents/trellis/trellis-cassandra
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,245 CassandraApplication.java:70 - java.vm.specification.name : Java Virtual Machine Specification
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,245 CassandraApplication.java:70 - thorntail.current.deployment : webapp-0.8.1-SNAPSHOT.war
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,246 CassandraApplication.java:70 - java.awt.printerjob : sun.lwawt.macosx.CPrinterJob
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,246 CassandraApplication.java:70 - thorntail.isuberjar : true
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,246 CassandraApplication.java:70 - jboss.host.name : ocio-lparkj
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,246 CassandraApplication.java:70 - org.jboss.security.context.ThreadLocal : true
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,246 CassandraApplication.java:70 - sun.os.patch.level : unknown
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,247 CassandraApplication.java:70 - rvm_alias_expanded : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,247 CassandraApplication.java:70 - rvm_ruby_bits : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,247 CassandraApplication.java:70 - GEM_PATH : /Users/ajs6f/.rvm/gems/ruby-2.3.0:/Users/ajs6f/.rvm/gems/ruby-2.3.0@global
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,247 CassandraApplication.java:70 - java.library.path : /Users/ajs6f/Library/Java/Extensions:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java:.
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,248 CassandraApplication.java:70 - jboss.server.name : ocio-lparkj
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,248 CassandraApplication.java:70 - java.vendor : Oracle Corporation
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,248 CassandraApplication.java:70 - thorntail.logging.loggers.[org.jboss.weld].level : WARN
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,248 CassandraApplication.java:70 - sun.io.unicode.encoding : UnicodeBig
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,248 CassandraApplication.java:70 - jboss.server.temp.dir : /var/folders/x3/v3kmyfkx6p30cwnwvxnfs8cr0000gq/T/thorntailwildfly-swarm407645422278435830.d
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,249 CassandraApplication.java:70 - socksNonProxyHosts : local|*.local|169.254/16|*.169.254/16
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,249 CassandraApplication.java:70 - gopherProxySet : false
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,249 CassandraApplication.java:70 - file.encoding.pkg : sun.io
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,249 CassandraApplication.java:70 - thorntail.bundled.dependencies : true
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,249 CassandraApplication.java:70 - java.class.path : /Users/ajs6f/Documents/trellis/trellis-cassandra/webapp/target/webapp-0.8.1-SNAPSHOT-thorntail.jar
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,250 CassandraApplication.java:70 - rvm_bin_flag : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,250 CassandraApplication.java:70 - java.vm.vendor : Oracle Corporation
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,250 CassandraApplication.java:70 - thorntail.ajp.enable : false
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,250 CassandraApplication.java:70 - resteasy.preferJacksonOverJsonB : false
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,250 CassandraApplication.java:70 - thorntail.logging.loggers.[org.xnio].level : ERROR
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,251 CassandraApplication.java:70 - user.timezone : America/New_York
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,251 CassandraApplication.java:70 - org.jboss.logging.provider : slf4j
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,251 CassandraApplication.java:70 - rvm_ruby_mode : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,251 CassandraApplication.java:70 - maven.conf : /usr/local/Cellar/maven/3.5.3/libexec/conf
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,251 CassandraApplication.java:70 - os.name : Mac OS X
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,251 CassandraApplication.java:70 - java.vm.specification.version : 1.8
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,252 CassandraApplication.java:70 - LOGNAME : ajs6f
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,252 CassandraApplication.java:70 - thorntail.app.artifact : webapp-0.8.1-SNAPSHOT.war
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,252 CassandraApplication.java:70 - sun.java.launcher : SUN_STANDARD
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,252 CassandraApplication.java:70 - user.country : US
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,252 CassandraApplication.java:70 - rvm_proxy : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,253 CassandraApplication.java:70 - http.nonProxyHosts : local|*.local|169.254/16|*.169.254/16
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,253 CassandraApplication.java:70 - SHELL : /bin/zsh
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,253 CassandraApplication.java:70 - sun.cpu.endian : little
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,253 CassandraApplication.java:70 - user.home : /Users/ajs6f
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,253 CassandraApplication.java:70 - user.language : en
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,253 CassandraApplication.java:70 - jboss.qualified.host.name : ocio-lparkj
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,254 CassandraApplication.java:70 - OLDPWD : /Users/ajs6f/Documents/trellis/trellis-cassandra
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,254 CassandraApplication.java:70 - rvm_sdk : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,254 CassandraApplication.java:70 - GEM_HOME : /Users/ajs6f/.rvm/gems/ruby-2.3.0
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,254 CassandraApplication.java:70 - TMPDIR : /var/folders/x3/v3kmyfkx6p30cwnwvxnfs8cr0000gq/T/
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,254 CassandraApplication.java:70 - rvm_use_flag : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,255 CassandraApplication.java:70 - thorntail.logging.loggers.[org.hibernate].level : ERROR
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,255 CassandraApplication.java:70 - RUBY_VERSION : ruby-2.3.0
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,255 CassandraApplication.java:70 - _system_name : OSX
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,255 CassandraApplication.java:70 - java.awt.graphicsenv : sun.awt.CGraphicsEnvironment
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,255 CassandraApplication.java:70 - __CF_USER_TEXT_ENCODING : 0x1F7:0x0:0x0
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,256 CassandraApplication.java:70 - LESS : -R
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,256 CassandraApplication.java:70 - COLORFGBG : 0;15
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,256 CassandraApplication.java:70 - boot.module.loader : org.wildfly.swarm.bootstrap.modules.BootModuleLoader
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,256 CassandraApplication.java:70 - logback.configurationFile : /Users/ajs6f/Documents/trellis/trellis-cassandra/webapp/target/test-classes/logback-test.xml
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,256 CassandraApplication.java:70 - rvm_gemstone_package_file : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,256 CassandraApplication.java:70 - _system_arch : x86_64
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,257 CassandraApplication.java:70 - rvm_bin_path : /Users/ajs6f/.rvm/bin
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,257 CassandraApplication.java:70 - ftp.nonProxyHosts : local|*.local|169.254/16|*.169.254/16
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,257 CassandraApplication.java:70 - java.net.preferIPv4Stack : true
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,257 CassandraApplication.java:70 - jboss.home.dir : /Users/ajs6f/Documents/trellis/trellis-cassandra/webapp
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,258 CassandraApplication.java:70 - rvm_prefix : /Users/ajs6f
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,258 CassandraApplication.java:70 - rvm_only_path_flag : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,258 CassandraApplication.java:70 - path.separator : :
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,258 CassandraApplication.java:70 - CASSANDRA_CONTACT_PORT : 54097
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,258 CassandraApplication.java:70 - LANG : en_US.UTF-8
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,258 CassandraApplication.java:70 - os.version : 10.13.6
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,259 CassandraApplication.java:70 - thorntail.http.port : 54100
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,259 CassandraApplication.java:70 - java.endorsed.dirs : /Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/lib/endorsed
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,259 CassandraApplication.java:70 - java.runtime.name : Java(TM) SE Runtime Environment
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,259 CassandraApplication.java:70 - DISPLAY : /private/tmp/com.apple.launchd.JnRdM0wrrx/org.macosforge.xquartz:0
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,259 CassandraApplication.java:70 - rvm_gemstone_url : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,260 CassandraApplication.java:70 - sun.nio.ch.bugLevel : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,260 CassandraApplication.java:70 - java.vm.name : Java HotSpot(TM) 64-Bit Server VM
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,260 CassandraApplication.java:70 - XPC_SERVICE_NAME : 0
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,260 CassandraApplication.java:70 - MAVEN_CMD_LINE_ARGS :  clean install
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,261 CassandraApplication.java:70 - java.security.auth.login.config : jar:file:/var/folders/x3/v3kmyfkx6p30cwnwvxnfs8cr0000gq/T/thorntailpicketbox-5.0.3.Final6395139758420244986.jar!/auth.conf
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,261 CassandraApplication.java:70 - jboss.server.log.dir : /Users/ajs6f/Documents/trellis/trellis-cassandra/webapp
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,261 CassandraApplication.java:70 - java.vendor.url.bug : http://bugreport.sun.com/bugreport/
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,261 CassandraApplication.java:70 - jboss.server.management.uuid : ed1e4f3b-cfaa-4a7d-98dc-ccbe9b71d404
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,262 CassandraApplication.java:70 - user.dir : /Users/ajs6f/Documents/trellis/trellis-cassandra/webapp
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,262 CassandraApplication.java:70 - _system_type : Darwin
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,262 CassandraApplication.java:70 - LSCOLORS : Gxfxcxdxbxegedabagacad
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,262 CassandraApplication.java:70 - os.arch : x86_64
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,262 CassandraApplication.java:70 - maven.multiModuleProjectDirectory : /Users/ajs6f/Documents/trellis/trellis-cassandra
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,263 CassandraApplication.java:70 - _system_version : 10.13
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,263 CassandraApplication.java:70 - USER : ajs6f
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,263 CassandraApplication.java:70 - rvm_ruby_file : 
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,263 CassandraApplication.java:70 - SSH_AUTH_SOCK : /private/tmp/com.apple.launchd.KTV5T5WABb/Listeners
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,263 CassandraApplication.java:70 - java.util.logging.manager : org.jboss.logmanager.LogManager
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,263 CassandraApplication.java:70 - java.vm.info : mixed mode
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,264 CassandraApplication.java:70 - java.vm.version : 25.65-b01
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,264 CassandraApplication.java:70 - java.ext.dirs : /Users/ajs6f/Library/Java/Extensions:/Library/Java/JavaVirtualMachines/jdk1.8.0_65.jdk/Contents/Home/jre/lib/ext:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,264 CassandraApplication.java:70 - jboss.node.name : ocio-lparkj
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,264 CassandraApplication.java:70 - java.class.version : 52.0
+DEBUG [ServerService Thread Pool -- 9] 2019-02-21 13:45:47,264 CassandraApplication.java:70 - HOME : /Users/ajs6f
+INFO  [default task-1] 2019-02-21 13:47:30,995 CassandraContext.java:131 - Using Cassandra node address: localhost and port: 54097
+DEBUG [default task-1] 2019-02-21 13:47:30,997 CassandraContext.java:132 - Looking for connection...
+WARN  [default task-1] 2019-02-21 13:47:31,070 CodecRegistry.java:399 - Ignoring codec BigintCodec [bigint <-> java.lang.Long] because it collides with previously registered codec BigintCodec [bigint <-> java.lang.Long]
+DEBUG [default task-1] 2019-02-21 13:47:31,075 CassandraContext.java:139 - Connecting to Cassandra...
+WARN  [Cassandra Connection Maker] 2019-02-21 13:47:31,306 Cluster.java:2323 - You listed localhost/0:0:0:0:0:0:0:1:54097 in your contact points, but it wasn't found in the control host's system.peers at startup
+DEBUG [Cassandra Connection Maker] 2019-02-21 13:47:31,441 CassandraContext.java:145 - Connection made and keyspace set to 'trellis'.
+DEBUG [default task-1] 2019-02-21 13:47:31,494 CassandraResourceService.java:149 - Retrieving: <trellis:data/> at 2019-02-21T18:47:31.494Z
+DEBUG [pool-19-thread-1] 2019-02-21 13:47:31,514 CassandraResourceService.java:119 - Resource was not found
+DEBUG [default task-1] 2019-02-21 13:47:31,516 CassandraResourceService.java:166 - Creating <trellis:data/> with interaction model <http://www.w3.org/ns/ldp#BasicContainer>
+WARN  [default task-1] 2019-02-21 13:47:31,576 UUIDs.java:166 - PID returned through native call was 0, JNR versions incompatible?  Falling back to JMX.
+DEBUG [default task-1] 2019-02-21 13:47:31,577 CassandraQuery.java:52 - Executing CQL write: com.datastax.driver.core.BoundStatement@636cfc1d
+DEBUG [pool-22-thread-1] 2019-02-21 13:47:31,583 CassandraQuery.java:54 - Executed CQL write: com.datastax.driver.core.BoundStatement@636cfc1d
+WARN  [cluster1-worker-7] 2019-02-21 13:47:31,610 Cluster.java:2345 - Re-preparing already prepared query is generally an anti-pattern and will likely affect performance. Consider preparing the statement only once. Query='SELECT chunk FROM binarydata WHERE identifier = :identifier and chunkIndex = :chunkIndex;'
+INFO  [default task-1] 2019-02-21 13:47:31,611 CassandraBinaryService.java:62 - Using configured default chunk length: 1048576
+DEBUG [default task-1] 2019-02-21 13:47:31,628 CassandraResourceService.java:149 - Retrieving: <trellis:data/> at 2019-02-21T18:47:31.628Z
+DEBUG [default task-1] 2019-02-21 13:47:31,628 CassandraResourceService.java:149 - Retrieving: <trellis:data/388cb3b2-0129-42f9-85e3-a8ec074de0a8> at 2019-02-21T18:47:31.628Z
+DEBUG [pool-19-thread-1] 2019-02-21 13:47:31,632 CassandraResourceService.java:119 - Resource was not found
+DEBUG [pool-19-thread-1] 2019-02-21 13:47:31,635 CassandraResourceService.java:123 - Resource <trellis:data/> was found, computing metadata.
+DEBUG [pool-19-thread-1] 2019-02-21 13:47:31,636 CassandraResourceService.java:125 - Found interactionModel = <http://www.w3.org/ns/ldp#BasicContainer> for resource <trellis:data/>
+DEBUG [pool-19-thread-1] 2019-02-21 13:47:31,636 CassandraResourceService.java:127 - Found hasAcl = false for resource <trellis:data/>
+DEBUG [pool-19-thread-1] 2019-02-21 13:47:31,637 CassandraResourceService.java:129 - Found binaryIdentifier = null for resource <trellis:data/>
+DEBUG [pool-19-thread-1] 2019-02-21 13:47:31,637 CassandraResourceService.java:131 - Found mimeType = null for resource <trellis:data/>
+DEBUG [pool-19-thread-1] 2019-02-21 13:47:31,637 CassandraResourceService.java:133 - Found container = null for resource <trellis:data/>
+DEBUG [pool-19-thread-1] 2019-02-21 13:47:31,638 CassandraResourceService.java:135 - Found modified = 2019-02-21T18:47:31.517Z for resource <trellis:data/>
+DEBUG [pool-19-thread-1] 2019-02-21 13:47:31,638 CassandraResourceService.java:137 - Found created = 250dae90-3609-11e9-9925-5710c6cc0151 for resource <trellis:data/>
+DEBUG [pool-19-thread-1] 2019-02-21 13:47:31,708 CassandraResourceService.java:166 - Creating <trellis:data/388cb3b2-0129-42f9-85e3-a8ec074de0a8> with interaction model <http://www.w3.org/ns/ldp#RDFSource>
+DEBUG [pool-19-thread-1] 2019-02-21 13:47:31,714 CassandraQuery.java:52 - Executing CQL write: com.datastax.driver.core.BoundStatement@60a48bee
+DEBUG [pool-19-thread-1] 2019-02-21 13:47:31,714 CassandraResourceService.java:160 - Adding immutable data to <trellis:data/388cb3b2-0129-42f9-85e3-a8ec074de0a8>
+DEBUG [pool-19-thread-1] 2019-02-21 13:47:31,715 CassandraQuery.java:52 - Executing CQL write: com.datastax.driver.core.BoundStatement@5216fb6c
+DEBUG [pool-20-thread-1] 2019-02-21 13:47:31,718 CassandraQuery.java:54 - Executed CQL write: com.datastax.driver.core.BoundStatement@5216fb6c
+DEBUG [pool-22-thread-1] 2019-02-21 13:47:31,723 CassandraQuery.java:54 - Executed CQL write: com.datastax.driver.core.BoundStatement@60a48bee
+DEBUG [pool-22-thread-1] 2019-02-21 13:47:31,728 CassandraResourceService.java:149 - Retrieving: <trellis:data/> at 2019-02-21T18:47:31.728Z
+DEBUG [pool-19-thread-1] 2019-02-21 13:47:31,731 CassandraResourceService.java:123 - Resource <trellis:data/> was found, computing metadata.
+DEBUG [pool-19-thread-1] 2019-02-21 13:47:31,731 CassandraResourceService.java:125 - Found interactionModel = <http://www.w3.org/ns/ldp#BasicContainer> for resource <trellis:data/>
+DEBUG [pool-19-thread-1] 2019-02-21 13:47:31,731 CassandraResourceService.java:127 - Found hasAcl = false for resource <trellis:data/>
+DEBUG [pool-19-thread-1] 2019-02-21 13:47:31,731 CassandraResourceService.java:129 - Found binaryIdentifier = null for resource <trellis:data/>
+DEBUG [pool-19-thread-1] 2019-02-21 13:47:31,731 CassandraResourceService.java:131 - Found mimeType = null for resource <trellis:data/>
+DEBUG [pool-19-thread-1] 2019-02-21 13:47:31,731 CassandraResourceService.java:133 - Found container = null for resource <trellis:data/>
+DEBUG [pool-19-thread-1] 2019-02-21 13:47:31,732 CassandraResourceService.java:135 - Found modified = 2019-02-21T18:47:31.517Z for resource <trellis:data/>
+DEBUG [pool-19-thread-1] 2019-02-21 13:47:31,732 CassandraResourceService.java:137 - Found created = 250dae90-3609-11e9-9925-5710c6cc0151 for resource <trellis:data/>
+DEBUG [pool-19-thread-1] 2019-02-21 13:47:31,732 CassandraQuery.java:52 - Executing CQL write: com.datastax.driver.core.BoundStatement@33d480ff
+DEBUG [pool-26-thread-1] 2019-02-21 13:47:31,735 CassandraQuery.java:54 - Executed CQL write: com.datastax.driver.core.BoundStatement@33d480ff
+DEBUG [pool-26-thread-1] 2019-02-21 13:47:31,739 CassandraResourceService.java:149 - Retrieving: <trellis:data/388cb3b2-0129-42f9-85e3-a8ec074de0a8> at 2019-02-21T18:47:31.739Z
+DEBUG [pool-19-thread-1] 2019-02-21 13:47:31,742 CassandraResourceService.java:123 - Resource <trellis:data/388cb3b2-0129-42f9-85e3-a8ec074de0a8> was found, computing metadata.
+DEBUG [pool-19-thread-1] 2019-02-21 13:47:31,742 CassandraResourceService.java:125 - Found interactionModel = <http://www.w3.org/ns/ldp#RDFSource> for resource <trellis:data/388cb3b2-0129-42f9-85e3-a8ec074de0a8>
+DEBUG [pool-19-thread-1] 2019-02-21 13:47:31,742 CassandraResourceService.java:127 - Found hasAcl = false for resource <trellis:data/388cb3b2-0129-42f9-85e3-a8ec074de0a8>
+DEBUG [pool-19-thread-1] 2019-02-21 13:47:31,743 CassandraResourceService.java:129 - Found binaryIdentifier = null for resource <trellis:data/388cb3b2-0129-42f9-85e3-a8ec074de0a8>
+DEBUG [pool-19-thread-1] 2019-02-21 13:47:31,743 CassandraResourceService.java:131 - Found mimeType = null for resource <trellis:data/388cb3b2-0129-42f9-85e3-a8ec074de0a8>
+DEBUG [pool-19-thread-1] 2019-02-21 13:47:31,743 CassandraResourceService.java:133 - Found container = <trellis:data/> for resource <trellis:data/388cb3b2-0129-42f9-85e3-a8ec074de0a8>
+DEBUG [pool-19-thread-1] 2019-02-21 13:47:31,743 CassandraResourceService.java:135 - Found modified = 2019-02-21T18:47:31.709Z for resource <trellis:data/388cb3b2-0129-42f9-85e3-a8ec074de0a8>
+DEBUG [pool-19-thread-1] 2019-02-21 13:47:31,743 CassandraResourceService.java:137 - Found created = 2521d2d0-3609-11e9-9925-5710c6cc0151 for resource <trellis:data/388cb3b2-0129-42f9-85e3-a8ec074de0a8>
+DEBUG [default task-1] 2019-02-21 13:47:31,800 CassandraResourceService.java:149 - Retrieving: <trellis:data/388cb3b2-0129-42f9-85e3-a8ec074de0a8> at 2019-02-21T18:47:31.800Z
+DEBUG [pool-19-thread-1] 2019-02-21 13:47:31,812 CassandraResourceService.java:123 - Resource <trellis:data/388cb3b2-0129-42f9-85e3-a8ec074de0a8> was found, computing metadata.
+DEBUG [pool-19-thread-1] 2019-02-21 13:47:31,815 CassandraResourceService.java:125 - Found interactionModel = <http://www.w3.org/ns/ldp#RDFSource> for resource <trellis:data/388cb3b2-0129-42f9-85e3-a8ec074de0a8>
+DEBUG [pool-19-thread-1] 2019-02-21 13:47:31,816 CassandraResourceService.java:127 - Found hasAcl = false for resource <trellis:data/388cb3b2-0129-42f9-85e3-a8ec074de0a8>
+DEBUG [pool-19-thread-1] 2019-02-21 13:47:31,816 CassandraResourceService.java:129 - Found binaryIdentifier = null for resource <trellis:data/388cb3b2-0129-42f9-85e3-a8ec074de0a8>
+DEBUG [pool-19-thread-1] 2019-02-21 13:47:31,817 CassandraResourceService.java:131 - Found mimeType = null for resource <trellis:data/388cb3b2-0129-42f9-85e3-a8ec074de0a8>
+DEBUG [pool-19-thread-1] 2019-02-21 13:47:31,818 CassandraResourceService.java:133 - Found container = <trellis:data/> for resource <trellis:data/388cb3b2-0129-42f9-85e3-a8ec074de0a8>
+DEBUG [pool-19-thread-1] 2019-02-21 13:47:31,819 CassandraResourceService.java:135 - Found modified = 2019-02-21T18:47:31.709Z for resource <trellis:data/388cb3b2-0129-42f9-85e3-a8ec074de0a8>
+DEBUG [pool-19-thread-1] 2019-02-21 13:47:31,821 CassandraResourceService.java:137 - Found created = 2521d2d0-3609-11e9-9925-5710c6cc0151 for resource <trellis:data/388cb3b2-0129-42f9-85e3-a8ec074de0a8>
+ERROR [cluster1-reconnection-0] 2019-02-21 13:47:32,361 ControlConnection.java:182 - [Control connection] Cannot connect to any host, scheduling retry in 1000 milliseconds
+ERROR [cluster1-reconnection-0] 2019-02-21 13:47:33,361 ControlConnection.java:182 - [Control connection] Cannot connect to any host, scheduling retry in 2000 milliseconds
+ERROR [cluster1-reconnection-0] 2019-02-21 13:47:35,365 ControlConnection.java:182 - [Control connection] Cannot connect to any host, scheduling retry in 4000 milliseconds
