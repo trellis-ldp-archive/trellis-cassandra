@@ -56,8 +56,8 @@ jobs:
         command: find ~/junit -name *.txt | xargs cat
         when: on_fail
     - run:
-        name: Spool logs
-        command: find . -type f -name "system.log" -exec cat {} \;
+        name: List logs
+        command: find . -type f -name "system.log"
         when: on_fail
     - run:
         name: Spool itest logs 
