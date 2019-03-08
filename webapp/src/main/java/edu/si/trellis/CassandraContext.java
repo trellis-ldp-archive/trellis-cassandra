@@ -109,6 +109,36 @@ public class CassandraContext {
         return rdfWriteConsistency;
     }
 
+    @Inject
+    @Config(value = { "cassandra.connectionTimeout", "CASSANDRA_CONNECTION_TIMEOUT" }, defaultValue = "5000")
+    private int connectTimeoutMillis;
+
+    @Inject
+    @Config(value = { "cassandra.readTimeout", "CASSANDRA_READ_TIMEOUT" }, defaultValue = "12000")
+    private int readTimeoutMillis;
+
+    /**
+     * The timeout for making a connection to Cassandra, in ms. *
+     * 
+     * @see SocketOptions#setReadTimeoutMillis(int)
+     */
+    @Produces
+    @ConnectionTimeout
+    private int connectTimeoutMillis() {
+        return connectTimeoutMillis;
+    }
+
+    /**
+     * The timeout for reading from a connection to Cassandra, in ms.
+     * 
+     * @see SocketOptions#setConnectTimeoutMillis(int)
+     */
+    @Produces
+    @ReadTimeout
+    private int readTimeoutMillis() {
+        return readTimeoutMillis;
+    }
+
     private Cluster cluster;
 
     private Session session;
@@ -129,10 +159,13 @@ public class CassandraContext {
     @PostConstruct
     public void connect() {
         log.info("Using Cassandra node address: {} and port: {}", contactAddress, contactPort);
+        log.info("Using connection timeout: {} and read timeout: { in ms.}", connectTimeoutMillis, readTimeoutMillis);
         log.debug("Looking for connection...");
+        SocketOptions socketOptions = new SocketOptions().setConnectTimeoutMillis(connectTimeoutMillis)
+                        .setReadTimeoutMillis(readTimeoutMillis);
         this.cluster = Cluster.builder().withTimestampGenerator(new AtomicMonotonicTimestampGenerator())
                         .withoutJMXReporting().withoutMetrics().addContactPoint(contactAddress)
-                        .withPort(parseInt(contactPort)).build();
+                        .withPort(parseInt(contactPort)).withSocketOptions(socketOptions).build();
         if (log.isDebugEnabled()) cluster.register(QueryLogger.builder().build());
         cluster.getConfiguration().getCodecRegistry().register(STANDARD_CODECS);
         Timer connector = new Timer("Cassandra Connection Maker", true);
