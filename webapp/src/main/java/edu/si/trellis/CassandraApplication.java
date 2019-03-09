@@ -42,11 +42,11 @@ public class CassandraApplication extends Application {
     @Inject
     private CassandraServiceBundler services;
 
-    @Config(value = { "configurationFile", "TRELLIS_CONFIG_FILE" })
+    @Config(key = "configurationFile", alternateKeys = { "TRELLIS_CONFIG_FILE" })
     private Optional<File> additionalConfigFile;
 
     @Inject
-    @Config(value = { "configurationUrl", "TRELLIS_CONFIG_URL" })
+    @Config(key = "configurationUrl", alternateKeys = { "TRELLIS_CONFIG_URL" })
     private Optional<URL> additionalConfigUrl;
 
     /**
