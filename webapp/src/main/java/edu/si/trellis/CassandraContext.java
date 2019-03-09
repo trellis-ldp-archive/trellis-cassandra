@@ -37,31 +37,31 @@ public class CassandraContext {
     private static final Logger log = getLogger(CassandraContext.class);
 
     @Inject
-    @Config(value = { "cassandra.contactPort", "CASSANDRA_CONTACT_PORT" }, defaultValue = "9042")
+    @Config(key = "cassandra.contactPort", alternateKeys = { "CASSANDRA_CONTACT_PORT" }, defaultValue = "9042")
     private String contactPort;
 
     @Inject
-    @Config(value = { "cassandra.contactAddress", "CASSANDRA_CONTACT_ADDRESS" }, defaultValue = "localhost")
+    @Config(key = "cassandra.contactAddress", alternateKeys = { "CASSANDRA_CONTACT_ADDRESS" }, defaultValue = "localhost")
     private String contactAddress;
 
     @Inject
-    @Config(value = { "cassandra.maxChunkSize", "CASSANDRA_MAX_CHUNK_SIZE" }, defaultValue = "1048576")
+    @Config(key = "cassandra.maxChunkSize", alternateKeys = { "CASSANDRA_MAX_CHUNK_SIZE" }, defaultValue = "1048576")
     private String defaultChunkSize;
 
     @Inject
-    @Config(value = { "cassandra.binaryReadConsistency", "CASSANDRA_BINARY_READ_CONSISTENCY" }, defaultValue = "ONE")
+    @Config(key = "cassandra.binaryReadConsistency", alternateKeys = { "CASSANDRA_BINARY_READ_CONSISTENCY" }, defaultValue = "ONE")
     private ConsistencyLevel binaryReadConsistency;
 
     @Inject
-    @Config(value = { "cassandra.binaryWriteConsistency", "CASSANDRA_BINARY_WRITE_CONSISTENCY" }, defaultValue = "ONE")
+    @Config(key = "cassandra.binaryWriteConsistency", alternateKeys = { "CASSANDRA_BINARY_WRITE_CONSISTENCY" }, defaultValue = "ONE")
     private ConsistencyLevel binaryWriteConsistency;
 
     @Inject
-    @Config(value = { "cassandra.rdfReadConsistency", "CASSANDRA_RDF_READ_CONSISTENCY" }, defaultValue = "ONE")
+    @Config(key = "cassandra.rdfReadConsistency", alternateKeys = { "CASSANDRA_RDF_READ_CONSISTENCY" }, defaultValue = "ONE")
     private ConsistencyLevel rdfReadConsistency;
 
     @Inject
-    @Config(value = { "cassandra.rdfWriteConsistency", "CASSANDRA_RDF_WRITE_CONSISTENCY" }, defaultValue = "ONE")
+    @Config(key = "cassandra.rdfWriteConsistency", alternateKeys = { "CASSANDRA_RDF_WRITE_CONSISTENCY" }, defaultValue = "ONE")
     private ConsistencyLevel rdfWriteConsistency;
 
     /**
