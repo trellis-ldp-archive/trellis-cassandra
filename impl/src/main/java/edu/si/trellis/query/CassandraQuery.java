@@ -58,7 +58,8 @@ public abstract class CassandraQuery {
         if (log.isDebugEnabled()) {
             for (Definition defn : prepStatement.getVariables()) {
                 String name = defn.getName();
-                String loggableValue = statement.getObject(name).toString();
+                Object rawValue = statement.isNull(name) ? "null" : statement.getObject(name);
+                String loggableValue = rawValue.toString();
                 int loggableLength = Math.min(MAX_LOGGED_VALUE_LENGTH, loggableValue.length());
                 String loggedValue = loggableValue.substring(0, loggableLength);
                 log.debug("{} : {}", name, loggedValue);
