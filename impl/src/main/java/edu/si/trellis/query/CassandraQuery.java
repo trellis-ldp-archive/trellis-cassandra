@@ -4,7 +4,6 @@ import static java.util.concurrent.Executors.newCachedThreadPool;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import com.datastax.driver.core.*;
-import com.datastax.driver.core.ColumnDefinitions.Definition;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import java.util.concurrent.CompletableFuture;
@@ -18,8 +17,6 @@ import org.slf4j.Logger;
  *
  */
 public abstract class CassandraQuery {
-
-    private static final int MAX_LOGGED_VALUE_LENGTH = 20;
 
     private static final Logger log = getLogger(CassandraQuery.class);
 
@@ -52,19 +49,8 @@ public abstract class CassandraQuery {
     }
 
     protected CompletableFuture<Void> executeWrite(BoundStatement statement) {
-        PreparedStatement prepStatement = statement.preparedStatement();
-        String queryString = prepStatement.getQueryString();
-        log.debug("Executing CQL write: {}\n with bound values:", queryString);
-        if (log.isDebugEnabled()) {
-            for (Definition defn : prepStatement.getVariables()) {
-                String name = defn.getName();
-                Object rawValue = statement.isNull(name) ? "null" : statement.getObject(name);
-                String loggableValue = rawValue.toString();
-                int loggableLength = Math.min(MAX_LOGGED_VALUE_LENGTH, loggableValue.length());
-                String loggedValue = loggableValue.substring(0, loggableLength);
-                log.debug("{} : {}", name, loggedValue);
-            }
-        }
+        String queryString = statement.preparedStatement().getQueryString();
+        log.debug("Executing CQL write: {}", queryString);
         return translate(session.executeAsync(statement), writeWorkers)
                         .thenAccept(r -> log.debug("Executed CQL write: {}", queryString));
     }
