@@ -48,7 +48,7 @@ jobs:
           find . -type f -regex ".*/target/failsafe-reports/.*txt" -exec cp {} ~/junit/ \;
         when: always
     - run: 
-        name: upload Sonar info
+        name: Upload Sonar info
         command: mvn sonar:sonar -Dsonar.login=$SONAR_LOGIN
         when: on_success
     - run:
@@ -56,8 +56,8 @@ jobs:
         command: find ~/junit -name *.txt | xargs cat
         when: on_fail
     - run:
-        name: List logs
-        command: find . -type f -name "system.log"
+        name: Spool logs
+        command: find . -type f -name "system.log" | xargs cat
         when: on_fail
     - run:
         name: Spool itest logs 
@@ -66,9 +66,7 @@ jobs:
     - store_test_results:
         path: ~/junit
     - store_artifacts:
-        path: ~/junit 
-    - run:
-        name: Spool test results 
-        command: find ~/junit -name *.txt | xargs cat
+        path: ~/junit
+
 
 
