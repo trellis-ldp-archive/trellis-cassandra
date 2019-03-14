@@ -49,7 +49,7 @@ abstract class BinaryReadQuery extends CassandraQuery {
                         .mapToInt(r -> r.getInt("chunkIndex"))
                         .mapToObj(chunkIndex -> readChunkStatement.bind()
                                             .setInt("chunkIndex", chunkIndex)
-                                            .set("identifier",id, IRI.class))
+                                            .set("identifier", id, IRI.class))
                         .peek(chunkIndex -> log.debug("Retrieving stream for chunk: {}", chunkIndex))
                         .<InputStream> map(s -> new LazyChunkInputStream(session, s))
                         .reduce(SequenceInputStream::new) // chunks now in one large stream
