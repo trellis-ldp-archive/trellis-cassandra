@@ -72,6 +72,7 @@ public abstract class CassandraQuery {
                 result.completeExceptionally(e);
                 Thread.currentThread().interrupt();
             } catch (ExecutionException e) {
+                log.error(e.getLocalizedMessage(), e);
                 result.completeExceptionally(e.getCause());
             }
         }, workers);
