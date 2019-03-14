@@ -11,10 +11,10 @@ import java.io.InputStream;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
 
-public class ReadQueryTest {
+class ReadQueryTest {
 
     @Test
-    public void shouldConcatStreams() throws IOException {
+    void shouldConcatStreams() throws IOException {
         try (InputStream one = new ByteArrayInputStream("one".getBytes(UTF_8));
              InputStream two = new ByteArrayInputStream("two".getBytes(UTF_8));
              SequenceInputStream stream = new SequenceInputStream(one, two)) {
@@ -24,7 +24,7 @@ public class ReadQueryTest {
     }
 
     @Test
-    public void shouldSkipAcrossStreams() throws IOException {
+    void shouldSkipAcrossStreams() throws IOException {
         try (InputStream one = new ByteArrayInputStream("onetwothree".getBytes(UTF_8));
              InputStream two = new ByteArrayInputStream("fourfivesix".getBytes(UTF_8));
              SequenceInputStream stream = new SequenceInputStream(one, two)) {
@@ -35,7 +35,7 @@ public class ReadQueryTest {
     }
 
     @Test
-    public void shouldReadAcrossStreams() throws IOException {
+    void shouldReadAcrossStreams() throws IOException {
         try (InputStream one = new ByteArrayInputStream("onetwothree".getBytes(UTF_8));
              InputStream two = new ByteArrayInputStream("fourfivesix".getBytes(UTF_8));
              SequenceInputStream stream = new SequenceInputStream(one, two);
@@ -51,7 +51,7 @@ public class ReadQueryTest {
     }
 
     @Test
-    public void shouldFulfillSkipContractEdges() throws IOException {
+    void shouldFulfillSkipContractEdges() throws IOException {
         try (InputStream one = new ByteArrayInputStream("onetwothree".getBytes(UTF_8));
              InputStream two = new ByteArrayInputStream("fourfivesix".getBytes(UTF_8));
              SequenceInputStream stream = new SequenceInputStream(one, two)) {
@@ -61,7 +61,7 @@ public class ReadQueryTest {
     }
 
     @Test
-    public void shouldFulfillReadContractEdges1() throws IOException {
+    void shouldFulfillReadContractEdges1() throws IOException {
         try (InputStream one = new ByteArrayInputStream("onetwothree".getBytes(UTF_8));
              InputStream two = new ByteArrayInputStream("fourfivesix".getBytes(UTF_8));
              SequenceInputStream stream = new SequenceInputStream(one, two)) {
@@ -70,7 +70,7 @@ public class ReadQueryTest {
     }
 
     @Test
-    public void shouldFulfillReadContractEdges2() throws IOException {
+    void shouldFulfillReadContractEdges2() throws IOException {
         try (InputStream one = new ByteArrayInputStream("onetwothree".getBytes(UTF_8));
              InputStream two = new ByteArrayInputStream("fourfivesix".getBytes(UTF_8));
              SequenceInputStream stream = new SequenceInputStream(one, two)) {
@@ -79,7 +79,7 @@ public class ReadQueryTest {
     }
 
     @Test
-    public void shouldFulfillReadContractEdges3() throws IOException {
+    void shouldFulfillReadContractEdges3() throws IOException {
 
         try (InputStream one = new ByteArrayInputStream("onetwothree".getBytes(UTF_8));
              InputStream two = new ByteArrayInputStream("fourfivesix".getBytes(UTF_8));
@@ -89,7 +89,7 @@ public class ReadQueryTest {
     }
 
     @Test
-    public void shouldFulfillReadContractEdges4() throws IOException {
+    void shouldFulfillReadContractEdges4() throws IOException {
 
         try (InputStream one = new ByteArrayInputStream("onetwothree".getBytes(UTF_8));
              InputStream two = new ByteArrayInputStream("fourfivesix".getBytes(UTF_8));

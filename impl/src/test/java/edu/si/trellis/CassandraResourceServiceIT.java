@@ -1,5 +1,6 @@
 package edu.si.trellis;
 
+import static java.lang.Boolean.TRUE;
 import static org.awaitility.Awaitility.await;
 import static org.awaitility.Duration.TWO_SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -19,10 +20,10 @@ import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.test.ResourceServiceTests;
 
-public class CassandraResourceServiceIT extends CassandraServiceIT implements ResourceServiceTests {
+class CassandraResourceServiceIT extends CassandraServiceIT implements ResourceServiceTests {
 
     @Test
-    public void basicActions() throws InterruptedException, ExecutionException {
+    void basicActions() throws InterruptedException, ExecutionException {
         IRI id = createIRI("http://example.com/id/foo");
         IRI container = createIRI("http://example.com/id");
         IRI ixnModel = createIRI("http://example.com/ixnModel");
@@ -57,7 +58,7 @@ public class CassandraResourceServiceIT extends CassandraServiceIT implements Re
     }
 
     @Test
-    public void mementos() throws InterruptedException, ExecutionException {
+    void mementos() throws InterruptedException, ExecutionException {
         IRI id = createIRI("http://example.com/id/foo2");
         IRI ixnModel = createIRI("http://example.com/ixnModel2");
         @SuppressWarnings("resource")
@@ -68,11 +69,11 @@ public class CassandraResourceServiceIT extends CassandraServiceIT implements Re
         // build resource
         Metadata meta = builder(id).interactionModel(ixnModel).build();
         connection.resourceService.create(meta, quads).get();
-        
+
         SortedSet<Instant> mementos = connection.resourceService.mementos(id).get();
         assertEquals(1, mementos.size());
         waitTwoSeconds();
-        
+
         // again
         connection.resourceService.replace(meta, quads).get();
 
@@ -81,7 +82,7 @@ public class CassandraResourceServiceIT extends CassandraServiceIT implements Re
     }
 
     private void waitTwoSeconds() {
-        await().pollDelay(TWO_SECONDS).until(() -> true);
+        await().pollDelay(TWO_SECONDS).until(() -> TRUE);
     }
 
     private IRI createIRI(String iri) {

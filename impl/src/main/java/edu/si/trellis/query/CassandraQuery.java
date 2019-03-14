@@ -45,7 +45,7 @@ public abstract class CassandraQuery {
      */
     public CassandraQuery(Session session, String queryString, ConsistencyLevel consistency) {
         this.session = session;
-        preparedStatement = session.prepare(queryString).setConsistencyLevel(consistency);
+        this.preparedStatement = session.prepare(queryString).setConsistencyLevel(consistency);
     }
 
     protected CompletableFuture<Void> executeWrite(BoundStatement statement) {

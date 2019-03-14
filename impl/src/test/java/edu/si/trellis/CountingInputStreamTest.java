@@ -15,13 +15,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 @SuppressWarnings("resource")
-public class CountingInputStreamTest {
+class CountingInputStreamTest {
 
     @Mock
     private InputStream mockInputStream;
 
     @Test
-    public void doNotPassClose() throws IOException {
+    void doNotPassClose() throws IOException {
         new NoopCloseCountingInputStream(mockInputStream).close();
         verify(mockInputStream, never()).close();
     }

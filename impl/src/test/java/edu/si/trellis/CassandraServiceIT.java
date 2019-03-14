@@ -4,7 +4,7 @@ import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.simple.SimpleRDF;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class CassandraServiceIT {
+class CassandraServiceIT {
 
     protected RDF rdfFactory = new SimpleRDF();
     

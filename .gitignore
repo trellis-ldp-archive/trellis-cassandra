@@ -5,4 +5,4 @@ target/
 .DS_Store
 /bin/
 project.build.directory_IS_UNDEFINED/
-
+logs/

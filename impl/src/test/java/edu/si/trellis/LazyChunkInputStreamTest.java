@@ -23,8 +23,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings("resource")
-public class LazyChunkInputStreamTest {
+class LazyChunkInputStreamTest {
 
     @Mock
     private Session mockSession;
@@ -46,7 +45,7 @@ public class LazyChunkInputStreamTest {
     private int off = 0, len = 0, n = 0, readlimit = 0;
 
     @Test
-    public void badQuery() {
+    void badQuery() {
         RuntimeException e = new RuntimeException("Expected");
         when(mockSession.execute(mockQuery)).thenThrow(e);
         try (LazyChunkInputStream testLazyChunkInputStream = new LazyChunkInputStream(mockSession, mockQuery)) {
@@ -57,7 +56,7 @@ public class LazyChunkInputStreamTest {
     }
 
     @Test
-    public void noData() {
+    void noData() {
         when(mockSession.execute(mockQuery)).thenReturn(mockResultSet);
         when(mockResultSet.one()).thenReturn(null);
 
@@ -70,7 +69,7 @@ public class LazyChunkInputStreamTest {
     }
 
     @Test
-    public void normalOperation() throws IOException {
+    void normalOperation() throws IOException {
         when(mockSession.execute(mockQuery)).thenReturn(mockResultSet);
         when(mockResultSet.one()).thenReturn(mockRow);
         when(mockRow.get("chunk", InputStream.class)).thenReturn(mockInputStream);

@@ -18,9 +18,9 @@ import org.apache.commons.rdf.api.Quad;
  * A query for use by individual resources to retrieve their contents.
  *
  */
-public abstract class ResourceQuery extends CassandraQuery {
+abstract class ResourceQuery extends CassandraQuery {
 
-    public ResourceQuery(Session session, String queryString, ConsistencyLevel consistency) {
+    ResourceQuery(Session session, String queryString, ConsistencyLevel consistency) {
         super(session, queryString, consistency);
     }
 

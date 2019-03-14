@@ -14,38 +14,38 @@ import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.simple.SimpleRDF;
 import org.junit.jupiter.api.Test;
 
-public class IRICodecTest {
+class IRICodecTest {
 
     RDF rdf = new SimpleRDF();
 
     @Test
-    public void badParse() {
+    void badParse() {
         assertThrows(InvalidTypeException.class, () -> iriCodec.parse("SGDF   &&$$$dfshgou;sdfhgoudfhogh"));
     }
 
     @Test
-    public void testParse() {
+    void testParse() {
         IRI iri = rdf.createIRI("http://example.com");
         String fieldForm = iri.getIRIString();
         assertEquals(iri, iriCodec.parse(fieldForm));
     }
 
     @Test
-    public void testFormat() {
+    void testFormat() {
         IRI iri = rdf.createIRI("http://example.com");
         String fieldForm = iri.getIRIString();
         assertEquals(fieldForm, iriCodec.format(iri));
     }
 
     @Test
-    public void testDeserialize() {
+    void testDeserialize() {
         IRI iri = rdf.createIRI("http://example.com");
         ByteBuffer fieldForm = ByteBuffer.wrap(iri.getIRIString().getBytes(UTF_8));
         assertEquals(iri, iriCodec.deserialize(fieldForm, null));
     }
 
     @Test
-    public void nullForNull() {
+    void nullForNull() {
         assertEquals(null, iriCodec.parse(null));
         assertEquals(null, iriCodec.format(null));
         assertEquals(null, iriCodec.serialize(null, null));

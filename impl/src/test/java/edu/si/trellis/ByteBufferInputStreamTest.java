@@ -13,9 +13,10 @@ import java.nio.ByteBuffer;
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("resource")
-public class ByteBufferInputStreamTest {
+class ByteBufferInputStreamTest {
 
     private final byte[] testByteArray = new byte[] { 1, 2, 3, 4, 3, 2, 1 };
+
     private final ByteBuffer testData = ByteBuffer.wrap(testByteArray);
 
     private ByteBuffer testData() {
@@ -23,7 +24,7 @@ public class ByteBufferInputStreamTest {
     }
 
     @Test
-    public void cantResetBeyondLimit() throws IOException {
+    void cantResetBeyondLimit() throws IOException {
         ByteBufferInputStream stream = new ByteBufferInputStream(testData());
         stream.mark(3);
         stream.read(new byte[8]);
@@ -31,19 +32,19 @@ public class ByteBufferInputStreamTest {
     }
 
     @Test
-    public void availableWorks() {
+    void availableWorks() {
         ByteBufferInputStream stream = new ByteBufferInputStream(testData());
         assertEquals(7, stream.available());
     }
 
     @Test
-    public void supportsMark() {
+    void supportsMark() {
         ByteBufferInputStream stream = new ByteBufferInputStream(testData());
         assertTrue(stream.markSupported());
     }
 
     @Test
-    public void noMarkMeansResetTo0() throws IOException {
+    void noMarkMeansResetTo0() throws IOException {
         ByteBufferInputStream stream = new ByteBufferInputStream(testData());
         byte[] answer = new byte[testByteArray.length];
         stream.read(new byte[3]);
@@ -53,14 +54,14 @@ public class ByteBufferInputStreamTest {
     }
 
     @Test
-    public void noBytesMeansNoBytes() throws IOException {
+    void noBytesMeansNoBytes() throws IOException {
         ByteBufferInputStream stream = new ByteBufferInputStream(ByteBuffer.allocate(0));
         assertEquals(-1, stream.read());
         assertEquals(-1, stream.read(new byte[10]));
     }
 
     @Test
-    public void skipWorks() throws IOException {
+    void skipWorks() throws IOException {
         ByteBufferInputStream stream = new ByteBufferInputStream(testData());
         byte[] answer = new byte[testByteArray.length];
         stream.skip(3);
@@ -68,8 +69,9 @@ public class ByteBufferInputStreamTest {
     }
 
     @Test
-    public void readWorks() {
+    void readWorks() {
         ByteBufferInputStream stream = new ByteBufferInputStream(testData());
-        for (int i : testByteArray) assertEquals(i, stream.read());
+        for (int i : testByteArray)
+            assertEquals(i, stream.read());
     }
 }

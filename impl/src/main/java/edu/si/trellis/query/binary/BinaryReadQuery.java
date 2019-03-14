@@ -32,7 +32,7 @@ abstract class BinaryReadQuery extends CassandraQuery {
 
     private final PreparedStatement readChunkStatement;
 
-    public BinaryReadQuery(Session session, String queryString, ConsistencyLevel consistency) {
+    BinaryReadQuery(Session session, String queryString, ConsistencyLevel consistency) {
         super(session, queryString, consistency);
         this.readChunkStatement = session.prepare(READ_CHUNK_QUERY);
     }
