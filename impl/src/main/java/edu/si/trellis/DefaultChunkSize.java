@@ -13,4 +13,10 @@ import javax.inject.Qualifier;
 @Documented
 @Retention(RUNTIME)
 @Qualifier
-public @interface DefaultChunkSize {}
+public @interface DefaultChunkSize {
+
+    /**
+     * Default chunk size to use.
+     */
+    public static final String value = "1048576";
+}

@@ -45,7 +45,8 @@ public class CassandraContext {
     private String contactAddress;
 
     @Inject
-    @Config(key = "cassandra.maxChunkSize", alternateKeys = { "CASSANDRA_MAX_CHUNK_SIZE" }, defaultValue = "1048576")
+    @Config(key = "cassandra.maxChunkSize", alternateKeys = {
+            "CASSANDRA_MAX_CHUNK_SIZE" }, defaultValue = DefaultChunkSize.value)
     private String defaultChunkSize;
 
     @Inject
