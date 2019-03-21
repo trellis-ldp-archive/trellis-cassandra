@@ -69,12 +69,15 @@ public class CassandraResourceService implements ResourceService, MementoService
     /**
      * Constructor.
      * 
-     * @param delete the {@link Delete} query to use
-     * @param get the {@link Get} query to use
-     * @param immutableInsert the {@link ImmutableInsert} query to use
-     * @param mutableInsert the {@link MutableInsert} query to use
-     * @param mementos the {@link Mementos} query to use
-     * @param touch the {@link Touch} query to use
+     * @param delete {@link Delete} query to use to delete resources
+     * @param get {@link Get} query to support retrieving content
+     * @param immutableInsert {@link ImmutableInsert} query to support storing immutable data
+     * @param mutableInsert {@link MutableInsert} query to support storing mutable data
+     * @param mementos {@link Mementos} query to support retrieving Mementos
+     * @param touch {@link Touch} query to support updating the value of {@link Resource#getModified()}
+     * @param mutableRetrieve {@link MutableRetrieve} to support retrieving content
+     * @param immutableRetrieve  {@link ImmutableRetrieve} to support retrieving content
+     * @param bcontainment  {@link BasicContainment} to support retrieving content
      */
     @Inject
     public CassandraResourceService(Delete delete, Get get, ImmutableInsert immutableInsert,
