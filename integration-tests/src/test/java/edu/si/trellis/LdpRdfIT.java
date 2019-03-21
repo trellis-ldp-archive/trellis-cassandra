@@ -5,7 +5,7 @@ import java.util.Set;
 
 import org.trellisldp.test.LdpRdfTests;
 
-public class LdpRdfIT extends IT implements LdpRdfTests {
+class LdpRdfIT extends IT implements LdpRdfTests {
 
     @Override
     public void testPatchRDF() {

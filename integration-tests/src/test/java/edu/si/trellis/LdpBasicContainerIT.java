@@ -2,7 +2,7 @@ package edu.si.trellis;
 
 import org.trellisldp.test.LdpBasicContainerTests;
 
-public class LdpBasicContainerIT extends IT implements LdpBasicContainerTests {
+class LdpBasicContainerIT extends IT implements LdpBasicContainerTests {
 
     private String container;
 

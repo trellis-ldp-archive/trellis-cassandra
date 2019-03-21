@@ -2,7 +2,7 @@ package edu.si.trellis;
 
 import org.trellisldp.test.MementoResourceTests;
 
-public class MementoResourceIT extends IT implements MementoResourceTests {
+class MementoResourceIT extends IT implements MementoResourceTests {
 
     @Override
     public void testMementoContent() {

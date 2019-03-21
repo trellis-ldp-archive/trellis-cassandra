@@ -122,18 +122,18 @@ class CassandraResource implements Resource {
         Stream<Quad> immutableQuads = immutable.execute(getIdentifier());
         Stream<Quad> quads = concat(mutableQuads, immutableQuads);
         if (isContainer) {
-            Stream<Quad> containmentQuadsInContainment = basicContainmentTriples().map(toQuad(PreferContainment));
-            Stream<Quad> containmentQuadsInMembership = basicContainmentTriples().map(toQuad(PreferMembership));
-            quads = concat(quads, concat(containmentQuadsInContainment, containmentQuadsInMembership));
+            Stream<Quad> quadsInContainment = basicRelationalTriples(contains).map(toQuad(PreferContainment));
+            Stream<Quad> quadsInMembership = basicRelationalTriples(member).map(toQuad(PreferMembership));
+            quads = concat(quads, concat(quadsInContainment, quadsInMembership));
         }
         return quads;
     }
 
-    private Stream<Triple> basicContainmentTriples() {
+    private Stream<Triple> basicRelationalTriples(IRI predicate) {
         RDF rdfFactory = TrellisUtils.getInstance();
-        final Spliterator<Row> rows = bcontainment.execute(getIdentifier()).spliterator();
+        Spliterator<Row> rows = bcontainment.execute(getIdentifier()).spliterator();
         Stream<IRI> contained = StreamSupport.stream(rows, false).map(r -> r.get("contained", IRI.class));
-        return contained.map(cont -> rdfFactory.createTriple(getIdentifier(), contains, cont))
-                        .peek(t -> log.trace("Built containment triple: {}", t));
+        return contained.map(cont -> rdfFactory.createTriple(getIdentifier(), predicate, cont))
+                        .peek(t -> log.trace("Built {} triple: {}", predicate.getIRIString(), t));
     }
 }
