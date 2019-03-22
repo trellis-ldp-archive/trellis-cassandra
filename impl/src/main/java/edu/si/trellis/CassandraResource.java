@@ -133,7 +133,7 @@ class CassandraResource implements Resource {
     private Stream<Triple> basicContainmentTriples() {
         RDF rdfFactory = TrellisUtils.getInstance();
         Spliterator<Row> rows = bcontainment.execute(getIdentifier()).spliterator();
-        Stream<IRI> contained = StreamSupport.stream(rows, false).map(r -> r.get("contained", IRI.class));
+        Stream<IRI> contained = StreamSupport.stream(rows, false).map(r -> r.get("contained", IRI.class)).distinct();
         return contained.map(cont -> rdfFactory.createTriple(getIdentifier(), contains, cont))
                         .peek(t -> log.trace("Built containment triple: {}", t));
     }
