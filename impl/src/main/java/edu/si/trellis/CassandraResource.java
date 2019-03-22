@@ -138,6 +138,12 @@ class CassandraResource implements Resource {
                         .peek(t -> log.trace("Built containment triple: {}", t));
     }
 
+    /**
+     * If there are mutable triples stored in the PreferContainment named graph, they will <i>not</i> be returned here.
+     * Our assumption is that no user will intentionally use that URI as a name for a graph.
+     *
+     * @see org.trellisldp.api.Resource#stream(org.apache.commons.rdf.api.IRI)
+     */
     @Override
     public Stream<Triple> stream(IRI graphName) {
         if (graphName.equals(PreferContainment)) return basicContainmentTriples();
