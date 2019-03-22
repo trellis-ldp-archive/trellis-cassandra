@@ -50,6 +50,8 @@ class CassandraResource implements Resource {
 
     private final BasicContainment bcontainment;
 
+    private final long createdMs;
+
     public CassandraResource(IRI id, IRI ixnModel, boolean hasAcl, IRI binaryIdentifier, String mimeType, IRI container,
                     Instant modified, UUID created, ImmutableRetrieve immutable, MutableRetrieve mutable,
                     BasicContainment bcontainment) {
@@ -65,6 +67,7 @@ class CassandraResource implements Resource {
         this.binary = isBinary ? builder(binaryIdentifier).mimeType(mimeType).build() : null;
         log.trace("Resource is {}a NonRDFSource.", !isBinary ? "not " : "");
         this.created = created;
+        this.createdMs = unixTimestamp(created);
         this.mutable = mutable;
         this.immutable = immutable;
         this.bcontainment = bcontainment;
@@ -117,13 +120,12 @@ class CassandraResource implements Resource {
     @Override
     public Stream<Quad> stream() {
         log.trace("Retrieving quad stream for resource {}", getIdentifier());
-        long createdMs = unixTimestamp(getCreated());
         Stream<Quad> mutableQuads = mutable.execute(getIdentifier(), createdMs);
         Stream<Quad> immutableQuads = immutable.execute(getIdentifier());
         Stream<Quad> quads = concat(mutableQuads, immutableQuads);
         if (isContainer) {
-            Stream<Quad> quadsInContainment = basicContainmentTriples().map(toQuad(PreferContainment));
-            quads = concat(quads, quadsInContainment);
+            Stream<Quad> containmentQuads = basicContainmentTriples().map(toQuad(PreferContainment));
+            quads = concat(quads, containmentQuads);
         }
         return quads;
     }
@@ -134,5 +136,11 @@ class CassandraResource implements Resource {
         Stream<IRI> contained = StreamSupport.stream(rows, false).map(r -> r.get("contained", IRI.class));
         return contained.map(cont -> rdfFactory.createTriple(getIdentifier(), contains, cont))
                         .peek(t -> log.trace("Built containment triple: {}", t));
+    }
+
+    @Override
+    public Stream<Triple> stream(IRI graphName) {
+        if (graphName.equals(PreferContainment)) return basicContainmentTriples();
+        return Resource.super.stream(graphName);
     }
 }
