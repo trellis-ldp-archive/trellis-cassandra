@@ -3,6 +3,7 @@ package edu.si.trellis;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.Buffer;
 
 /**
  * An {@link InputStream} that wraps a {@link ByteBuffer} to avoid copying byte arrays.
@@ -17,7 +18,10 @@ class ByteBufferInputStream extends InputStream {
     private int readLimit, readSinceMark;
 
     ByteBufferInputStream(ByteBuffer b) {
-        this.buffer = (ByteBuffer) b.mark();
+        // https://github.com/trellis-ldp/trellis-cassandra/issues/51#issuecomment-474970424
+        @SuppressWarnings("cast")
+        Buffer marked = (Buffer) b.mark();
+        this.buffer = (ByteBuffer) marked;
         this.readSinceMark = 0;
         this.readLimit = buffer.remaining();
     }
