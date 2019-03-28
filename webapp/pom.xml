@@ -97,6 +97,11 @@
     </dependency>
     <dependency>
       <groupId>org.trellisldp</groupId>
+      <artifactId>trellis-webdav</artifactId>
+      <version>${trellis.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.trellisldp</groupId>
       <artifactId>trellis-webac</artifactId>
       <version>${trellis.version}</version>
       <exclusions>

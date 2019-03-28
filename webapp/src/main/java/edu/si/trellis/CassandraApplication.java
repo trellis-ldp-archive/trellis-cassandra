@@ -28,6 +28,9 @@ import org.apache.tamaya.spi.PropertySource;
 import org.slf4j.Logger;
 import org.trellisldp.http.TrellisHttpFilter;
 import org.trellisldp.http.TrellisHttpResource;
+import org.trellisldp.webdav.TrellisWebDAV;
+import org.trellisldp.webdav.TrellisWebDAVRequestFilter;
+import org.trellisldp.webdav.TrellisWebDAVResponseFilter;
 
 /**
  * Basic JAX-RS {@link Application} to deploy Trellis with a Cassandra persistence implementation.
@@ -66,7 +69,7 @@ public class CassandraApplication extends Application {
         log(current().getProperties());
     }
 
-    private static <K,V> void log(Map<K, V> config) {
+    private static <K, V> void log(Map<K, V> config) {
         config.forEach((k, v) -> log.debug("{} : {}", k, v));
     }
 
@@ -92,6 +95,7 @@ public class CassandraApplication extends Application {
 
     @Override
     public Set<Object> getSingletons() {
-        return ImmutableSet.of(new TrellisHttpResource(services), new TrellisHttpFilter());
+        return ImmutableSet.of(new TrellisHttpResource(services), new TrellisHttpFilter(), new TrellisWebDAV(services),
+                        new TrellisWebDAVRequestFilter(services), new TrellisWebDAVResponseFilter());
     }
 }
