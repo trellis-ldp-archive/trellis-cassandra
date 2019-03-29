@@ -22,4 +22,3 @@ java:
     preferIPv4Stack: true
 resteasy:
   preferJacksonOverJsonB: false
-
