@@ -3,6 +3,7 @@ package edu.si.trellis;
 import static org.apache.tamaya.Configuration.current;
 import static org.apache.tamaya.Configuration.setCurrent;
 import static org.slf4j.LoggerFactory.getLogger;
+import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_PUT_UNCONTAINED;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -57,6 +58,8 @@ public class CassandraApplication extends Application {
      */
     @PostConstruct
     public void importAdditionalConfig() {
+        // we require contained PUT because we use the Trellis WebDAV module, which requires it
+        System.setProperty(CONFIG_HTTP_PUT_UNCONTAINED, "false");
         additionalConfigFile.map(this::toUrl).ifPresent(this::addConfig);
         additionalConfigUrl.ifPresent(this::addConfig);
         log.debug("Using system properties:");
