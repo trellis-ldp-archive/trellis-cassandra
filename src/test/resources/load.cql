@@ -22,5 +22,5 @@ CREATE TABLE IF NOT EXISTS binarydata (identifier text, size bigint, chunkSize i
 CREATE MATERIALIZED VIEW IF NOT EXISTS basiccontainment AS
        SELECT identifier, container, created FROM mutabledata
        WHERE identifier IS NOT NULL AND container IS NOT NULL AND created IS NOT NULL
-       PRIMARY KEY ((container), identifier, created);
+       PRIMARY KEY ((container, identifier), created);
 

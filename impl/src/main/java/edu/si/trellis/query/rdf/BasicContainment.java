@@ -17,8 +17,8 @@ public class BasicContainment extends ResourceQuery {
 
     @Inject
     public BasicContainment(Session session, @RdfReadConsistency ConsistencyLevel consistency) {
-        super(session, "SELECT identifier AS contained FROM " + BASIC_CONTAINMENT_TABLENAME
-                        + " WHERE container = :container ;", consistency);
+        super(session, "SELECT DISTINCT container, identifier AS contained FROM " + BASIC_CONTAINMENT_TABLENAME
+                        + " WHERE container = :container ALLOW FILTERING;", consistency);
     }
 
     /**
