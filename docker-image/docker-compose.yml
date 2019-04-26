@@ -1,0 +1,102 @@
+version: "3"
+# https://forums.docker.com/t/cassandra-on-docker-swarm/27923/3 - placement ideas
+# https://github.com/thelastpickle/docker-cassandra-bootstrap - monitoring/grafana, other docker details
+services:
+  trellis-cassandra:
+    image: trellisldp/trellis-cassandra:0.8.1-SNAPSHOT
+    ports:
+      - "10080:8080"
+    environment:
+      - CASSANDRA_CONTACT_ADDRESS="cassandra-1"
+      - CASSANDRA_CONTACT_PORT=9042
+      - CASSANDRA_MAX_CHUNK_SIZE=1048576
+      - CASSANDRA_BINARY_READ_CONSISTENCY="ONE"
+      - CASSANDRA_BINARY_WRITE_CONSISTENCY="ONE"
+      - TRELLIS_JMS_USE_QUEUE="false"
+      - TRELLIS_JMS_QUEUE_NAME="trellis"
+      - TRELLIS_JMS_URL="tcp://activemq:61616"
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        max_attempts: 20
+        window: 120s
+#    command: ["java", "--illegal-access=warn", "-jar", "/opt/trellis/trellis.jar", "server", "/opt/trellis/config.yml"]
+    links:
+      - cassandra-1
+      - cassandra-2
+      - cassandra-3
+      - activemq
+#      - cassandra-4
+    depends_on:
+      - cassandra-1
+      - cassandra-2
+      - cassandra-3
+      - activemq
+#      - cassandra-4
+    networks:
+      - trellis
+  activemq:
+    image: rmohr/activemq:latest
+    ports:
+      - "61616:61616"
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 20
+        window: 120s
+    networks:
+      - trellis
+  cassandra-1:
+    image: cassandra
+    environment:
+      CASSANDRA_BROADCAST_ADDRESS: cassandra-1
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        window: 120s
+    networks:
+      - trellis
+  cassandra-2:
+    image: cassandra
+    environment:
+      CASSANDRA_BROADCAST_ADDRESS: cassandra-2
+      CASSANDRA_SEEDS: cassandra-1
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        window: 120s
+    depends_on:
+      - cassandra-1
+    networks:
+      - trellis
+  cassandra-3:
+    image: cassandra
+    environment:
+      CASSANDRA_BROADCAST_ADDRESS: cassandra-3
+      CASSANDRA_SEEDS: cassandra-1
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        window: 120s
+    depends_on:
+      - cassandra-2
+    networks:
+      - trellis
+  cassandra-init:
+    image: trellisldp/trellis-cassandra-init:0.8.1-SNAPSHOT
+    depends_on:
+      - cassandra-3
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 30s
+    command: cqlsh cassandra-1 -f /load.cql
+    networks:
+      - trellis
+networks:
+  trellis:
