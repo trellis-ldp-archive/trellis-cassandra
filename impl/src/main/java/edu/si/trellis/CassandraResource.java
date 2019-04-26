@@ -139,7 +139,7 @@ class CassandraResource implements Resource {
     private Stream<Quad> basicContainmentQuads() {
         Spliterator<Row> rows = bcontainment.execute(getIdentifier()).spliterator();
         Stream<IRI> contained = StreamSupport.stream(rows, false).map(r -> r.get("contained", IRI.class));
-        return contained.map(c -> rdfFactory.createQuad(PreferContainment, getIdentifier(), contains, c))
+        return contained.distinct().map(c -> rdfFactory.createQuad(PreferContainment, getIdentifier(), contains, c))
                         .peek(t -> log.trace("Built containment quad: {}", t));
     }
     
