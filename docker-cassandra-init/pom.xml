@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>edu.si.trellis</groupId>
+    <artifactId>trellis-cassandra</artifactId>
+    <version>0.8.1-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>docker-cassandra-init</artifactId>
+  <packaging>jar</packaging>
+
+  <name>Trellis/Cassandra Cassandra Init Image</name>
+  <description>Cassandra application container image used to initialize Trellis/Cassandra schema for persistence in a Docker Compose environment.</description>
+
+  <properties>
+    <jandex.version>2.0.5.Final</jandex.version>
+    <cassandra.contactAddress>localhost</cassandra.contactAddress>
+    <git-commit-id-plugin.version>2.2.5</git-commit-id-plugin.version>
+    <docker-maven-version>1.2.0</docker-maven-version>
+  </properties>
+
+  <!-- Configuration -->
+
+  <!-- Builds a Docker image around the Thorntail hollow runtime jar and webapp war file.
+    The git-commit-id-plugin is used to obtain git commit id and url from the local
+    repository. The values are added to the project build context and later used as
+    Docker build arguments. In the Dockerfile the values are recorded as image labels.
+    The git information will be used to support traceability in performance testing. -->
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>pl.project13.maven</groupId>
+        <artifactId>git-commit-id-plugin</artifactId>
+        <version>${git-commit-id-plugin.version}</version>
+        <executions>
+          <execution>
+            <id>get-the-git-infos</id>
+            <goals>
+              <goal>revision</goal>
+            </goals>
+            <phase>validate</phase>
+          </execution>
+        </executions>
+        <configuration>
+          <dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>com.spotify</groupId>
+        <artifactId>docker-maven-plugin</artifactId>
+        <version>${docker-maven-version}</version>
+        <executions>
+          <execution>
+            <id>default</id>
+            <phase>package</phase>
+            <goals>
+              <goal>build</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <dockerDirectory>${project.basedir}/docker</dockerDirectory>
+          <imageName>trellisldp/trellis-cassandra-init:${project.version}</imageName>
+          <resources>
+            <resource>
+              <directory>${project.parent.basedir}/src/test/resources</directory>
+              <include>load.cql</include>
+            </resource>
+          </resources>
+          <dockerBuildArgs>
+            <GIT_ORIGIN_REMOTE_URL>${git.remote.origin.url}</GIT_ORIGIN_REMOTE_URL>
+            <GIT_COMMIT_ID_DESCRIBE>${git.commit.id.describe}</GIT_COMMIT_ID_DESCRIBE>
+          </dockerBuildArgs>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>javax.activation</groupId>
+            <artifactId>activation</artifactId>
+            <version>1.1.1</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+    </plugins>
+  </build>
+</project>

@@ -16,12 +16,13 @@
     </license>
   </licenses>
 
-  <modules>
+  <!-- <modules>
     <module>impl</module>
     <module>webapp</module>
     <module>integration-tests</module>
-  </modules>
-
+    <module>docker-image</module>
+    <module>docker-cassandra-init</module>
+  </modules> -->
   <scm>
     <url>git@github.com:trellis-ldp/trellis-cassandra.git</url>
   </scm>
@@ -40,7 +41,7 @@
 
     <cassandra.test.version>3.11.3</cassandra.test.version>
     <cassandra.driver.version>3.6.0</cassandra.driver.version>
-    <jena.version>3.10.0</jena.version>
+    <jena.version>3.11.0</jena.version>
     <commons.rdf.version>0.5.0</commons.rdf.version>
     <thorntail.version>2.3.0.Final</thorntail.version>
     <tamaya.version>0.4-incubating-SNAPSHOT</tamaya.version>
@@ -462,6 +463,11 @@
       <activation>
         <activeByDefault>true</activeByDefault>
       </activation>
+      <modules>
+          <module>impl</module>
+          <module>webapp</module>
+          <module>integration-tests</module>
+      </modules>
       <properties>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <sonar.language>java</sonar.language>
@@ -473,6 +479,16 @@
         <sonar.jacoco.reportPaths>${jacoco.destFile}</sonar.jacoco.reportPaths>
         <sonar.organization>trellis-ldp</sonar.organization>
       </properties>
+    </profile>
+    <profile>
+         <id>docker</id>
+         <modules>
+           <module>impl</module>
+           <module>webapp</module>
+           <module>integration-tests</module>
+           <module>docker-image</module>
+           <module>docker-cassandra-init</module>
+         </modules>
     </profile>
   </profiles>
 </project>
