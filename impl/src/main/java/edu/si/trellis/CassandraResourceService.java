@@ -65,15 +65,15 @@ public class CassandraResourceService implements ResourceService {
 
     private final ImmutableInsert immutableInsert;
 
-    final MutableInsert mutableInsert;
+    private final MutableInsert mutableInsert;
 
     private final Touch touch;
 
-    protected final BasicContainment bcontainment;
+    private final BasicContainment bcontainment;
 
-    protected final MutableRetrieve mutableRetrieve;
+    private final MutableRetrieve mutableRetrieve;
 
-    protected final ImmutableRetrieve immutableRetrieve;
+    private final ImmutableRetrieve immutableRetrieve;
 
     /**
      * Constructor.
@@ -195,7 +195,7 @@ public class CassandraResourceService implements ResourceService {
                         immutableRetrieve, mutableRetrieve, bcontainment);
     }
 
-    protected CompletionStage<Void> write(Metadata meta, Dataset data) {
+    private CompletionStage<Void> write(Metadata meta, Dataset data) {
         IRI id = meta.getIdentifier();
         IRI ixnModel = meta.getInteractionModel();
         IRI container = meta.getContainer().orElse(null);

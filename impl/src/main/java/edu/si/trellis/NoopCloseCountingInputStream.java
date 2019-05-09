@@ -8,6 +8,9 @@ import java.io.InputStream;
  */
 public class NoopCloseCountingInputStream extends org.apache.commons.io.input.CountingInputStream {
 
+    /**
+     * @param in the {@link InputStream} to wrap
+     */
     public NoopCloseCountingInputStream(InputStream in) {
         super(in);
     }

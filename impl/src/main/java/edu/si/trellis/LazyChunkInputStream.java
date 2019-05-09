@@ -22,6 +22,10 @@ public class LazyChunkInputStream extends LazyFilterInputStream {
 
     private final Statement query;
 
+    /**
+     * @param session The Cassandra session to use
+     * @param query the CQL query to use
+     */
     public LazyChunkInputStream(Session session, Statement query) {
         this.session = session;
         this.query = query;

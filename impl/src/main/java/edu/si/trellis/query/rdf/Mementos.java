@@ -5,8 +5,6 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 
 import edu.si.trellis.RdfReadConsistency;
-import edu.si.trellis.query.CassandraQuery;
-
 import java.util.concurrent.CompletableFuture;
 
 import javax.inject.Inject;
@@ -16,7 +14,7 @@ import org.apache.commons.rdf.api.IRI;
 /**
  * A query to retrieve a list of the Mementos of a resource.
  */
-public class Mementos extends CassandraQuery {
+public class Mementos extends ResourceQuery {
 
     @Inject
     public Mementos(Session session, @RdfReadConsistency ConsistencyLevel consistency) {

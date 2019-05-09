@@ -7,8 +7,6 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 
 import edu.si.trellis.BinaryReadConsistency;
-import edu.si.trellis.query.CassandraQuery;
-
 import java.util.concurrent.CompletableFuture;
 
 import javax.inject.Inject;
@@ -19,7 +17,7 @@ import org.apache.commons.rdf.api.IRI;
  * A query to retrieve the chunk size metadata for a binary.
  *
  */
-public class GetChunkSize extends CassandraQuery {
+public class GetChunkSize extends BinaryQuery {
 
     @Inject
     public GetChunkSize(Session session, @BinaryReadConsistency ConsistencyLevel consistency) {

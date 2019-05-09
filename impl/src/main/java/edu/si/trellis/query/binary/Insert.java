@@ -5,8 +5,6 @@ import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.Session;
 
 import edu.si.trellis.BinaryWriteConsistency;
-import edu.si.trellis.query.CassandraQuery;
-
 import java.io.InputStream;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -15,7 +13,10 @@ import javax.inject.Inject;
 
 import org.apache.commons.rdf.api.IRI;
 
-public class Insert extends CassandraQuery implements Executor {
+/**
+ * Insert binary data into a table.
+ */
+public class Insert extends BinaryQuery implements Executor {
 
     @Inject
     public Insert(Session session, @BinaryWriteConsistency ConsistencyLevel consistency) {

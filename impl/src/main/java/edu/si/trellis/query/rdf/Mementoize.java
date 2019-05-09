@@ -6,8 +6,6 @@ import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.Session;
 
 import edu.si.trellis.RdfWriteConsistency;
-import edu.si.trellis.query.CassandraQuery;
-
 import java.time.Instant;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -20,7 +18,7 @@ import org.apache.commons.rdf.api.IRI;
 /**
  * A query that records a version of a resource as a Memento.
  */
-public class Mementoize extends CassandraQuery {
+public class Mementoize extends ResourceQuery {
 
     @Inject
     public Mementoize(Session session, @RdfWriteConsistency ConsistencyLevel consistency) {
