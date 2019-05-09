@@ -23,14 +23,13 @@ public class MutableInsert extends CassandraQuery {
     @Inject
     public MutableInsert(Session session, @RdfWriteConsistency ConsistencyLevel consistency) {
         super(session, "INSERT INTO " + MUTABLE_TABLENAME
-                        + " (interactionModel, mimeType, createdSeconds, container, quads, modified, binaryIdentifier, created, identifier)"
-                        + " VALUES (?,?,?,?,?,?,?,?,?)", consistency);
+                        + " (interactionModel, mimeType, container, quads, modified, binaryIdentifier, created, identifier)"
+                        + " VALUES (?,?,?,?,?,?,?,?);", consistency);
     }
 
     /**
      * @param ixnModel an {@link IRI} for the interaction model for this resource
      * @param mimeType if this resource has a binary, the mimeType therefor
-     * @param createdSeconds the time at which this resource was created truncated to seconds (used to support Memento)
      * @param container if this resource has a container, the {@link IRI} therefor
      * @param data RDF for this resource
      * @param modified the time at which this resource was last modified
@@ -39,9 +38,9 @@ public class MutableInsert extends CassandraQuery {
      * @param id an {@link IRI} that identifies this resource
      * @return whether and when it has been inserted
      */
-    public CompletableFuture<Void> execute(IRI ixnModel, String mimeType, Instant createdSeconds, IRI container,
+    public CompletableFuture<Void> execute(IRI ixnModel, String mimeType, IRI container,
                     Dataset data, Instant modified, IRI binaryIdentifier, UUID creation, IRI id) {
-        return executeWrite(preparedStatement().bind(ixnModel, mimeType, createdSeconds, container, data, modified,
+        return executeWrite(preparedStatement().bind(ixnModel, mimeType, container, data, modified,
                         binaryIdentifier, creation, id));
     }
 }

@@ -1,14 +1,10 @@
 package edu.si.trellis;
 
-import static java.lang.Boolean.TRUE;
-import static org.awaitility.Awaitility.await;
-import static org.awaitility.Duration.TWO_SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.trellisldp.api.Metadata.builder;
 
 import java.time.Instant;
-import java.util.SortedSet;
 import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.rdf.api.Dataset;
@@ -34,13 +30,13 @@ class CassandraResourceServiceIT extends CassandraServiceIT implements ResourceS
 
         // build container
         Metadata meta = builder(container).interactionModel(ixnModel).container(null).build();
-        connection.resourceService.create(meta, null).get();
+        connection.resourceService.create(meta, null).toCompletableFuture().get();
 
         // build resource
         meta = builder(id).interactionModel(ixnModel).container(container).build();
-        connection.resourceService.create(meta, quads).get();
+        connection.resourceService.create(meta, quads).toCompletableFuture().get();
 
-        Resource resource = connection.resourceService.get(id).get();
+        Resource resource = connection.resourceService.get(id).toCompletableFuture().get();
         assertEquals(id, resource.getIdentifier());
         assertEquals(ixnModel, resource.getInteractionModel());
         assertEquals(container,
@@ -50,43 +46,11 @@ class CassandraResourceServiceIT extends CassandraServiceIT implements ResourceS
         assertEquals(quad, firstQuad);
 
         // touch container
-        Instant modified = connection.resourceService.get(container).get().getModified();
+        Instant modified = connection.resourceService.get(container).toCompletableFuture().get().getModified();
         waitTwoSeconds();
-        connection.resourceService.touch(container).get();
-        Instant newModified = connection.resourceService.get(container).get().getModified();
+        connection.resourceService.touch(container).toCompletableFuture().get();
+        Instant newModified = connection.resourceService.get(container).toCompletableFuture().get().getModified();
         assertTrue(modified.compareTo(newModified) < 0);
-    }
-
-    @Test
-    void mementos() throws InterruptedException, ExecutionException {
-        IRI id = createIRI("http://example.com/id/foo2");
-        IRI ixnModel = createIRI("http://example.com/ixnModel2");
-        @SuppressWarnings("resource")
-        Dataset quads = rdfFactory.createDataset();
-        Quad quad = rdfFactory.createQuad(id, ixnModel, id, ixnModel);
-        quads.add(quad);
-
-        // build resource
-        Metadata meta = builder(id).interactionModel(ixnModel).build();
-        connection.resourceService.create(meta, quads).get();
-
-        SortedSet<Instant> mementos = connection.resourceService.mementos(id).get();
-        assertEquals(1, mementos.size());
-        waitTwoSeconds();
-
-        // again
-        connection.resourceService.replace(meta, quads).get();
-
-        mementos = connection.resourceService.mementos(id).get();
-        assertEquals(2, mementos.size());
-    }
-
-    private void waitTwoSeconds() {
-        await().pollDelay(TWO_SECONDS).until(() -> TRUE);
-    }
-
-    private IRI createIRI(String iri) {
-        return rdfFactory.createIRI(iri);
     }
 
     @Override

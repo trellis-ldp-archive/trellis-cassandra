@@ -7,7 +7,6 @@ import com.datastax.driver.core.Session;
 import edu.si.trellis.RdfReadConsistency;
 import edu.si.trellis.query.CassandraQuery;
 
-import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 
 import javax.inject.Inject;
@@ -18,11 +17,10 @@ public class Get extends CassandraQuery {
 
     @Inject
     public Get(Session session, @RdfReadConsistency ConsistencyLevel consistency) {
-        super(session, "SELECT * FROM " + MUTABLE_TABLENAME + " WHERE identifier = ? AND "
-                        + "createdSeconds <= ? LIMIT 1 ALLOW FILTERING;", consistency);
+        super(session, "SELECT * FROM " + MUTABLE_TABLENAME + " WHERE identifier = ?;", consistency);
     }
 
-    public CompletableFuture<ResultSet> execute(IRI id, Instant time) {
-        return executeRead(preparedStatement().bind(id, time));
+    public CompletableFuture<ResultSet> execute(IRI id) {
+        return executeRead(preparedStatement().bind(id));
     }
 }

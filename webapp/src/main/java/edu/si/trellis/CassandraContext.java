@@ -134,7 +134,7 @@ public class CassandraContext {
         this.cluster = Cluster.builder().withTimestampGenerator(new AtomicMonotonicTimestampGenerator())
                         .withoutJMXReporting().withoutMetrics().addContactPoint(contactAddress)
                         .withPort(parseInt(contactPort)).build();
-        if (log.isDebugEnabled()) cluster.register(QueryLogger.builder().build());
+        if (log.isDebugEnabled()) cluster.register(QueryLogger.builder().withMaxParameterValueLength(1000).build());
         cluster.getConfiguration().getCodecRegistry().register(STANDARD_CODECS);
         Timer connector = new Timer("Cassandra Connection Maker", true);
         log.debug("Connecting to Cassandra...");

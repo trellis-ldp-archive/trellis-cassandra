@@ -13,6 +13,10 @@ import com.datastax.driver.extras.codecs.jdk8.InstantCodec;
 
 import edu.si.trellis.CassandraBinaryService;
 import edu.si.trellis.CassandraResourceService;
+import edu.si.trellis.query.rdf.GetMemento;
+import edu.si.trellis.query.rdf.MementoMutableRetrieve;
+import edu.si.trellis.query.rdf.Mementoize;
+import edu.si.trellis.query.rdf.Mementos;
 
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
@@ -22,8 +26,10 @@ import org.trellisldp.api.IdentifierService;
 
 class CassandraConnection implements AfterAllCallback, BeforeAllCallback {
 
-    private static final String[] CLEANOUT_QUERIES = new String[] { "TRUNCATE Metadata ; ", "TRUNCATE Mutabledata ; ",
-            "TRUNCATE Immutabledata ;", "TRUNCATE Binarydata ;" };
+    private static final String[] CLEANOUT_QUERIES = new String[] { "TRUNCATE metadata ; ", "TRUNCATE mutabledata ; ",
+            "TRUNCATE immutabledata ;", "TRUNCATE binarydata ;", "TRUNCATE mementodata ;" };
+
+    private static final ConsistencyLevel testConsistency = ONE;
 
     private static final Logger log = getLogger(CassandraConnection.class);
 
@@ -36,6 +42,8 @@ class CassandraConnection implements AfterAllCallback, BeforeAllCallback {
     CassandraResourceService resourceService;
 
     CassandraBinaryService binaryService;
+
+    CassandraMementoService mementoService;
 
     private static final String contactAddress = System.getProperty("cassandra.contactAddress", "localhost");
 
@@ -54,30 +62,33 @@ class CassandraConnection implements AfterAllCallback, BeforeAllCallback {
         QueryLogger queryLogger = QueryLogger.builder().build();
         cluster.register(queryLogger);
         this.session = cluster.connect("trellis");
-        ConsistencyLevel consistency = ONE;
         this.resourceService = new CassandraResourceService(new edu.si.trellis.query.rdf.Delete(session, ONE),
                         new edu.si.trellis.query.rdf.Get(session, ONE),
-                        new edu.si.trellis.query.rdf.ImmutableInsert(session, consistency),
-                        new edu.si.trellis.query.rdf.MutableInsert(session, consistency),
-                        new edu.si.trellis.query.rdf.Mementos(session, consistency),
-                        new edu.si.trellis.query.rdf.Touch(session, consistency),
-                        new edu.si.trellis.query.rdf.MutableRetrieve(session, consistency),
-                        new edu.si.trellis.query.rdf.ImmutableRetrieve(session, consistency),
-                        new edu.si.trellis.query.rdf.BasicContainment(session, consistency));
-        resourceService.initializeQueriesAndRoot();
+                        new edu.si.trellis.query.rdf.ImmutableInsert(session, testConsistency),
+                        new edu.si.trellis.query.rdf.MutableInsert(session, testConsistency),
+                        new edu.si.trellis.query.rdf.Touch(session, testConsistency),
+                        new edu.si.trellis.query.rdf.MutableRetrieve(session, testConsistency),
+                        new edu.si.trellis.query.rdf.ImmutableRetrieve(session, testConsistency),
+                        new edu.si.trellis.query.rdf.BasicContainment(session, testConsistency));
+        resourceService.initializeRoot();
+        this.mementoService = new CassandraMementoService(
+                        new Mementos(session, testConsistency),
+                        new Mementoize(session, testConsistency),
+                        new GetMemento(session, testConsistency),
+                        new MementoMutableRetrieve(session, testConsistency),
+                        new edu.si.trellis.query.rdf.ImmutableRetrieve(session, testConsistency));
         this.binaryService = new CassandraBinaryService((IdentifierService) null, 1024 * 1024,
-                        new edu.si.trellis.query.binary.Get(session, consistency),
-                        new edu.si.trellis.query.binary.Insert(session, consistency),
-                        new edu.si.trellis.query.binary.Delete(session, consistency),
-                        new edu.si.trellis.query.binary.Read(session, consistency),
-                        new edu.si.trellis.query.binary.ReadRange(session, consistency));
+                        new edu.si.trellis.query.binary.Get(session, testConsistency),
+                        new edu.si.trellis.query.binary.Insert(session, testConsistency),
+                        new edu.si.trellis.query.binary.Delete(session, testConsistency),
+                        new edu.si.trellis.query.binary.Read(session, testConsistency),
+                        new edu.si.trellis.query.binary.ReadRange(session, testConsistency));
         if (cleanBefore) cleanOut();
     }
 
     private void cleanOut() {
         log.info("Cleaning out test keyspace {}", keyspace);
-        for (String q : CLEANOUT_QUERIES)
-            session.execute(q);
+        for (String q : CLEANOUT_QUERIES) session.execute(q);
     }
 
     private CodecRegistry codecRegistry() {
