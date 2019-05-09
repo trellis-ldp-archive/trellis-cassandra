@@ -20,7 +20,8 @@ public class Touch extends CassandraQuery {
 
     @Inject
     public Touch(Session session, @RdfWriteConsistency ConsistencyLevel consistency) {
-        super(session, "UPDATE " + MUTABLE_TABLENAME + " SET modified=? WHERE identifier=?", consistency);
+        super(session, "UPDATE " + MUTABLE_TABLENAME + " SET modified=:modified WHERE identifier=:identifier",
+                        consistency);
     }
 
     /**
@@ -29,6 +30,8 @@ public class Touch extends CassandraQuery {
      * @return whether and when the modification succeeds
      */
     public CompletableFuture<Void> execute(Instant modified, IRI id) {
-        return executeWrite(preparedStatement().bind(modified, id));
+        return executeWrite(preparedStatement().bind()
+                        .set("modified", modified, Instant.class)
+                        .set("identifier", id, IRI.class));
     }
 }

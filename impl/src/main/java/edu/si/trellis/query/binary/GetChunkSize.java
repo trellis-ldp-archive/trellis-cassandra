@@ -19,10 +19,10 @@ import org.apache.commons.rdf.api.IRI;
  * A query to retrieve the chunk size metadata for a binary.
  *
  */
-public class Get extends CassandraQuery {
+public class GetChunkSize extends CassandraQuery {
 
     @Inject
-    public Get(Session session, @BinaryReadConsistency ConsistencyLevel consistency) {
+    public GetChunkSize(Session session, @BinaryReadConsistency ConsistencyLevel consistency) {
         super(session, "SELECT chunkSize FROM " + BINARY_TABLENAME + " WHERE identifier = :identifier LIMIT 1;",
                         consistency);
     }
@@ -32,7 +32,8 @@ public class Get extends CassandraQuery {
      * @return a {@link Row} with the chunk size for this binary
      */
     public CompletableFuture<Row> execute(IRI id) {
-        return executeRead(preparedStatement().bind(id)).thenApply(rows -> requireNonNull(rows.one(),
-                        () -> "Binary not found under IRI: " + id.getIRIString() + " !"));
+        return executeRead(preparedStatement().bind().set("identifier", id, IRI.class))
+                        .thenApply(rows -> requireNonNull(rows.one(),
+                                        () -> "Binary not found under IRI: " + id.getIRIString() + " !"));
     }
 }

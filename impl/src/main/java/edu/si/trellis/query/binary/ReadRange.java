@@ -35,7 +35,9 @@ public class ReadRange extends BinaryReadQuery {
      * @see BinaryReadQuery#retrieve(IRI, com.datastax.driver.core.Statement)
      */
     public InputStream execute(IRI id, int first, int last) {
-        BoundStatement bound = preparedStatement().bind().set("identifier", id, IRI.class).setInt("start", first)
+        BoundStatement bound = preparedStatement().bind()
+                        .set("identifier", id, IRI.class)
+                        .setInt("start", first)
                         .setInt("end", last);
         return retrieve(id, bound);
     }

@@ -19,7 +19,7 @@ public class ImmutableRetrieve extends ResourceQuery {
 
     @Inject
     public ImmutableRetrieve(Session session, @RdfReadConsistency ConsistencyLevel consistency) {
-        super(session, "SELECT quads FROM " + IMMUTABLE_TABLENAME + "  WHERE identifier = ? ;", consistency);
+        super(session, "SELECT quads FROM " + IMMUTABLE_TABLENAME + "  WHERE identifier = :identifier ;", consistency);
     }
 
     /**
@@ -27,6 +27,6 @@ public class ImmutableRetrieve extends ResourceQuery {
      * @return the RDF retrieved
      */
     public Stream<Quad> execute(IRI id) {
-        return quads(preparedStatement().bind(id));
+        return quads(preparedStatement().bind().set("identifier", id, IRI.class));
     }
 }

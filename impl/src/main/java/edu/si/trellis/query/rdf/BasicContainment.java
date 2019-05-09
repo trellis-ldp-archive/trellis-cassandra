@@ -26,6 +26,6 @@ public class BasicContainment extends ResourceQuery {
      * @return a {@link ResultSet} of the resources contained in {@code id}
      */
     public ResultSet execute(IRI id) {
-        return executeSyncRead(preparedStatement().bind(id));
+        return executeSyncRead(preparedStatement().bind().set("container", id, IRI.class));
     }
 }

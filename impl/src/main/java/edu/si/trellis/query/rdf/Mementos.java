@@ -20,7 +20,8 @@ public class Mementos extends CassandraQuery {
 
     @Inject
     public Mementos(Session session, @RdfReadConsistency ConsistencyLevel consistency) {
-        super(session, "SELECT mementomodified FROM " + MEMENTO_MUTABLE_TABLENAME + " WHERE identifier = ?", consistency);
+        super(session, "SELECT mementomodified FROM " + MEMENTO_MUTABLE_TABLENAME + " WHERE identifier = :identifier",
+                        consistency);
     }
 
     /**
