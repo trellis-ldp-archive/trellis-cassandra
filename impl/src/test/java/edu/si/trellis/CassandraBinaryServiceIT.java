@@ -112,8 +112,6 @@ class CassandraBinaryServiceIT extends CassandraServiceIT {
             assertEquals(md5sum, digest);
         }
 
-        assertEquals(parseInt(chunkSize), ((CassandraBinary) binary).chunkLength());
-
         try (FileInputStream testData = new FileInputStream("src/test/resources/test.jpg")) {
             Map<String, List<String>> hints = ImmutableMap.of(CASSANDRA_CHUNK_HEADER_NAME,
                             ImmutableList.of(chunkSize, chunkSize + 1000));

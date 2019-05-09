@@ -35,6 +35,7 @@ public class CassandraBinary implements Binary {
         this.id = id;
         this.read = read;
         this.readRange = readRange;
+        if (chunkLength < 1) throw new IllegalArgumentException("Chunk length < 1!");
         this.chunkLength = chunkLength;
     }
 
@@ -56,12 +57,5 @@ public class CassandraBinary implements Binary {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-    }
-
-    /**
-     * @return the length of chunk used by {@code this}
-     */
-    public int chunkLength() {
-        return chunkLength;
     }
 }
