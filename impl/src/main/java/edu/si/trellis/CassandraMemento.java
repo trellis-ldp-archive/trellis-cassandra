@@ -4,7 +4,6 @@ import edu.si.trellis.query.rdf.ImmutableRetrieve;
 import edu.si.trellis.query.rdf.MementoMutableRetrieve;
 
 import java.time.Instant;
-import java.util.UUID;
 import java.util.stream.Stream;
 
 import org.apache.commons.rdf.api.IRI;

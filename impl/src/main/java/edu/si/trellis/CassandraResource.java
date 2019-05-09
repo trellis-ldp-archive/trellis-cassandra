@@ -18,7 +18,6 @@ import edu.si.trellis.query.rdf.MutableRetrieve;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.Spliterator;
-import java.util.UUID;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
