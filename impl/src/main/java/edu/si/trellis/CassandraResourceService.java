@@ -11,8 +11,6 @@ import static org.trellisldp.vocabulary.LDP.Container;
 import static org.trellisldp.vocabulary.LDP.NonRDFSource;
 import static org.trellisldp.vocabulary.LDP.RDFSource;
 
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
 import com.datastax.driver.core.utils.UUIDs;
 import com.google.common.collect.ImmutableSet;
 
@@ -51,7 +49,7 @@ import org.trellisldp.vocabulary.LDP;
  * @author ajs6f
  *
  */
-public class CassandraResourceService implements ResourceService {
+public class CassandraResourceService extends CassandraService implements ResourceService {
 
     private static final ImmutableSet<IRI> SUPPORTED_INTERACTION_MODELS = ImmutableSet.of(LDP.Resource, RDFSource,
                     NonRDFSource, Container, BasicContainer);
@@ -123,7 +121,7 @@ public class CassandraResourceService implements ResourceService {
 
     @Override
     public CompletionStage<? extends Resource> get(final IRI id) {
-        return get.execute(id).thenApply(this::buildResource);
+        return get.execute(id).thenApply(rows -> buildResource(rows, log, id));
     }
 
     @Override
@@ -168,30 +166,6 @@ public class CassandraResourceService implements ResourceService {
         return SUPPORTED_INTERACTION_MODELS;
     }
 
-    private Resource buildResource(ResultSet rows) {
-        final Row metadata;
-        if ((metadata = rows.one()) == null) {
-            log.debug("Resource was not found");
-            return MISSING_RESOURCE;
-        }
-        IRI id = metadata.get("identifier", IRI.class);
-        log.debug("Resource {} was found, computing metadata.", id);
-        IRI ixnModel = metadata.get("interactionModel", IRI.class);
-        log.debug("Found interactionModel = {} for resource {}", ixnModel, id);
-        boolean hasAcl = metadata.getBool("hasAcl");
-        log.debug("Found hasAcl = {} for resource {}", hasAcl, id);
-        IRI binaryId = metadata.get("binaryIdentifier", IRI.class);
-        log.debug("Found binaryIdentifier = {} for resource {}", binaryId, id);
-        String mimeType = metadata.getString("mimetype");
-        log.debug("Found mimeType = {} for resource {}", mimeType, id);
-        IRI container = metadata.get("container", IRI.class);
-        log.debug("Found container = {} for resource {}", container, id);
-        Instant modified = metadata.get("modified", Instant.class);
-        log.debug("Found modified = {} for resource {}", modified, id);
-        return new CassandraResource(id, ixnModel, hasAcl, binaryId, mimeType, container, modified,
-                        immutableRetrieve, mutableRetrieve, bcontainment);
-    }
-
     private CompletionStage<Void> write(Metadata meta, Dataset data) {
         IRI id = meta.getIdentifier();
         IRI ixnModel = meta.getInteractionModel();
@@ -203,5 +177,12 @@ public class CassandraResourceService implements ResourceService {
         Instant now = now();
 
         return mutableInsert.execute(ixnModel, mimeType, container, data, now, binaryIdentifier, UUIDs.timeBased(), id);
+    }
+
+    @Override
+    Resource constructResource(IRI id, IRI ixnModel, boolean hasAcl, IRI binaryId, String mimeType, IRI container,
+                    Instant modified) {
+        return new CassandraResource(id, ixnModel, hasAcl, binaryId, mimeType, container, modified, immutableRetrieve,
+                        mutableRetrieve, bcontainment);
     }
 }

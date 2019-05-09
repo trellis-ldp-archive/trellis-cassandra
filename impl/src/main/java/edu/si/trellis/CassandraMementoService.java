@@ -3,13 +3,9 @@ package edu.si.trellis;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.stream.Collectors.toCollection;
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
 import com.datastax.driver.core.utils.UUIDs;
 
-import edu.si.trellis.query.rdf.BasicContainment;
 import edu.si.trellis.query.rdf.GetMemento;
 import edu.si.trellis.query.rdf.ImmutableRetrieve;
 import edu.si.trellis.query.rdf.MementoMutableRetrieve;
@@ -36,7 +32,7 @@ import org.trellisldp.api.Resource;
  * A {@link MementoService} that stores Mementos in a Cassandra table.
  *
  */
-public class CassandraMementoService implements MementoService {
+public class CassandraMementoService extends CassandraService implements MementoService {
 
     private static final Logger log = getLogger(CassandraMementoService.class);
 
@@ -49,8 +45,6 @@ public class CassandraMementoService implements MementoService {
     private ImmutableRetrieve immutableRetrieve;
 
     private MementoMutableRetrieve mementoMutableRetrieve;
-
-    private BasicContainment bcontainment;
 
     @Inject
     public CassandraMementoService(Mementos mementos, Mementoize mementoize, GetMemento getMemento,
@@ -93,28 +87,12 @@ public class CassandraMementoService implements MementoService {
     @Override
     public CompletionStage<Resource> get(final IRI id, Instant time) {
         log.debug("Retrieving Memento for: {} at {}", id, time);
-        return getMemento.execute(id, time).thenApply(result -> buildResource(result, id));
+        return getMemento.execute(id, time).thenApply(result -> buildResource(result, log, id));
     }
 
-    Resource buildResource(ResultSet rows, IRI id) {
-        final Row metadata;
-        if ((metadata = rows.one()) == null) {
-            log.debug("Memento {} was not found.", id);
-            return MISSING_RESOURCE;
-        }
-        log.debug("Memento {} was found, computing metadata.", id);
-        IRI ixnModel = metadata.get("interactionModel", IRI.class);
-        log.debug("Found interactionModel = {} for resource {}", ixnModel, id);
-        boolean hasAcl = metadata.getBool("hasAcl");
-        log.debug("Found hasAcl = {} for resource {}", hasAcl, id);
-        IRI binaryId = metadata.get("binaryIdentifier", IRI.class);
-        log.debug("Found binaryIdentifier = {} for resource {}", binaryId, id);
-        String mimeType = metadata.getString("mimetype");
-        log.debug("Found mimeType = {} for resource {}", mimeType, id);
-        IRI container = metadata.get("container", IRI.class);
-        log.debug("Found container = {} for resource {}", container, id);
-        Instant modified = metadata.get("modified", Instant.class);
-        log.debug("Found modified = {} for resource {}", modified, id);
+    @Override
+    Resource constructResource(IRI id, IRI ixnModel, boolean hasAcl, IRI binaryId, String mimeType, IRI container,
+                    Instant modified) {
         return new CassandraMemento(id, ixnModel, hasAcl, binaryId, mimeType, container, modified, immutableRetrieve,
                         mementoMutableRetrieve);
     }
