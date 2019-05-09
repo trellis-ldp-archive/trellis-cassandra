@@ -4,8 +4,6 @@ import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.Session;
 
 import edu.si.trellis.RdfWriteConsistency;
-import edu.si.trellis.query.CassandraQuery;
-
 import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 
@@ -17,7 +15,7 @@ import org.apache.commons.rdf.api.IRI;
 /**
  * A query to insert immutable data about a resource into Cassandra.
  */
-public class ImmutableInsert extends CassandraQuery {
+public class ImmutableInsert extends ResourceQuery {
 
     @Inject
     public ImmutableInsert(Session session, @RdfWriteConsistency ConsistencyLevel consistency) {

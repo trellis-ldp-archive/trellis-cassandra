@@ -4,8 +4,6 @@ import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.Session;
 
 import edu.si.trellis.RdfWriteConsistency;
-import edu.si.trellis.query.CassandraQuery;
-
 import java.util.concurrent.CompletableFuture;
 
 import javax.inject.Inject;
@@ -15,7 +13,7 @@ import org.apache.commons.rdf.api.IRI;
 /**
  * A query to delete a resource.
  */
-public class Delete extends CassandraQuery {
+public class Delete extends ResourceQuery {
 
     @Inject
     public Delete(Session session, @RdfWriteConsistency ConsistencyLevel consistency) {

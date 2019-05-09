@@ -4,8 +4,6 @@ import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.Session;
 
 import edu.si.trellis.RdfWriteConsistency;
-import edu.si.trellis.query.CassandraQuery;
-
 import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 
@@ -16,7 +14,7 @@ import org.apache.commons.rdf.api.IRI;
 /**
  * A query that adjusts the modified time of a resource.
  */
-public class Touch extends CassandraQuery {
+public class Touch extends ResourceQuery {
 
     @Inject
     public Touch(Session session, @RdfWriteConsistency ConsistencyLevel consistency) {

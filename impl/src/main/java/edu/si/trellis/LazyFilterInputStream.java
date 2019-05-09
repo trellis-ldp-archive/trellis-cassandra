@@ -22,6 +22,9 @@ public abstract class LazyFilterInputStream extends InputStream {
      */
     protected abstract void initialize();
 
+    /**
+     * @param w the {@link InputStream} to wrap
+     */
     protected void wrap(InputStream w) {
         this.wrapped = w;
     }

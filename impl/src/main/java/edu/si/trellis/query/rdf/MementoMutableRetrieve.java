@@ -13,6 +13,9 @@ import javax.inject.Inject;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 
+/**
+ * A query to retrieve (formerly) mutable data about a Memento from Cassandra.
+ */
 public class MementoMutableRetrieve extends ResourceQuery {
 
     @Inject

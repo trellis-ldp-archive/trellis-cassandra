@@ -5,15 +5,16 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 
 import edu.si.trellis.RdfReadConsistency;
-import edu.si.trellis.query.CassandraQuery;
-
 import java.util.concurrent.CompletableFuture;
 
 import javax.inject.Inject;
 
 import org.apache.commons.rdf.api.IRI;
 
-public class Get extends CassandraQuery {
+/**
+ * Retrieve data for a resource.
+ */
+public class Get extends ResourceQuery {
 
     @Inject
     public Get(Session session, @RdfReadConsistency ConsistencyLevel consistency) {

@@ -32,6 +32,10 @@ import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.MementoService;
 import org.trellisldp.api.Resource;
 
+/**
+ * A {@link MementoService} that stores Mementos in a Cassandra table.
+ *
+ */
 public class CassandraMementoService implements MementoService {
 
     private static final Logger log = getLogger(CassandraMementoService.class);
@@ -64,13 +68,13 @@ public class CassandraMementoService implements MementoService {
         IRI id = r.getIdentifier();
         IRI ixnModel = r.getInteractionModel();
         IRI container = r.getContainer().orElse(null);
-
         Optional<BinaryMetadata> binary = r.getBinaryMetadata();
         IRI binaryIdentifier = binary.map(BinaryMetadata::getIdentifier).orElse(null);
         String mimeType = binary.flatMap(BinaryMetadata::getMimeType).orElse(null);
         Dataset data = r.dataset();
         Instant modified = r.getModified();
         UUID creation = UUIDs.timeBased();
+        
         log.debug("Writing Memento for {} at time: {}", id, modified);
         return mementoize.execute(ixnModel, mimeType, container, data, modified, binaryIdentifier, creation, id);
     }
@@ -88,7 +92,7 @@ public class CassandraMementoService implements MementoService {
 
     @Override
     public CompletionStage<Resource> get(final IRI id, Instant time) {
-        log.debug("Retrieving: {} at {}", id, time);
+        log.debug("Retrieving Memento for: {} at {}", id, time);
         return getMemento.execute(id, time).thenApply(result -> buildResource(result, id));
     }
 
@@ -114,6 +118,6 @@ public class CassandraMementoService implements MementoService {
         UUID created = metadata.getUUID("created");
         log.debug("Found created = {} for resource {}", created, id);
         return new CassandraMemento(id, ixnModel, hasAcl, binaryId, mimeType, container, modified, created,
-                        immutableRetrieve, mementoMutableRetrieve, bcontainment);
+                        immutableRetrieve, mementoMutableRetrieve);
     }
 }

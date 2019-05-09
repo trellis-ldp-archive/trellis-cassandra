@@ -11,7 +11,7 @@ import javax.inject.Inject;
 import org.apache.commons.rdf.api.IRI;
 
 /**
- * A query to retrieve basic containment information.
+ * A query to retrieve basic containment information from a materialized view or index table.
  */
 public class BasicContainment extends ResourceQuery {
 

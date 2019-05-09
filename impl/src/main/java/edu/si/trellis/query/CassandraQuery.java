@@ -20,22 +20,25 @@ public abstract class CassandraQuery {
 
     private static final Logger log = getLogger(CassandraQuery.class);
 
-    protected static final String MUTABLE_TABLENAME = "mutabledata";
-    
-    protected static final String MEMENTO_MUTABLE_TABLENAME = "mementodata";
-
-    protected static final String IMMUTABLE_TABLENAME = "immutabledata";
-
-    protected static final String BASIC_CONTAINMENT_TABLENAME = "basiccontainment";
-
-    protected static final String BINARY_TABLENAME = "binarydata";
-
+    /**
+     * A Cassandra session for use with this query.
+     */
     protected final Session session;
 
+    /**
+     * 
+     */
+    /**
+     * Worker threads that read and write from and to Cassandra. Reading and writing are thereby uncoupled from threads
+     * calling into this class.
+     */
     protected final Executor writeWorkers = newCachedThreadPool(), readWorkers = newCachedThreadPool();
 
     private final PreparedStatement preparedStatement;
 
+    /**
+     * @return the {@link PreparedStatement} that underlies this query
+     */
     protected PreparedStatement preparedStatement() {
         return preparedStatement;
     }
@@ -50,6 +53,10 @@ public abstract class CassandraQuery {
         this.preparedStatement = session.prepare(queryString).setConsistencyLevel(consistency);
     }
 
+    /**
+     * @param statement the CQL statement to execute
+     * @return when and whether the statement completed
+     */
     protected CompletableFuture<Void> executeWrite(BoundStatement statement) {
         String queryString = statement.preparedStatement().getQueryString();
         log.debug("Executing CQL write: {}", queryString);
@@ -57,15 +64,23 @@ public abstract class CassandraQuery {
                         .thenAccept(r -> log.debug("Executed CQL write: {}", queryString));
     }
 
+    /**
+     * @param statement the CQL statement to execute
+     * @return the results of that statement
+     */
     protected CompletableFuture<ResultSet> executeRead(Statement statement) {
         return translate(session.executeAsync(statement), readWorkers);
     }
 
+    /**
+     * @param statement the CQL statement to execute
+     * @return the results of that statement
+     */
     protected ResultSet executeSyncRead(Statement statement) {
         return session.execute(statement);
     }
 
-    protected <T> CompletableFuture<T> translate(ListenableFuture<T> future, Executor workers) {
+    private <T> CompletableFuture<T> translate(ListenableFuture<T> future, Executor workers) {
         CompletableFuture<T> result = new CompletableFuture<>();
         future.addListener(() -> {
             try {

@@ -9,8 +9,6 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 
 import edu.si.trellis.LazyChunkInputStream;
-import edu.si.trellis.query.CassandraQuery;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,7 +21,7 @@ import org.trellisldp.api.RuntimeTrellisException;
 /**
  * A query that reads binary data from Cassandra.
  */
-abstract class BinaryReadQuery extends CassandraQuery {
+abstract class BinaryReadQuery extends BinaryQuery {
 
     private static final Logger log = getLogger(BinaryReadQuery.class);
 

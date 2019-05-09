@@ -13,6 +13,9 @@ import javax.inject.Inject;
 
 import org.apache.commons.rdf.api.IRI;
 
+/**
+ * Retrieve data for a Memento.
+ */
 public class GetMemento extends ResourceQuery {
 
     @Inject
