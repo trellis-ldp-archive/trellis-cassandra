@@ -31,7 +31,7 @@ public class Read extends BinaryReadQuery {
      * @see BinaryReadQuery#retrieve(IRI, com.datastax.driver.core.Statement)
      */
     public InputStream execute(IRI id) {
-        BoundStatement bound = preparedStatement().bind(id);
+        BoundStatement bound = preparedStatement().bind().set("identifier", id, IRI.class);
         return retrieve(id, bound);
     }
 }

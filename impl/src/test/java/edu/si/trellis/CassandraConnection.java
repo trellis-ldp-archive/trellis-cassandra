@@ -78,7 +78,7 @@ class CassandraConnection implements AfterAllCallback, BeforeAllCallback {
                         new MementoMutableRetrieve(session, testConsistency),
                         new edu.si.trellis.query.rdf.ImmutableRetrieve(session, testConsistency));
         this.binaryService = new CassandraBinaryService((IdentifierService) null, 1024 * 1024,
-                        new edu.si.trellis.query.binary.Get(session, testConsistency),
+                        new edu.si.trellis.query.binary.GetChunkSize(session, testConsistency),
                         new edu.si.trellis.query.binary.Insert(session, testConsistency),
                         new edu.si.trellis.query.binary.Delete(session, testConsistency),
                         new edu.si.trellis.query.binary.Read(session, testConsistency),

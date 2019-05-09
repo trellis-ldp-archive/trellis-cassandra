@@ -17,10 +17,10 @@ public class Get extends CassandraQuery {
 
     @Inject
     public Get(Session session, @RdfReadConsistency ConsistencyLevel consistency) {
-        super(session, "SELECT * FROM " + MUTABLE_TABLENAME + " WHERE identifier = ?;", consistency);
+        super(session, "SELECT * FROM " + MUTABLE_TABLENAME + " WHERE identifier = :identifier;", consistency);
     }
 
     public CompletableFuture<ResultSet> execute(IRI id) {
-        return executeRead(preparedStatement().bind(id));
+        return executeRead(preparedStatement().bind().set("identifier", id, IRI.class));
     }
 }

@@ -29,6 +29,8 @@ public class GetMemento extends ResourceQuery {
      */
     public CompletableFuture<ResultSet> execute(IRI id, Instant time) {
         return executeRead(
-                        preparedStatement().bind().set("time", time, Instant.class).set("identifier", id, IRI.class));
+                        preparedStatement().bind()
+                        .set("time", time, Instant.class)
+                        .set("identifier", id, IRI.class));
     }
 }

@@ -19,7 +19,7 @@ public class Delete extends CassandraQuery {
 
     @Inject
     public Delete(Session session, @RdfWriteConsistency ConsistencyLevel consistency) {
-        super(session, "DELETE FROM " + MUTABLE_TABLENAME + " WHERE identifier = ? ", consistency);
+        super(session, "DELETE FROM " + MUTABLE_TABLENAME + " WHERE identifier = :identifier ;", consistency);
     }
 
     /**
@@ -27,6 +27,6 @@ public class Delete extends CassandraQuery {
      * @return whether and when it has been deleted
      */
     public CompletableFuture<Void> execute(IRI id) {
-        return executeWrite(preparedStatement().bind(id));
+        return executeWrite(preparedStatement().bind().set("identifier", id, IRI.class));
     }
 }

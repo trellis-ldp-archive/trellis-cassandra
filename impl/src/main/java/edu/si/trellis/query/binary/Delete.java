@@ -28,6 +28,6 @@ public class Delete extends CassandraQuery {
      * @return whether and when it has been deleted
      */
     public CompletableFuture<Void> execute(IRI id) {
-        return executeWrite(preparedStatement().bind(id));
+        return executeWrite(preparedStatement().bind().set("identifier", id, IRI.class));
     }
 }

@@ -35,7 +35,7 @@ public class CassandraBinaryService implements BinaryService {
 
     private final int defaultChunkLength;
 
-    private final Get get;
+    private final GetChunkSize get;
 
     private final Insert insert;
 
@@ -48,14 +48,14 @@ public class CassandraBinaryService implements BinaryService {
     /**
      * @param idService {@link IdentifierService} to use for binaries
      * @param chunkLength the maximum size of any chunk in this service
-     * @param get a {@link Get} query to use
+     * @param get a {@link GetChunkSize} query to use
      * @param insert a {@link Insert} query to use
      * @param delete a {@link Delete} query to use
      * @param read a {@link Read} query to use
      * @param readRange a {@link ReadRange} query to use
      */
     @Inject
-    public CassandraBinaryService(IdentifierService idService, @DefaultChunkSize int chunkLength, Get get,
+    public CassandraBinaryService(IdentifierService idService, @DefaultChunkSize int chunkLength, GetChunkSize get,
                     Insert insert, Delete delete, Read read, ReadRange readRange) {
         this.idService = idService;
         this.defaultChunkLength = chunkLength;
