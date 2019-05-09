@@ -21,6 +21,8 @@ public abstract class CassandraQuery {
     private static final Logger log = getLogger(CassandraQuery.class);
 
     protected static final String MUTABLE_TABLENAME = "mutabledata";
+    
+    protected static final String MEMENTO_MUTABLE_TABLENAME = "mementodata";
 
     protected static final String IMMUTABLE_TABLENAME = "immutabledata";
 

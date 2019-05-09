@@ -22,6 +22,9 @@ public class CassandraServiceBundler implements ServiceBundler {
     private CassandraResourceService resourceService;
 
     @Inject
+    private CassandraMementoService mementoService;
+
+    @Inject
     private CassandraBinaryService binaryService;
 
     @Inject
@@ -72,7 +75,7 @@ public class CassandraServiceBundler implements ServiceBundler {
 
     @Override
     public MementoService getMementoService() {
-        return resourceService;
+        return mementoService;
     }
 
     @Override

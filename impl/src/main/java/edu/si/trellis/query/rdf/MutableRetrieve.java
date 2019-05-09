@@ -19,17 +19,14 @@ public class MutableRetrieve extends ResourceQuery {
 
     @Inject
     public MutableRetrieve(Session session, @RdfReadConsistency ConsistencyLevel consistency) {
-        super(session, "SELECT quads FROM " + MUTABLE_TABLENAME
-                        + " WHERE identifier = :identifier AND createdSeconds <= :createdSeconds "
-                        + "LIMIT 1 ALLOW FILTERING;", consistency);
+        super(session, "SELECT quads FROM " + MUTABLE_TABLENAME + " WHERE identifier = :identifier;", consistency);
     }
 
     /**
      * @param id the {@link IRI} of the resource, the mutable data of which is to be retrieved
-     * @param time the time (version) at which to find this data
      * @return the RDF retrieved
      */
-    public Stream<Quad> execute(IRI id, long time) {
-        return quads(preparedStatement().bind().setLong("createdSeconds", time).set("identifier", id, IRI.class));
+    public Stream<Quad> execute(IRI id) {
+        return quads(preparedStatement().bind().set("identifier", id, IRI.class));
     }
 }

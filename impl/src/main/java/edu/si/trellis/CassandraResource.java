@@ -1,10 +1,13 @@
 package edu.si.trellis;
 
-import static com.datastax.driver.core.utils.UUIDs.unixTimestamp;
 import static java.util.stream.Stream.concat;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.BinaryMetadata.builder;
-import static org.trellisldp.vocabulary.LDP.*;
+import static org.trellisldp.vocabulary.LDP.Container;
+import static org.trellisldp.vocabulary.LDP.NonRDFSource;
+import static org.trellisldp.vocabulary.LDP.PreferContainment;
+import static org.trellisldp.vocabulary.LDP.contains;
+import static org.trellisldp.vocabulary.LDP.getSuperclassOf;
 
 import com.datastax.driver.core.Row;
 
@@ -48,8 +51,6 @@ class CassandraResource implements Resource {
 
     private final BasicContainment bcontainment;
 
-    private final long createdMs;
-
     private static final RDF rdfFactory = TrellisUtils.getInstance();
 
     public CassandraResource(IRI id, IRI ixnModel, boolean hasAcl, IRI binaryIdentifier, String mimeType, IRI container,
@@ -67,7 +68,6 @@ class CassandraResource implements Resource {
         this.binary = isBinary ? builder(binaryIdentifier).mimeType(mimeType).build() : null;
         log.trace("Resource is {}a NonRDFSource.", !isBinary ? "not " : "");
         this.created = created;
-        this.createdMs = unixTimestamp(created);
         this.mutable = mutable;
         this.immutable = immutable;
         this.bcontainment = bcontainment;
@@ -128,8 +128,11 @@ class CassandraResource implements Resource {
         return quads;
     }
 
-    private Stream<Quad> mutableQuads() {
-        return mutable.execute(getIdentifier(), createdMs);
+    /**
+     * @return the quads stored via mutable data paths, either current or Memento
+     */
+    protected Stream<Quad> mutableQuads() {
+        return mutable.execute(getIdentifier());
     }
 
     private Stream<Quad> immutableQuads() {

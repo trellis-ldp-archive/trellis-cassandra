@@ -1,10 +1,7 @@
 package edu.si.trellis;
 
 import static java.time.Instant.now;
-import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.UUID.randomUUID;
-import static java.util.concurrent.CompletableFuture.completedFuture;
-import static java.util.stream.Collectors.toCollection;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Metadata.builder;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
@@ -19,11 +16,20 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.core.utils.UUIDs;
 import com.google.common.collect.ImmutableSet;
 
-import edu.si.trellis.query.rdf.*;
+import edu.si.trellis.query.rdf.BasicContainment;
+import edu.si.trellis.query.rdf.Delete;
+import edu.si.trellis.query.rdf.Get;
+import edu.si.trellis.query.rdf.ImmutableInsert;
+import edu.si.trellis.query.rdf.ImmutableRetrieve;
+import edu.si.trellis.query.rdf.MutableInsert;
+import edu.si.trellis.query.rdf.MutableRetrieve;
+import edu.si.trellis.query.rdf.Touch;
 
 import java.time.Instant;
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 
 import javax.annotation.PostConstruct;
@@ -32,7 +38,12 @@ import javax.inject.Inject;
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.slf4j.Logger;
-import org.trellisldp.api.*;
+import org.trellisldp.api.BinaryMetadata;
+import org.trellisldp.api.Metadata;
+import org.trellisldp.api.Resource;
+import org.trellisldp.api.ResourceService;
+import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.api.TrellisUtils;
 import org.trellisldp.vocabulary.LDP;
 
 /**
@@ -41,12 +52,12 @@ import org.trellisldp.vocabulary.LDP;
  * @author ajs6f
  *
  */
-public class CassandraResourceService implements ResourceService, MementoService {
+public class CassandraResourceService implements ResourceService {
 
     private static final ImmutableSet<IRI> SUPPORTED_INTERACTION_MODELS = ImmutableSet.of(LDP.Resource, RDFSource,
                     NonRDFSource, Container, BasicContainer);
 
-    private static final Logger log = getLogger(CassandraResourceService.class);
+    static final Logger log = getLogger(CassandraResourceService.class);
 
     private final Delete delete;
 
@@ -54,17 +65,15 @@ public class CassandraResourceService implements ResourceService, MementoService
 
     private final ImmutableInsert immutableInsert;
 
-    private final MutableInsert mutableInsert;
-
-    private final Mementos mementos;
+    final MutableInsert mutableInsert;
 
     private final Touch touch;
 
-    private final BasicContainment bcontainment;
+    protected final BasicContainment bcontainment;
 
-    private final MutableRetrieve mutableRetrieve;
+    protected final MutableRetrieve mutableRetrieve;
 
-    private final ImmutableRetrieve immutableRetrieve;
+    protected final ImmutableRetrieve immutableRetrieve;
 
     /**
      * Constructor.
@@ -73,40 +82,37 @@ public class CassandraResourceService implements ResourceService, MementoService
      * @param get {@link Get} query to support retrieving content
      * @param immutableInsert {@link ImmutableInsert} query to support storing immutable data
      * @param mutableInsert {@link MutableInsert} query to support storing mutable data
-     * @param mementos {@link Mementos} query to support retrieving Mementos
      * @param touch {@link Touch} query to support updating the value of {@link Resource#getModified()}
      * @param mutableRetrieve {@link MutableRetrieve} to support retrieving content
-     * @param immutableRetrieve  {@link ImmutableRetrieve} to support retrieving content
-     * @param bcontainment  {@link BasicContainment} to support retrieving content
+     * @param immutableRetrieve {@link ImmutableRetrieve} to support retrieving content
+     * @param bcontainment {@link BasicContainment} to support retrieving content
      */
     @Inject
     public CassandraResourceService(Delete delete, Get get, ImmutableInsert immutableInsert,
-                    MutableInsert mutableInsert, Mementos mementos, Touch touch, MutableRetrieve mutableRetrieve,
+                    MutableInsert mutableInsert, Touch touch, MutableRetrieve mutableRetrieve,
                     ImmutableRetrieve immutableRetrieve, BasicContainment bcontainment) {
         this.delete = delete;
         this.get = get;
         this.immutableInsert = immutableInsert;
         this.mutableInsert = mutableInsert;
-        this.mementos = mementos;
         this.touch = touch;
-        this.immutableRetrieve = immutableRetrieve;
         this.mutableRetrieve = mutableRetrieve;
+        this.immutableRetrieve = immutableRetrieve;
         this.bcontainment = bcontainment;
+
     }
 
     /**
      * Build a root container.
-     * 
-     * @throws Exception
      */
     @PostConstruct
-    void initializeQueriesAndRoot() {
+    void initializeRoot() {
 
         IRI rootIri = TrellisUtils.getInstance().createIRI(TRELLIS_DATA_PREFIX);
         try {
-            if (get(rootIri).get().equals(MISSING_RESOURCE)) {
+            if (get(rootIri).toCompletableFuture().get().equals(MISSING_RESOURCE)) {
                 Metadata rootResource = builder(rootIri).interactionModel(BasicContainer).build();
-                create(rootResource, null).get();
+                create(rootResource, null).toCompletableFuture().get();
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -114,6 +120,53 @@ public class CassandraResourceService implements ResourceService, MementoService
         } catch (ExecutionException e) {
             throw new RuntimeTrellisException(e);
         }
+    }
+
+    @Override
+    public CompletionStage<? extends Resource> get(final IRI id) {
+        return get.execute(id).thenApply(this::buildResource);
+    }
+
+    @Override
+    public String generateIdentifier() {
+        return randomUUID().toString();
+    }
+
+    @Override
+    public CompletionStage<Void> add(final IRI id, final Dataset dataset) {
+        log.debug("Adding immutable data to {}", id);
+        return immutableInsert.execute(id, dataset, now());
+    }
+
+    @Override
+    public CompletionStage<Void> create(Metadata meta, Dataset data) {
+        log.debug("Creating {} with interaction model {}", meta.getIdentifier(), meta.getInteractionModel());
+        return write(meta, data);
+    }
+
+    @Override
+    public CompletionStage<Void> replace(Metadata meta, Dataset data) {
+        log.debug("Replacing {} with interaction model {}", meta.getIdentifier(), meta.getInteractionModel());
+        return write(meta, data);
+    }
+
+    @Override
+    public CompletionStage<Void> delete(Metadata meta) {
+        log.debug("Deleting {}", meta.getIdentifier());
+        return delete.execute(meta.getIdentifier());
+    }
+
+    /*
+     * (non-Javadoc) TODO avoid read-modify-write?
+     */
+    @Override
+    public CompletionStage<Void> touch(IRI id) {
+        return touch.execute(now(), id);
+    }
+
+    @Override
+    public Set<IRI> supportedInteractionModels() {
+        return SUPPORTED_INTERACTION_MODELS;
     }
 
     private Resource buildResource(ResultSet rows) {
@@ -142,73 +195,7 @@ public class CassandraResourceService implements ResourceService, MementoService
                         immutableRetrieve, mutableRetrieve, bcontainment);
     }
 
-    @Override
-    public CompletableFuture<? extends Resource> get(final IRI id) {
-        return get(id, now());
-    }
-
-    @Override
-    public CompletableFuture<Resource> get(final IRI id, Instant time) {
-        log.debug("Retrieving: {} at {}", id, time);
-        return get.execute(id, time).thenApply(this::buildResource);
-    }
-
-    @Override
-    public String generateIdentifier() {
-        return randomUUID().toString();
-    }
-
-    @Override
-    public CompletableFuture<Void> add(final IRI id, final Dataset dataset) {
-        log.debug("Adding immutable data to {}", id);
-        return immutableInsert.execute(id, dataset, now());
-    }
-
-    @Override
-    public CompletableFuture<Void> create(Metadata meta, Dataset data) {
-        log.debug("Creating {} with interaction model {}", meta.getIdentifier(), meta.getInteractionModel());
-        return write(meta, data);
-    }
-
-    @Override
-    public CompletableFuture<Void> replace(Metadata meta, Dataset data) {
-        log.debug("Replacing {} with interaction model {}", meta.getIdentifier(), meta.getInteractionModel());
-        return write(meta, data);
-    }
-
-    @Override
-    public CompletableFuture<Void> delete(Metadata meta) {
-        log.debug("Deleting {}", meta.getIdentifier());
-        return delete.execute(meta.getIdentifier());
-    }
-
-    /*
-     * (non-Javadoc) TODO avoid read-modify-write?
-     */
-    @Override
-    public CompletableFuture<Void> touch(IRI id) {
-        return get(id).thenApply(resource -> ((CassandraResource) resource).getCreated())
-                        .thenCompose(created -> touch.execute(now(), created, id));
-    }
-
-    @Override
-    public CompletableFuture<Void> put(Resource resource) {
-        // NOOP see our data model
-        return completedFuture(null);
-    }
-
-    //@formatter:off
-    @Override
-    public CompletableFuture<SortedSet<Instant>> mementos(IRI id) {
-        return mementos.execute(id).thenApply(
-                        results -> results.all().stream()
-                                        .map(row -> row.get("modified", Instant.class))
-                                        .map(time -> time.truncatedTo(SECONDS))
-                                        .collect(toCollection(TreeSet::new)));
-    }
-    //@formatter:on
-
-    private CompletableFuture<Void> write(Metadata meta, Dataset data) {
+    protected CompletionStage<Void> write(Metadata meta, Dataset data) {
         IRI id = meta.getIdentifier();
         IRI ixnModel = meta.getInteractionModel();
         IRI container = meta.getContainer().orElse(null);
@@ -218,12 +205,6 @@ public class CassandraResourceService implements ResourceService, MementoService
         String mimeType = binary.flatMap(BinaryMetadata::getMimeType).orElse(null);
         Instant now = now();
 
-        return mutableInsert.execute(ixnModel, mimeType, now.truncatedTo(SECONDS), container, data, now,
-                        binaryIdentifier, UUIDs.timeBased(), id);
-    }
-
-    @Override
-    public Set<IRI> supportedInteractionModels() {
-        return SUPPORTED_INTERACTION_MODELS;
+        return mutableInsert.execute(ixnModel, mimeType, container, data, now, binaryIdentifier, UUIDs.timeBased(), id);
     }
 }
