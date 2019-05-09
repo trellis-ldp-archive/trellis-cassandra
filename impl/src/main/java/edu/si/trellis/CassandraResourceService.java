@@ -28,7 +28,6 @@ import edu.si.trellis.query.rdf.Touch;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 
@@ -189,9 +188,7 @@ public class CassandraResourceService implements ResourceService {
         log.debug("Found container = {} for resource {}", container, id);
         Instant modified = metadata.get("modified", Instant.class);
         log.debug("Found modified = {} for resource {}", modified, id);
-        UUID created = metadata.getUUID("created");
-        log.debug("Found created = {} for resource {}", created, id);
-        return new CassandraResource(id, ixnModel, hasAcl, binaryId, mimeType, container, modified, created,
+        return new CassandraResource(id, ixnModel, hasAcl, binaryId, mimeType, container, modified,
                         immutableRetrieve, mutableRetrieve, bcontainment);
     }
 
