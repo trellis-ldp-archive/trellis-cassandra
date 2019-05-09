@@ -74,7 +74,7 @@ public class CassandraMementoService implements MementoService {
         Dataset data = r.dataset();
         Instant modified = r.getModified();
         UUID creation = UUIDs.timeBased();
-        
+
         log.debug("Writing Memento for {} at time: {}", id, modified);
         return mementoize.execute(ixnModel, mimeType, container, data, modified, binaryIdentifier, creation, id);
     }
@@ -115,9 +115,7 @@ public class CassandraMementoService implements MementoService {
         log.debug("Found container = {} for resource {}", container, id);
         Instant modified = metadata.get("modified", Instant.class);
         log.debug("Found modified = {} for resource {}", modified, id);
-        UUID created = metadata.getUUID("created");
-        log.debug("Found created = {} for resource {}", created, id);
-        return new CassandraMemento(id, ixnModel, hasAcl, binaryId, mimeType, container, modified, created,
-                        immutableRetrieve, mementoMutableRetrieve);
+        return new CassandraMemento(id, ixnModel, hasAcl, binaryId, mimeType, container, modified, immutableRetrieve,
+                        mementoMutableRetrieve);
     }
 }

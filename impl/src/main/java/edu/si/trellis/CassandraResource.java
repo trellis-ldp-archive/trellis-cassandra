@@ -28,7 +28,6 @@ import org.apache.commons.rdf.api.RDF;
 import org.slf4j.Logger;
 import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.Resource;
-import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.TrellisUtils;
 
 class CassandraResource implements Resource {
@@ -41,8 +40,6 @@ class CassandraResource implements Resource {
 
     private final Instant modified;
 
-    private final UUID created;
-
     private final BinaryMetadata binary;
 
     private final ImmutableRetrieve immutable;
@@ -54,7 +51,7 @@ class CassandraResource implements Resource {
     private static final RDF rdfFactory = TrellisUtils.getInstance();
 
     public CassandraResource(IRI id, IRI ixnModel, boolean hasAcl, IRI binaryIdentifier, String mimeType, IRI container,
-                    Instant modified, UUID created, ImmutableRetrieve immutable, MutableRetrieve mutable,
+                    Instant modified, ImmutableRetrieve immutable, MutableRetrieve mutable,
                     BasicContainment bcontainment) {
         this.identifier = id;
         this.interactionModel = ixnModel;
@@ -67,7 +64,6 @@ class CassandraResource implements Resource {
         boolean isBinary = NonRDFSource.equals(getInteractionModel());
         this.binary = isBinary ? builder(binaryIdentifier).mimeType(mimeType).build() : null;
         log.trace("Resource is {}a NonRDFSource.", !isBinary ? "not " : "");
-        this.created = created;
         this.mutable = mutable;
         this.immutable = immutable;
         this.bcontainment = bcontainment;
@@ -94,17 +90,6 @@ class CassandraResource implements Resource {
     @Override
     public Instant getModified() {
         return modified;
-    }
-
-    /**
-     * Unlike the value of {@link #getModified()}, this value is immutable after a resource record is persisted. The
-     * value of {@link #getModified()}, on the other hand, can change for containers if a child is added or removed, via
-     * {@link ResourceService#touch}.
-     * 
-     * @return the created date for this resource
-     */
-    public UUID getCreated() {
-        return created;
     }
 
     @Override
