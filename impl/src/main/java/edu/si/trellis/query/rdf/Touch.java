@@ -3,7 +3,7 @@ package edu.si.trellis.query.rdf;
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.Session;
 
-import edu.si.trellis.RdfWriteConsistency;
+import edu.si.trellis.MutableWriteConsistency;
 import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 
@@ -17,8 +17,8 @@ import org.apache.commons.rdf.api.IRI;
 public class Touch extends ResourceQuery {
 
     @Inject
-    public Touch(Session session, @RdfWriteConsistency ConsistencyLevel consistency) {
-        super(session, "UPDATE " + MUTABLE_TABLENAME + " SET modified=:modified WHERE identifier=:identifier",
+    public Touch(Session session, @MutableWriteConsistency ConsistencyLevel consistency) {
+        super(session, "UPDATE " + MUTABLE_TABLENAME + " SET modified = :modified WHERE identifier = :identifier",
                         consistency);
     }
 

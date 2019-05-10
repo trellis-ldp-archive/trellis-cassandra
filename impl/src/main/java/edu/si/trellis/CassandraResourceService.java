@@ -49,7 +49,7 @@ import org.trellisldp.vocabulary.LDP;
  * @author ajs6f
  *
  */
-public class CassandraResourceService extends CassandraService implements ResourceService {
+public class CassandraResourceService extends CassandraBuildingService implements ResourceService {
 
     private static final ImmutableSet<IRI> SUPPORTED_INTERACTION_MODELS = ImmutableSet.of(LDP.Resource, RDFSource,
                     NonRDFSource, Container, BasicContainer);
@@ -121,7 +121,7 @@ public class CassandraResourceService extends CassandraService implements Resour
 
     @Override
     public CompletionStage<? extends Resource> get(final IRI id) {
-        return get.execute(id).thenApply(rows -> buildResource(rows, log, id));
+        return get.execute(id).thenApply(rows -> parse(rows, log, id));
     }
 
     @Override
@@ -180,7 +180,7 @@ public class CassandraResourceService extends CassandraService implements Resour
     }
 
     @Override
-    Resource constructResource(IRI id, IRI ixnModel, boolean hasAcl, IRI binaryId, String mimeType, IRI container,
+    Resource construct(IRI id, IRI ixnModel, boolean hasAcl, IRI binaryId, String mimeType, IRI container,
                     Instant modified) {
         return new CassandraResource(id, ixnModel, hasAcl, binaryId, mimeType, container, modified, immutableRetrieve,
                         mutableRetrieve, bcontainment);

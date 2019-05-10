@@ -5,7 +5,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.Session;
 
-import edu.si.trellis.RdfWriteConsistency;
+import edu.si.trellis.MutableWriteConsistency;
 import java.time.Instant;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -21,7 +21,7 @@ import org.apache.commons.rdf.api.IRI;
 public class Mementoize extends ResourceQuery {
 
     @Inject
-    public Mementoize(Session session, @RdfWriteConsistency ConsistencyLevel consistency) {
+    public Mementoize(Session session, @MutableWriteConsistency ConsistencyLevel consistency) {
         super(session, "INSERT INTO " + MEMENTO_MUTABLE_TABLENAME
                         + " (interactionModel, mimeType, container, quads, modified, binaryIdentifier, "
                         + "created, identifier, mementomodified)" + " VALUES (?,?,?,?,?,?,?,?,?);", consistency);

@@ -1,7 +1,6 @@
 package edu.si.trellis;
 
 import static edu.si.trellis.CassandraBinaryService.CASSANDRA_CHUNK_HEADER_NAME;
-import static java.lang.Integer.parseInt;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.UUID.randomUUID;
 import static org.apache.commons.io.IOUtils.contentEquals;

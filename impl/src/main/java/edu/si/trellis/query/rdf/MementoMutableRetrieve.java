@@ -3,7 +3,7 @@ package edu.si.trellis.query.rdf;
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.Session;
 
-import edu.si.trellis.RdfReadConsistency;
+import edu.si.trellis.MutableReadConsistency;
 
 import java.time.Instant;
 import java.util.stream.Stream;
@@ -19,7 +19,7 @@ import org.apache.commons.rdf.api.Quad;
 public class MementoMutableRetrieve extends ResourceQuery {
 
     @Inject
-    public MementoMutableRetrieve(Session session, @RdfReadConsistency ConsistencyLevel consistency) {
+    public MementoMutableRetrieve(Session session, @MutableReadConsistency ConsistencyLevel consistency) {
         super(session, "SELECT quads FROM " + MEMENTO_MUTABLE_TABLENAME
                         + " WHERE identifier = :identifier AND mementomodified <= :time " + "LIMIT 1 ALLOW FILTERING;",
                         consistency);
@@ -31,9 +31,8 @@ public class MementoMutableRetrieve extends ResourceQuery {
      * @return the RDF retrieved
      */
     public Stream<Quad> execute(IRI id, Instant time) {
-        return quads(preparedStatement().bind().bind()
+        return quads(preparedStatement().bind()
                         .set("time", time, Instant.class)
-                        .set("identifier", id,
-                        IRI.class));
+                        .set("identifier", id, IRI.class));
     }
 }

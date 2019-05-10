@@ -4,7 +4,7 @@ import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 
-import edu.si.trellis.RdfReadConsistency;
+import edu.si.trellis.MutableReadConsistency;
 
 import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
@@ -19,7 +19,7 @@ import org.apache.commons.rdf.api.IRI;
 public class GetMemento extends ResourceQuery {
 
     @Inject
-    public GetMemento(Session session, @RdfReadConsistency ConsistencyLevel consistency) {
+    public GetMemento(Session session, @MutableReadConsistency ConsistencyLevel consistency) {
         super(session, "SELECT * FROM " + MEMENTO_MUTABLE_TABLENAME
                         + " WHERE identifier = :identifier AND mementomodified <= :time " + " LIMIT 1 ALLOW FILTERING;",
                         consistency);
@@ -31,8 +31,7 @@ public class GetMemento extends ResourceQuery {
      * @return the data for the Memento
      */
     public CompletableFuture<ResultSet> execute(IRI id, Instant time) {
-        return executeRead(
-                        preparedStatement().bind()
+        return executeRead(preparedStatement().bind()
                         .set("time", time, Instant.class)
                         .set("identifier", id, IRI.class));
     }

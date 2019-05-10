@@ -11,15 +11,16 @@ import org.apache.commons.rdf.api.IRI;
 import org.slf4j.Logger;
 import org.trellisldp.api.Resource;
 
-abstract class CassandraService {
+abstract class CassandraBuildingService {
 
-    Resource buildResource(ResultSet rows, Logger log, IRI id) {
+    Resource parse(ResultSet rows, Logger log, IRI id) {
         final Row metadata;
         if ((metadata = rows.one()) == null) {
-            log.debug("Memento {} was not found.", id);
+            log.debug("{} was not found.", id);
             return MISSING_RESOURCE;
         }
-        log.debug("Memento {} was found, computing metadata.", id);
+
+        log.debug("{} was found, computing metadata.", id);
         IRI ixnModel = metadata.get("interactionModel", IRI.class);
         log.debug("Found interactionModel = {} for resource {}", ixnModel, id);
         boolean hasAcl = metadata.getBool("hasAcl");
@@ -32,9 +33,10 @@ abstract class CassandraService {
         log.debug("Found container = {} for resource {}", container, id);
         Instant modified = metadata.get("modified", Instant.class);
         log.debug("Found modified = {} for resource {}", modified, id);
-        return constructResource(id, ixnModel, hasAcl, binaryId, mimeType, container, modified);
+
+        return construct(id, ixnModel, hasAcl, binaryId, mimeType, container, modified);
     }
 
-    abstract Resource constructResource(IRI id, IRI ixnModel, boolean hasAcl, IRI binaryId, String mimeType,
+    abstract Resource construct(IRI id, IRI ixnModel, boolean hasAcl, IRI binaryId, String mimeType,
                     IRI container, Instant modified);
 }

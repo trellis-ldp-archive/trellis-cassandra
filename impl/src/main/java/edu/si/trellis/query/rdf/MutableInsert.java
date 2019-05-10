@@ -3,7 +3,7 @@ package edu.si.trellis.query.rdf;
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.Session;
 
-import edu.si.trellis.RdfWriteConsistency;
+import edu.si.trellis.MutableWriteConsistency;
 import java.time.Instant;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -19,7 +19,7 @@ import org.apache.commons.rdf.api.IRI;
 public class MutableInsert extends ResourceQuery {
 
     @Inject
-    public MutableInsert(Session session, @RdfWriteConsistency ConsistencyLevel consistency) {
+    public MutableInsert(Session session, @MutableWriteConsistency ConsistencyLevel consistency) {
         super(session, "INSERT INTO " + MUTABLE_TABLENAME
                         + " (interactionModel, mimeType, container, quads, modified, binaryIdentifier, created, identifier)"
                         + " VALUES (?,?,?,?,?,?,?,?);", consistency);
