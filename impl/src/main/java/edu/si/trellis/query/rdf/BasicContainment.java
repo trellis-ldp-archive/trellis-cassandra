@@ -4,7 +4,7 @@ import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 
-import edu.si.trellis.RdfReadConsistency;
+import edu.si.trellis.MutableReadConsistency;
 
 import javax.inject.Inject;
 
@@ -16,7 +16,7 @@ import org.apache.commons.rdf.api.IRI;
 public class BasicContainment extends ResourceQuery {
 
     @Inject
-    public BasicContainment(Session session, @RdfReadConsistency ConsistencyLevel consistency) {
+    public BasicContainment(Session session, @MutableReadConsistency ConsistencyLevel consistency) {
         super(session, "SELECT identifier AS contained FROM " + BASIC_CONTAINMENT_TABLENAME
                         + " WHERE container = :container ;", consistency);
     }

@@ -3,7 +3,7 @@ package edu.si.trellis.query.rdf;
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.Session;
 
-import edu.si.trellis.RdfWriteConsistency;
+import edu.si.trellis.MutableWriteConsistency;
 import java.util.concurrent.CompletableFuture;
 
 import javax.inject.Inject;
@@ -16,7 +16,7 @@ import org.apache.commons.rdf.api.IRI;
 public class Delete extends ResourceQuery {
 
     @Inject
-    public Delete(Session session, @RdfWriteConsistency ConsistencyLevel consistency) {
+    public Delete(Session session, @MutableWriteConsistency ConsistencyLevel consistency) {
         super(session, "DELETE FROM " + MUTABLE_TABLENAME + " WHERE identifier = :identifier ;", consistency);
     }
 

@@ -3,7 +3,7 @@ package edu.si.trellis.query.rdf;
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.Session;
 
-import edu.si.trellis.RdfWriteConsistency;
+import edu.si.trellis.MutableWriteConsistency;
 import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 
@@ -18,7 +18,7 @@ import org.apache.commons.rdf.api.IRI;
 public class ImmutableInsert extends ResourceQuery {
 
     @Inject
-    public ImmutableInsert(Session session, @RdfWriteConsistency ConsistencyLevel consistency) {
+    public ImmutableInsert(Session session, @MutableWriteConsistency ConsistencyLevel consistency) {
         super(session, "INSERT INTO " + IMMUTABLE_TABLENAME + " (identifier, quads, created) VALUES (?,?,?)",
                         consistency);
     }

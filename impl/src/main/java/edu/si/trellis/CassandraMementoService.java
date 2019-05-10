@@ -32,7 +32,7 @@ import org.trellisldp.api.Resource;
  * A {@link MementoService} that stores Mementos in a Cassandra table.
  *
  */
-public class CassandraMementoService extends CassandraService implements MementoService {
+public class CassandraMementoService extends CassandraBuildingService implements MementoService {
 
     private static final Logger log = getLogger(CassandraMementoService.class);
 
@@ -78,7 +78,7 @@ public class CassandraMementoService extends CassandraService implements Memento
     public CompletionStage<SortedSet<Instant>> mementos(IRI id) {
         return mementos.execute(id).thenApply(
                         results -> results.all().stream()
-                                        .map(row -> row.get("mementomodified", Instant.class))
+                                        .map(row -> row.get("modified", Instant.class))
                                         .map(time -> time.truncatedTo(SECONDS))
                                         .collect(toCollection(TreeSet::new)));
     }
@@ -87,11 +87,11 @@ public class CassandraMementoService extends CassandraService implements Memento
     @Override
     public CompletionStage<Resource> get(final IRI id, Instant time) {
         log.debug("Retrieving Memento for: {} at {}", id, time);
-        return getMemento.execute(id, time).thenApply(result -> buildResource(result, log, id));
+        return getMemento.execute(id, time).thenApply(result -> parse(result, log, id));
     }
 
     @Override
-    Resource constructResource(IRI id, IRI ixnModel, boolean hasAcl, IRI binaryId, String mimeType, IRI container,
+    Resource construct(IRI id, IRI ixnModel, boolean hasAcl, IRI binaryId, String mimeType, IRI container,
                     Instant modified) {
         return new CassandraMemento(id, ixnModel, hasAcl, binaryId, mimeType, container, modified, immutableRetrieve,
                         mementoMutableRetrieve);

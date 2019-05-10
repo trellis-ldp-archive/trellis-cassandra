@@ -96,7 +96,7 @@ public class CassandraContext {
      * @return the read-consistency to use querying Cassandra RDF data
      */
     @Produces
-    @RdfReadConsistency
+    @MutableReadConsistency
     public ConsistencyLevel rdfReadConsistency() {
         return rdfReadConsistency;
     }
@@ -105,7 +105,7 @@ public class CassandraContext {
      * @return the write-consistency to use querying Cassandra RDF data
      */
     @Produces
-    @RdfWriteConsistency
+    @MutableWriteConsistency
     public ConsistencyLevel rdfWriteConsistency() {
         return rdfWriteConsistency;
     }

@@ -4,7 +4,7 @@ import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 
-import edu.si.trellis.RdfReadConsistency;
+import edu.si.trellis.MutableReadConsistency;
 import java.util.concurrent.CompletableFuture;
 
 import javax.inject.Inject;
@@ -17,8 +17,8 @@ import org.apache.commons.rdf.api.IRI;
 public class Mementos extends ResourceQuery {
 
     @Inject
-    public Mementos(Session session, @RdfReadConsistency ConsistencyLevel consistency) {
-        super(session, "SELECT mementomodified FROM " + MEMENTO_MUTABLE_TABLENAME + " WHERE identifier = :identifier",
+    public Mementos(Session session, @MutableReadConsistency ConsistencyLevel consistency) {
+        super(session, "SELECT modified FROM " + MEMENTO_MUTABLE_TABLENAME + " WHERE identifier = :identifier",
                         consistency);
     }
 
@@ -28,6 +28,6 @@ public class Mementos extends ResourceQuery {
      *         (the most recent one).
      */
     public CompletableFuture<ResultSet> execute(IRI id) {
-        return executeRead(preparedStatement().bind(id));
+        return executeRead(preparedStatement().bind().set("identifier", id, IRI.class));
     }
 }
