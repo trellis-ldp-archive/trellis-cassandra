@@ -10,7 +10,7 @@
 
   <artifactId>integration-tests</artifactId>
 
-  <name>Trellis/Cassandra integration tests</name>
+  <name>Trellis/Cassandra Integration Tests</name>
 
   <properties>
     <cassandra.contactNode>localhost</cassandra.contactNode>
