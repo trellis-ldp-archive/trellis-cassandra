@@ -13,6 +13,7 @@ import java.io.UncheckedIOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -23,9 +24,11 @@ import javax.inject.Inject;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 
+import org.apache.tamaya.ConfigException;
 import org.apache.tamaya.format.ConfigurationFormats;
 import org.apache.tamaya.inject.api.Config;
 import org.apache.tamaya.spi.PropertySource;
+import org.apache.tamaya.spisupport.propertysource.EnvironmentPropertySource;
 import org.slf4j.Logger;
 import org.trellisldp.http.TrellisHttpFilter;
 import org.trellisldp.http.TrellisHttpResource;
@@ -57,7 +60,7 @@ public class CassandraApplication extends Application {
      * Load in any additional configuration.
      */
     @PostConstruct
-    public void importAdditionalConfig() {
+    public void importAndArrangeAdditionalConfig() {
         // we require contained PUT because we use the Trellis WebDAV module, which requires it
         System.setProperty(CONFIG_HTTP_PUT_UNCONTAINED, "false");
         additionalConfigFile.map(this::toUrl).ifPresent(this::addConfig);
@@ -66,8 +69,14 @@ public class CassandraApplication extends Application {
         log(System.getProperties());
         log.debug("Using ENV vars:");
         log(System.getenv());
+        // put ENV properties first to cater for Docker expectations
+        final List<PropertySource> propertySources = current().getContext().getPropertySources();
+        final PropertySource envPropSource = propertySources.stream().filter(EnvironmentPropertySource.class::isInstance)
+                        .findFirst().orElseThrow(() -> new ConfigException(
+                                        "Must have an EnvironmentPropertySource in Tamaya's chain!"));
+        current().toBuilder().highestPriority(envPropSource);
         log.debug("Using Tamaya configuration sources:");
-        current().getContext().getPropertySources().stream().map(PropertySource::getName).forEach(log::debug);
+        propertySources.stream().map(PropertySource::getName).forEach(log::debug);
         log.debug("Using Tamaya configuration:");
         log(current().getProperties());
     }

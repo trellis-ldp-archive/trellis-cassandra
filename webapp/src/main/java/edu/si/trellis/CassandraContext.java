@@ -137,17 +137,17 @@ public class CassandraContext {
         if (log.isDebugEnabled()) cluster.register(QueryLogger.builder().withMaxParameterValueLength(1000).build());
         cluster.getConfiguration().getCodecRegistry().register(STANDARD_CODECS);
         Timer connector = new Timer("Cassandra Connection Maker", true);
-        log.debug("Connecting to Cassandra...");
+        log.info("Connecting to Cassandra...");
         connector.schedule(new TimerTask() {
             @Override
             public void run() {
                 if (isPortOpen(contactAddress, contactPort)) {
                     session = cluster.connect("trellis");
-                    log.debug("Connection made and keyspace set to 'trellis'.");
+                    log.info("Connection made and keyspace set to 'trellis'.");
                     sessionInitialized.countDown();
                     this.cancel();
                     connector.cancel();
-                } else log.debug("Still trying connection to {}:{}...", contactAddress, contactPort);
+                } else log.warn("Still trying connection to {}:{}...", contactAddress, contactPort);
             }
         }, 0, POLL_TIMEOUT);
     }
