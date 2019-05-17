@@ -3,6 +3,12 @@
 # Cassandra Options
 OPTS="-Dcassandra.contactAddress=$CASSANDRA_CONTACT_ADDRESS"
 OPTS="$OPTS -Dcassandra.contactPort=$CASSANDRA_CONTACT_PORT"
+OPTS="$OPTS -Dcassandra.binaryReadConsistency=$CASSANDRA_BINARY_READ_CONSISTENCY"
+OPTS="$OPTS -Dcassandra.binaryWriteConsistency=$CASSANDRA_BINARY_WRITE_CONSISTENCY"
+OPTS="$OPTS -Dcassandra.rdfReadConsistency=$CASSANDRA_RDF_READ_CONSISTENCY"
+OPTS="$OPTS -Dcassandra.rdfWriteConsistency=$CASSANDRA_RDF_WRITE_CONSISTENCY"
+
+
 
 # HTTP Server Options
 OPTS="$OPTS -Dswarm.undertow.servers.default-server.http-listeners.default.max-post-size=1000000000000"

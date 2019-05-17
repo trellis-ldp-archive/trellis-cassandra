@@ -112,13 +112,6 @@
       </exclusions>
     </dependency>
 
-    <!-- Adds JMS-based EventService implementation
-    <dependency>
-      <groupId>org.trellisldp</groupId>
-      <artifactId>trellis-jms</artifactId>
-      <version>${trellis.version}</version>
-    </dependency>-->
-
   <!-- Configuration -->
 
   <!-- Used by Trellis -->
@@ -407,5 +400,40 @@
         </plugins>
       </build>
     </profile>
+
+    <profile>
+      <id>jms</id>
+      <!-- Adds JMS-based EventService implementation-->
+      <dependencies>
+        <dependency>
+          <groupId>org.trellisldp</groupId>
+          <artifactId>trellis-jms</artifactId>
+          <version>${trellis.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.trellisldp</groupId>
+          <artifactId>trellis-event-serialization</artifactId>
+          <version>${trellis.version}</version>
+        </dependency>
+      </dependencies>
+    </profile>
+
+    <profile>
+      <id>basic-webac</id>
+      <!-- Adds WebAC Service and BASIC authorization. -->
+      <dependencies>
+        <dependency>
+          <groupId>org.trellisldp</groupId>
+          <artifactId>trellis-webac</artifactId>
+          <version>${trellis.version}</version>
+        </dependency>
+          <dependency>
+            <groupId>org.trellisldp</groupId>
+            <artifactId>trellis-auth-basic</artifactId>
+            <version>${trellis.version}</version>
+          </dependency>
+      </dependencies>
+    </profile>
+
   </profiles>
 </project>
