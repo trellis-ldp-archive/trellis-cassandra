@@ -18,7 +18,9 @@ public class Get extends ResourceQuery {
 
     @Inject
     public Get(Session session, @MutableReadConsistency ConsistencyLevel consistency) {
-        super(session, "SELECT * FROM " + MUTABLE_TABLENAME + " WHERE identifier = :identifier;", consistency);
+        super(session, "SELECT "
+                        + " identifier, interactionModel, hasAcl, binaryIdentifier, mimeType, container, modified "
+                        + " FROM " + MUTABLE_TABLENAME + " WHERE identifier = :identifier;", consistency);
     }
 
     public CompletableFuture<ResultSet> execute(IRI id) {

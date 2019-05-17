@@ -20,7 +20,9 @@ public class GetMemento extends ResourceQuery {
 
     @Inject
     public GetMemento(Session session, @MutableReadConsistency ConsistencyLevel consistency) {
-        super(session, "SELECT * FROM " + MEMENTO_MUTABLE_TABLENAME
+        super(session, "SELECT "
+                        + " identifier, interactionModel, hasAcl, binaryIdentifier, mimeType, container, modified "
+                        + " FROM " + MEMENTO_MUTABLE_TABLENAME
                         + " WHERE identifier = :identifier AND mementomodified <= :time " + " LIMIT 1 ALLOW FILTERING;",
                         consistency);
     }
@@ -31,8 +33,7 @@ public class GetMemento extends ResourceQuery {
      * @return the data for the Memento
      */
     public CompletableFuture<ResultSet> execute(IRI id, Instant time) {
-        return executeRead(preparedStatement().bind()
-                        .set("time", time, Instant.class)
-                        .set("identifier", id, IRI.class));
+        return executeRead(
+                        preparedStatement().bind().set("time", time, Instant.class).set("identifier", id, IRI.class));
     }
 }
