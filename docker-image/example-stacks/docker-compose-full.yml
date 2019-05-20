@@ -43,14 +43,6 @@ services:
         condition: on-failure
         max_attempts: 20
         window: 120s
-  nginx:
-    image: nginx:latest
-    container_name: protected_nginx
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
-    ports:
-      - 8080:80
-      - 8443:443
   cassandra-1:
     image: cassandra
     environment:
