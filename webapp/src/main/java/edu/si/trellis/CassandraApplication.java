@@ -1,11 +1,10 @@
 package edu.si.trellis;
 
+import static java.util.concurrent.CompletableFuture.runAsync;
 import static org.apache.tamaya.Configuration.current;
 import static org.apache.tamaya.Configuration.setCurrent;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_PUT_UNCONTAINED;
-
-import com.google.common.collect.ImmutableSet;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,6 +34,8 @@ import org.trellisldp.http.TrellisHttpResource;
 import org.trellisldp.webdav.TrellisWebDAV;
 import org.trellisldp.webdav.TrellisWebDAVRequestFilter;
 import org.trellisldp.webdav.TrellisWebDAVResponseFilter;
+
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Basic JAX-RS {@link Application} to deploy Trellis with a Cassandra persistence implementation.
@@ -107,7 +108,9 @@ public class CassandraApplication extends Application {
 
     @Override
     public Set<Object> getSingletons() {
-        return ImmutableSet.of(new TrellisHttpResource(services), new TrellisHttpFilter(), new TrellisWebDAV(services),
+    	TrellisHttpResource thr = new TrellisHttpResource(services);
+    	runAsync(() -> { thr.initialize(); });
+        return ImmutableSet.of(thr, new TrellisHttpFilter(), new TrellisWebDAV(services),
                         new TrellisWebDAVRequestFilter(services), new TrellisWebDAVResponseFilter());
     }
 }
