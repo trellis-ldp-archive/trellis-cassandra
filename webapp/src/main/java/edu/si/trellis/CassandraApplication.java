@@ -49,14 +49,6 @@ public class CassandraApplication extends Application {
 
     private static final Logger log = getLogger(CassandraApplication.class);
 
-    @Inject
-    private CassandraServiceBundler services;
-
-//    @Produces
-//    private CassandraServiceBundler services() {
-//        return services;
-//    }
-
     @Config(key = "configurationFile", alternateKeys = { "TRELLIS_CONFIG_FILE" })
     private Optional<File> additionalConfigFile;
 
