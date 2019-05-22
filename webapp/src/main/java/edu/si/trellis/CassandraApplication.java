@@ -1,10 +1,11 @@
 package edu.si.trellis;
 
-import static java.util.concurrent.CompletableFuture.runAsync;
 import static org.apache.tamaya.Configuration.current;
 import static org.apache.tamaya.Configuration.setCurrent;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_PUT_UNCONTAINED;
+
+import com.google.common.collect.ImmutableSet;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,8 +20,6 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.Dependent;
-import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
@@ -36,8 +35,6 @@ import org.trellisldp.http.TrellisHttpResource;
 import org.trellisldp.webdav.TrellisWebDAV;
 import org.trellisldp.webdav.TrellisWebDAVRequestFilter;
 import org.trellisldp.webdav.TrellisWebDAVResponseFilter;
-
-import com.google.common.collect.ImmutableSet;
 
 /**
  * Basic JAX-RS {@link Application} to deploy Trellis with a Cassandra persistence implementation.
