@@ -19,6 +19,8 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.Dependent;
+import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
@@ -50,12 +52,32 @@ public class CassandraApplication extends Application {
     @Inject
     private CassandraServiceBundler services;
 
+//    @Produces
+//    private CassandraServiceBundler services() {
+//        return services;
+//    }
+
     @Config(key = "configurationFile", alternateKeys = { "TRELLIS_CONFIG_FILE" })
     private Optional<File> additionalConfigFile;
 
     @Inject
     @Config(key = "configurationUrl", alternateKeys = { "TRELLIS_CONFIG_URL" })
     private Optional<URL> additionalConfigUrl;
+    
+    @Inject
+    private TrellisHttpResource ldpHttpResource;
+    
+    @Inject
+    private TrellisWebDAV webDav;
+    
+    @Inject
+    private TrellisWebDAVRequestFilter webDavRequestFilter;
+    
+    @Inject
+    private TrellisHttpFilter httpFilter;
+    
+    @Inject
+    private TrellisWebDAVResponseFilter webDavResponseFilter;
 
     /**
      * Load in any additional configuration.
@@ -108,9 +130,6 @@ public class CassandraApplication extends Application {
 
     @Override
     public Set<Object> getSingletons() {
-    	TrellisHttpResource thr = new TrellisHttpResource(services);
-    	runAsync(thr::initialize);
-        return ImmutableSet.of(thr, new TrellisHttpFilter(), new TrellisWebDAV(services),
-                        new TrellisWebDAVRequestFilter(services), new TrellisWebDAVResponseFilter());
+    	return ImmutableSet.of(ldpHttpResource, httpFilter, webDav, webDavRequestFilter, webDavResponseFilter);
     }
 }
