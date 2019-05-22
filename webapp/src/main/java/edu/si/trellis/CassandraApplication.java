@@ -82,13 +82,9 @@ public class CassandraApplication extends Application {
         log.debug("Using ENV vars:");
         log(System.getenv());
         // put ENV properties first to cater for Docker expectations
-        final List<PropertySource> propertySources = current().getContext().getPropertySources();
-        final PropertySource envPropSource = propertySources.stream().filter(EnvironmentPropertySource.class::isInstance)
-                        .findFirst().orElseThrow(() -> new ConfigException(
-                                        "Must have an EnvironmentPropertySource in Tamaya's chain!"));
-        current().toBuilder().highestPriority(envPropSource);
+        setCurrent(current().toBuilder().highestPriority(new EnvironmentPropertySource()).build());
         log.debug("Using Tamaya configuration sources:");
-        propertySources.stream().map(PropertySource::getName).forEach(log::debug);
+        current().getContext().getPropertySources().stream().map(PropertySource::getName).forEach(log::debug);
         log.debug("Using Tamaya configuration:");
         log(current().getProperties());
     }
