@@ -109,7 +109,7 @@ public class CassandraApplication extends Application {
     @Override
     public Set<Object> getSingletons() {
     	TrellisHttpResource thr = new TrellisHttpResource(services);
-    	runAsync(() -> { thr.initialize(); });
+    	runAsync(thr::initialize);
         return ImmutableSet.of(thr, new TrellisHttpFilter(), new TrellisWebDAV(services),
                         new TrellisWebDAVRequestFilter(services), new TrellisWebDAVResponseFilter());
     }
