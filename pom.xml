@@ -39,7 +39,7 @@
     <trellis.version>0.9.0-SNAPSHOT</trellis.version>
 
     <cassandra.test.version>3.11.3</cassandra.test.version>
-    <cassandra.driver.version>3.6.0</cassandra.driver.version>
+    <cassandra.driver.version>3.7.0</cassandra.driver.version>
     <jena.version>3.11.0</jena.version>
     <commons.rdf.version>0.5.0</commons.rdf.version>
     <thorntail.version>2.4.0.Final</thorntail.version>
