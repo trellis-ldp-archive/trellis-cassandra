@@ -7,8 +7,7 @@ Rich, delicious [TrellisLDP](https://github.com/trellis-ldp/trellis) ice cream l
 3. The renowned distribution and scaling characteristics of Apache Cassandra.
 
 [![CircleCI](https://circleci.com/gh/trellis-ldp/trellis-cassandra/tree/master.svg?style=svg)](https://circleci.com/gh/trellis-ldp/trellis-cassandra/tree/master)
-[![Travis-CI](https://travis-ci.org/trellis-ldp/trellis-cassandra.svg?branch=master)](https://travis-ci.org/trellis-ldp/trellis-cassandra)
-
+[![Travis-CI](https://travis-ci.com/trellis-ldp/trellis-cassandra.svg?branch=master)](https://travis-ci.com/trellis-ldp/trellis-cassandra)
 
 Use
 ```
