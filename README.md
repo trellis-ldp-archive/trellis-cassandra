@@ -12,4 +12,4 @@ Use
 ```
 mvn clean install
 ```
-to [build](wiki/Building-and-running) with a build-provided Cassandra instance for testing.
+to [build](wiki/Building-and-running) with a build-provided Cassandra instance for testing. [Configure](wiki/Configuration) to connect to your Cassandra cluster. Use Docker [to deploy](wiki/Docker-machinery). Enjoy!
