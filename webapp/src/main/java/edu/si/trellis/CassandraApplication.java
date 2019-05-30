@@ -1,10 +1,11 @@
 package edu.si.trellis;
 
-import static java.util.concurrent.CompletableFuture.runAsync;
 import static org.apache.tamaya.Configuration.current;
 import static org.apache.tamaya.Configuration.setCurrent;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_PUT_UNCONTAINED;
+
+import com.google.common.collect.ImmutableSet;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,8 +36,6 @@ import org.trellisldp.webdav.TrellisWebDAV;
 import org.trellisldp.webdav.TrellisWebDAVRequestFilter;
 import org.trellisldp.webdav.TrellisWebDAVResponseFilter;
 
-import com.google.common.collect.ImmutableSet;
-
 /**
  * Basic JAX-RS {@link Application} to deploy Trellis with a Cassandra persistence implementation.
  *
@@ -47,15 +46,27 @@ public class CassandraApplication extends Application {
 
     private static final Logger log = getLogger(CassandraApplication.class);
 
-    @Inject
-    private CassandraServiceBundler services;
-
     @Config(key = "configurationFile", alternateKeys = { "TRELLIS_CONFIG_FILE" })
     private Optional<File> additionalConfigFile;
 
     @Inject
     @Config(key = "configurationUrl", alternateKeys = { "TRELLIS_CONFIG_URL" })
     private Optional<URL> additionalConfigUrl;
+    
+    @Inject
+    private TrellisHttpResource ldpHttpResource;
+    
+    @Inject
+    private TrellisWebDAV webDav;
+    
+    @Inject
+    private TrellisWebDAVRequestFilter webDavRequestFilter;
+    
+    @Inject
+    private TrellisHttpFilter httpFilter;
+    
+    @Inject
+    private TrellisWebDAVResponseFilter webDavResponseFilter;
 
     /**
      * Load in any additional configuration.
@@ -71,13 +82,9 @@ public class CassandraApplication extends Application {
         log.debug("Using ENV vars:");
         log(System.getenv());
         // put ENV properties first to cater for Docker expectations
-        final List<PropertySource> propertySources = current().getContext().getPropertySources();
-        final PropertySource envPropSource = propertySources.stream().filter(EnvironmentPropertySource.class::isInstance)
-                        .findFirst().orElseThrow(() -> new ConfigException(
-                                        "Must have an EnvironmentPropertySource in Tamaya's chain!"));
-        current().toBuilder().highestPriority(envPropSource);
+        setCurrent(current().toBuilder().highestPriority(new EnvironmentPropertySource()).build());
         log.debug("Using Tamaya configuration sources:");
-        propertySources.stream().map(PropertySource::getName).forEach(log::debug);
+        current().getContext().getPropertySources().stream().map(PropertySource::getName).forEach(log::debug);
         log.debug("Using Tamaya configuration:");
         log(current().getProperties());
     }
@@ -108,9 +115,6 @@ public class CassandraApplication extends Application {
 
     @Override
     public Set<Object> getSingletons() {
-    	TrellisHttpResource thr = new TrellisHttpResource(services);
-    	runAsync(thr::initialize);
-        return ImmutableSet.of(thr, new TrellisHttpFilter(), new TrellisWebDAV(services),
-                        new TrellisWebDAVRequestFilter(services), new TrellisWebDAVResponseFilter());
+    	return ImmutableSet.of(ldpHttpResource, httpFilter, webDav, webDavRequestFilter, webDavResponseFilter);
     }
 }
