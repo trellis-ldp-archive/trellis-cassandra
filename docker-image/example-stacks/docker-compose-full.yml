@@ -3,23 +3,27 @@ version: "3"
 # https://github.com/thelastpickle/docker-cassandra-bootstrap - monitoring/grafana, other docker details
 services:
   trellis-cassandra:
-    image: trellisldp/trellis-cassandra:0.8.1-SNAPSHOT
+    image: trellisldp/trellis-cassandra:${SUBJECT_DOCKER_TAG:?SUBJECT_DOCKER_TAG missing}
     environment:
-      - CASSANDRA_CONTACT_ADDRESS="cassandra-1"
-      - CASSANDRA_CONTACT_PORT=9042
-      - CASSANDRA_MAX_CHUNK_SIZE=1048576
-      #- CASSANDRA_BINARY_READ_CONSISTENCY="ConsistencyLevel.ONE"
-      #- CASSANDRA_BINARY_WRITE_CONSISTENCY="ConsistencyLevel.ONE"
-      - TRELLIS_JMS_USE_QUEUE="false"
-      - TRELLIS_JMS_QUEUE_NAME="trellis"
-      - TRELLIS_JMS_URL="tcp://activemq:61616"
+      CASSANDRA_CONTACT_ADDRESS: "cassandra-1"
+      CASSANDRA_CONTACT_PORT: 9042
+      CASSANDRA_MAX_CHUNK_SIZE:
+      CASSANDRA_BINARY_READ_CONSISTENCY:
+      CASSANDRA_BINARY_WRITE_CONSISTENCY:
+      CASSANDRA_RDF_READ_CONSISTENCY:
+      CASSANDRA_RDF_WRITE_CONSISTENCY:
+      TRELLIS_JMS_USE_QUEUE: ${TRELLIS_JMS_USE_QUEUE:?TRELLIS_JMS_USE_QUEUE missing}
+      TRELLIS_JMS_QUEUE_NAME: "trellis"
+      TRELLIS_JMS_URL: "tcp://activemq:61616"
+      TRELLIS_JMS_USERNAME:
+      TRELLIS_JMS_PASSWORD:
     volumes:
       - ./users.auth:/etc/users.auth
     ports:
-      - "8080:8080"
+      - "10080:8080"
     deploy:
       mode: replicated
-      replicas: 1
+      replicas: ${FRONTEND_NODES:?FRONTEND_NODES missing}
       restart_policy:
         condition: on-failure
         max_attempts: 20
@@ -95,4 +99,5 @@ services:
       restart_policy:
         condition: on-failure
         delay: 30s
-    command: cqlsh cassandra-1 -f /load.cql
+    command: cqlsh cassandra-1 -f /load.cql && cqlsh -e "ALTER KEYSPACE trellis WITH REPLICATION = {'class' : 'SimpleStrategy', 'replication_factor' : ${CASSANDRA_REPLICATION_FACTOR:?CASSANDRA_REPLICATION_FACTOR}}" cassandra-1
+}"

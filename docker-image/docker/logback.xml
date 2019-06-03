@@ -37,11 +37,11 @@
 
 <!--   <logger name="com.datastax.driver.core.QueryLogger" level="TRACE"/> -->
 
-<!--   <logger name="org.jboss.weld" level="DEBUG"/> -->
+  <!-- <logger name="org.jboss.weld" level="DEBUG"/> -->
 
-<!--   <logger name="org.wildfly" level="WARN"/> -->
+  <!-- <logger name="org.wildfly" level="DEBUG"/> -->
 
-<!--   <logger name="org.trellisldp" level="INFO"/> -->
+  <!-- <logger name="org.trellisldp" level="DEBUG"/> -->
 
   <!-- <logger name="edu.si" level="DEBUG"/> -->
 

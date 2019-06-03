@@ -5,15 +5,12 @@ import static org.apache.tamaya.Configuration.setCurrent;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_PUT_UNCONTAINED;
 
-import com.google.common.collect.ImmutableSet;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -24,17 +21,23 @@ import javax.inject.Inject;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 
-import org.apache.tamaya.ConfigException;
 import org.apache.tamaya.format.ConfigurationFormats;
 import org.apache.tamaya.inject.api.Config;
 import org.apache.tamaya.spi.PropertySource;
 import org.apache.tamaya.spisupport.propertysource.EnvironmentPropertySource;
 import org.slf4j.Logger;
+import org.trellisldp.api.EventService;
+import org.trellisldp.api.ResourceService;
+import org.trellisldp.auth.basic.BasicAuthFilter;
+import org.trellisldp.http.AgentAuthorizationFilter;
 import org.trellisldp.http.TrellisHttpFilter;
 import org.trellisldp.http.TrellisHttpResource;
-import org.trellisldp.webdav.TrellisWebDAV;
-import org.trellisldp.webdav.TrellisWebDAVRequestFilter;
-import org.trellisldp.webdav.TrellisWebDAVResponseFilter;
+import org.trellisldp.http.WebAcFilter;
+//import org.trellisldp.webdav.TrellisWebDAV;
+//import org.trellisldp.webdav.TrellisWebDAVRequestFilter;
+//import org.trellisldp.webdav.TrellisWebDAVResponseFilter;
+
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Basic JAX-RS {@link Application} to deploy Trellis with a Cassandra persistence implementation.
@@ -56,17 +59,33 @@ public class CassandraApplication extends Application {
     @Inject
     private TrellisHttpResource ldpHttpResource;
     
-    @Inject
-    private TrellisWebDAV webDav;
+    // @Inject
+    //private TrellisWebDAV webDav;
     
-    @Inject
-    private TrellisWebDAVRequestFilter webDavRequestFilter;
+    //@Inject
+    //private TrellisWebDAVRequestFilter webDavRequestFilter;
     
     @Inject
     private TrellisHttpFilter httpFilter;
     
+    //@Inject
+    //private TrellisWebDAVResponseFilter webDavResponseFilter;
+    
+    @Inject 
+    private ResourceService resourceService;
+    
     @Inject
-    private TrellisWebDAVResponseFilter webDavResponseFilter;
+    private EventService eventService;
+    
+    @Inject
+    private BasicAuthFilter basicAuthFilter;
+    
+    @Inject
+    private AgentAuthorizationFilter agentAuthorizationFilter;
+    
+    @Inject
+    private WebAcFilter acFilter;
+    
 
     /**
      * Load in any additional configuration.
@@ -115,6 +134,7 @@ public class CassandraApplication extends Application {
 
     @Override
     public Set<Object> getSingletons() {
-    	return ImmutableSet.of(ldpHttpResource, httpFilter, webDav, webDavRequestFilter, webDavResponseFilter);
+		return ImmutableSet.of(ldpHttpResource, httpFilter, /* webDav, webDavRequestFilter, webDavResponseFilter,*/
+				resourceService, /* acService,*/ eventService, basicAuthFilter, agentAuthorizationFilter, acFilter);
     }
 }

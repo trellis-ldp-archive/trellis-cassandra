@@ -21,8 +21,8 @@ public class MutableInsert extends ResourceQuery {
     @Inject
     public MutableInsert(Session session, @MutableWriteConsistency ConsistencyLevel consistency) {
         super(session, "INSERT INTO " + MUTABLE_TABLENAME
-                        + " (interactionModel, mimeType, container, quads, modified, binaryIdentifier, created, identifier)"
-                        + " VALUES (?,?,?,?,?,?,?,?);", consistency);
+                        + " (interactionModel, mimeType, container, hasAcl, quads, modified, binaryIdentifier, created, identifier)"
+                        + " VALUES (?,?,?,?,?,?,?,?,?);", consistency);
     }
 
     /**
@@ -37,8 +37,8 @@ public class MutableInsert extends ResourceQuery {
      * @return whether and when it has been inserted
      */
     public CompletableFuture<Void> execute(IRI ixnModel, String mimeType, IRI container,
-                    Dataset data, Instant modified, IRI binaryIdentifier, UUID creation, IRI id) {
-        return executeWrite(preparedStatement().bind(ixnModel, mimeType, container, data, modified,
+                    boolean hasAcl, Dataset data, Instant modified, IRI binaryIdentifier, UUID creation, IRI id) {
+        return executeWrite(preparedStatement().bind(ixnModel, mimeType, container, hasAcl, data, modified,
                         binaryIdentifier, creation, id));
     }
 }

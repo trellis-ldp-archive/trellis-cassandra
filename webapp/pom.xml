@@ -95,21 +95,32 @@
       <artifactId>trellis-agent</artifactId>
       <version>${trellis.version}</version>
     </dependency>
-    <dependency>
+    <!-- <dependency>
       <groupId>org.trellisldp</groupId>
       <artifactId>trellis-webdav</artifactId>
       <version>${trellis.version}</version>
+    </dependency>-->
+    <dependency>
+      <groupId>org.trellisldp</groupId>
+      <artifactId>trellis-auth-basic</artifactId>
+      <version>${trellis.version}</version>
+      <exclusions>
+       <exclusion>
+          <groupId>org.apache.tamaya</groupId>
+          <artifactId>tamaya-api</artifactId>
+       </exclusion>
+   	  </exclusions>
     </dependency>
     <dependency>
       <groupId>org.trellisldp</groupId>
       <artifactId>trellis-webac</artifactId>
       <version>${trellis.version}</version>
       <exclusions>
-        <exclusion>
+       <exclusion>
           <groupId>org.apache.tamaya</groupId>
           <artifactId>tamaya-api</artifactId>
-        </exclusion>
-      </exclusions>
+       </exclusion>
+     </exclusions>
     </dependency>
 
   <!-- Configuration -->
@@ -419,19 +430,15 @@
     </profile>
 
     <profile>
-      <id>basic-webac</id>
+      <id>webac</id>
       <!-- Adds WebAC Service and BASIC authorization. -->
       <dependencies>
-        <dependency>
-          <groupId>org.trellisldp</groupId>
-          <artifactId>trellis-webac</artifactId>
-          <version>${trellis.version}</version>
-        </dependency>
-          <dependency>
-            <groupId>org.trellisldp</groupId>
-            <artifactId>trellis-auth-basic</artifactId>
-            <version>${trellis.version}</version>
-          </dependency>
+        
+      </dependencies>
+    </profile>
+    <profile>
+      <id>basic</id>
+        <dependencies>
       </dependencies>
     </profile>
 
