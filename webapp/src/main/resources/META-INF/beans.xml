@@ -3,6 +3,9 @@
   xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/beans_1_1.xsd" version="1.1"
   bean-discovery-mode="all">
   <alternatives>
-<!--     <class>class org.trellisldp.api.NoopMementoService</class> -->
+    <class>org.trellisldp.api.NoopCacheService</class>
+    <class>org.trellisldp.api.NoopAuditService</class>
+    <class>org.trellisldp.api.NoopEventService</class>
+    <class>org.trellisldp.api.NoopNamespaceService</class>
   </alternatives>
 </beans>
