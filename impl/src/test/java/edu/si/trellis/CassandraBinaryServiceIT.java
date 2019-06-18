@@ -34,25 +34,25 @@ class CassandraBinaryServiceIT extends CassandraServiceIT {
     private static final Logger log = getLogger(CassandraBinaryServiceIT.class);
 
     @Test
-    void setAndGetSmallContent() throws Exception {
+    void setAndGetSmallContent() throws IOException {
         IRI id = createIRI();
         log.debug("Using identifier: {} for testSetAndGetSmallContent", id);
         String content = "This is only a short test, but it has meaning";
         try (InputStream testInput = IOUtils.toInputStream(content, UTF_8)) {
-            connection.binaryService.setContent(builder(id).build(), testInput).get();
+            connection.binaryService.setContent(builder(id).build(), testInput).join();
         }
 
-        try (InputStream got = connection.binaryService.get(id).get().getContent()) {
+        try (InputStream got = connection.binaryService.get(id).join().getContent()) {
             String reply = IOUtils.toString(got, UTF_8);
             assertEquals(content, reply);
         }
 
-        try (InputStream got = connection.binaryService.get(id).get().getContent(5, 11)) {
+        try (InputStream got = connection.binaryService.get(id).join().getContent(5, 11)) {
             String reply = IOUtils.toString(got, UTF_8);
             assertEquals(content.subSequence(5, 12), reply);
         }
 
-        connection.binaryService.purgeContent(id).get();
+        connection.binaryService.purgeContent(id).join();
 
         try {
             connection.binaryService.get(id).get();
@@ -65,15 +65,15 @@ class CassandraBinaryServiceIT extends CassandraServiceIT {
     }
 
     @Test
-    void setAndGetMultiChunkContent() throws Exception {
+    void setAndGetMultiChunkContent() throws IOException {
         IRI id = createIRI();
         final String md5sum = "89c4b71c69f59cde963ce8aa9dbe1617";
         try (FileInputStream testData = new FileInputStream("src/test/resources/test.jpg")) {
-            connection.binaryService.setContent(builder(id).build(), testData).get();
+            connection.binaryService.setContent(builder(id).build(), testData).join();
         }
 
         CompletableFuture<Binary> got = connection.binaryService.get(id);
-        Binary binary = got.get();
+        Binary binary = got.join();
         assertTrue(got.isDone());
 
         try (InputStream testData = new FileInputStream("src/test/resources/test.jpg");

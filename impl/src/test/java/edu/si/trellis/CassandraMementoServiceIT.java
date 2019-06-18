@@ -5,8 +5,6 @@ import static org.trellisldp.api.Metadata.builder;
 
 import java.time.Instant;
 import java.util.SortedSet;
-import java.util.concurrent.ExecutionException;
-
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
@@ -16,7 +14,7 @@ import org.trellisldp.api.Metadata;
 class CassandraMementoServiceIT extends CassandraServiceIT {
 
     @Test
-    void mementos() throws InterruptedException, ExecutionException {
+    void mementos() {
         IRI id = createIRI("http://example.com/id/foo2");
         IRI ixnModel = createIRI("http://example.com/ixnModel2");
         @SuppressWarnings("resource")
@@ -26,18 +24,18 @@ class CassandraMementoServiceIT extends CassandraServiceIT {
 
         // build resource
         Metadata meta = builder(id).interactionModel(ixnModel).build();
-        connection.resourceService.create(meta, quads).toCompletableFuture().get();
-        connection.mementoService.put(connection.resourceService, id).toCompletableFuture().get();
+        connection.resourceService.create(meta, quads).toCompletableFuture().join();
+        connection.mementoService.put(connection.resourceService, id).toCompletableFuture().join();
 
-        SortedSet<Instant> mementos = connection.mementoService.mementos(id).toCompletableFuture().get();
+        SortedSet<Instant> mementos = connection.mementoService.mementos(id).toCompletableFuture().join();
         assertEquals(1, mementos.size());
         waitTwoSeconds();
 
         // again
-        connection.resourceService.replace(meta, quads).toCompletableFuture().get();
-        connection.mementoService.put(connection.resourceService, id).toCompletableFuture().get();
+        connection.resourceService.replace(meta, quads).toCompletableFuture().join();
+        connection.mementoService.put(connection.resourceService, id).toCompletableFuture().join();
 
-        mementos = connection.mementoService.mementos(id).toCompletableFuture().get();
+        mementos = connection.mementoService.mementos(id).toCompletableFuture().join();
         assertEquals(2, mementos.size());
     }
 }
