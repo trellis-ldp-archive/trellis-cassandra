@@ -28,8 +28,7 @@ matrix:
   allow_failures:
     - jdk: oraclejdk11
 
-# do not resolve dependencies because of inter-module dependencies
-install: true
+install: mvn -Dcassandra.skip -DskipTests install
 
 # load our schema
 before_script: src/test/resources/load.sh
