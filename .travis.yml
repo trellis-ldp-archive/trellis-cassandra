@@ -28,7 +28,7 @@ matrix:
   allow_failures:
     - jdk: oraclejdk11
 
-install: mvn -Dcassandra.skip -DskipTests install
+install: mvn --quiet -Dcassandra.skip -DskipTests install
 
 # load our schema
 before_script: src/test/resources/load.sh
