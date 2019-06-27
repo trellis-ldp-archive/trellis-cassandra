@@ -198,7 +198,7 @@
             <rpcPort>${cassandra.rpcPort}</rpcPort>
             <stopPort>${cassandra.stopPort}</stopPort>
             <storagePort>${cassandra.storagePort}</storagePort>
-
+            <logLevel>low</logLevel>
             <systemPropertyVariables>
               <log4j.configurationFile>${project.build.directory}/test-classes/log4j2-test.xml</log4j.configurationFile>
             </systemPropertyVariables>

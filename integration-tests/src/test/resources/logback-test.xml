@@ -23,8 +23,6 @@
     <appender-ref ref="STDOUT"/>
   </root>
 
-  <logger name="com.thinkaurelius.thrift" level="ERROR"/>
-
   <logger name="org.jboss.weld" level="WARN"/>
 
   <logger name="org.wildfly" level="WARN"/>
