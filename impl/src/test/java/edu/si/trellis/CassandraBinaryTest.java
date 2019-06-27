@@ -75,7 +75,7 @@ class CassandraBinaryTest {
         when(mockRead.execute(any())).thenReturn(mockInputStream1);
         CassandraBinary testCassandraBinary = new CassandraBinary(testId, mockRead, mockReadRange, testChunkSize);
 
-        final InputStream result = testCassandraBinary.getContent();
+        final InputStream result = testCassandraBinary.getContent().toCompletableFuture().join();
         assertSame(mockInputStream1, result, "Got wrong InputStream!");
     }
 
@@ -86,7 +86,7 @@ class CassandraBinaryTest {
         when(mockReadRange.execute(any(), anyInt(), anyInt())).thenReturn(testInputStream);
         CassandraBinary testCassandraBinary = new CassandraBinary(testId, mockRead, mockReadRange, testChunkSize);
 
-        final InputStream content = testCassandraBinary.getContent(0, 10);
+        final InputStream content = testCassandraBinary.getContent(0, 10).toCompletableFuture().join();
         byte[] result = new byte[3];
 
         content.read(result);
