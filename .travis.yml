@@ -8,9 +8,6 @@ addons:
   sonarcloud:
     organization: trellis-ldp
 
-services:
-  - cassandra
-
 cache:
   directories:
     - $HOME/.m2/repository
@@ -19,14 +16,24 @@ matrix:
   fast_finish: true
 
   include:
-    # JDK 8
     - jdk: openjdk8
 
-    # JDK 11
     - jdk: openjdk11
 
   allow_failures:
     - jdk: openjdk11
+    
+# install Casssandra "manually" to ensure the presence of nodetool
+before_install:
+  - echo "deb http://www.apache.org/dist/cassandra/debian 311x main" | sudo tee -a /etc/apt/sources.list.d/cassandra.sources.list
+  - curl https://www.apache.org/dist/cassandra/KEYS | sudo apt-key add -
+  - sudo apt-get update
+  - sudo apt-get install cassandra
+  - sudo service cassandra start 
+
+addons:
+  apt:
+    update: true
 
 install: mvn --quiet -Dcargo.maven.skip -Dcassandra.skip -DskipTests install
 
