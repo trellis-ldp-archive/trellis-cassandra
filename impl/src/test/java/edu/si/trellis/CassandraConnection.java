@@ -13,6 +13,7 @@ import com.datastax.driver.extras.codecs.jdk8.InstantCodec;
 
 import edu.si.trellis.CassandraBinaryService;
 import edu.si.trellis.CassandraResourceService;
+import edu.si.trellis.query.rdf.GetFirstMemento;
 import edu.si.trellis.query.rdf.GetMemento;
 import edu.si.trellis.query.rdf.MementoMutableRetrieve;
 import edu.si.trellis.query.rdf.Mementoize;
@@ -76,7 +77,8 @@ class CassandraConnection implements AfterAllCallback, BeforeAllCallback {
                         new Mementoize(session, testConsistency),
                         new GetMemento(session, testConsistency),
                         new MementoMutableRetrieve(session, testConsistency),
-                        new edu.si.trellis.query.rdf.ImmutableRetrieve(session, testConsistency));
+                        new edu.si.trellis.query.rdf.ImmutableRetrieve(session, testConsistency),
+                        new GetFirstMemento(session, testConsistency));
         this.binaryService = new CassandraBinaryService((IdentifierService) null, 1024 * 1024,
                         new edu.si.trellis.query.binary.GetChunkSize(session, testConsistency),
                         new edu.si.trellis.query.binary.Insert(session, testConsistency),

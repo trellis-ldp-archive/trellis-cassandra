@@ -1,11 +1,13 @@
 package edu.si.trellis;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toCollection;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import com.datastax.driver.core.utils.UUIDs;
 
+import edu.si.trellis.query.rdf.GetFirstMemento;
 import edu.si.trellis.query.rdf.GetMemento;
 import edu.si.trellis.query.rdf.ImmutableRetrieve;
 import edu.si.trellis.query.rdf.MementoMutableRetrieve;
@@ -42,16 +44,20 @@ public class CassandraMementoService extends CassandraBuildingService implements
 
     private final GetMemento getMemento;
 
+    private final GetFirstMemento getFirstMemento;
+
     private ImmutableRetrieve immutableRetrieve;
 
     private MementoMutableRetrieve mementoMutableRetrieve;
 
     @Inject
     public CassandraMementoService(Mementos mementos, Mementoize mementoize, GetMemento getMemento,
-                    MementoMutableRetrieve mementoMutableRetrieve, ImmutableRetrieve immutableRetrieve) {
+                    MementoMutableRetrieve mementoMutableRetrieve, ImmutableRetrieve immutableRetrieve,
+                    GetFirstMemento getFirstMemento) {
         this.mementos = mementos;
         this.mementoize = mementoize;
         this.getMemento = getMemento;
+        this.getFirstMemento = getFirstMemento;
         this.mementoMutableRetrieve = mementoMutableRetrieve;
         this.immutableRetrieve = immutableRetrieve;
     }
@@ -87,7 +93,10 @@ public class CassandraMementoService extends CassandraBuildingService implements
     @Override
     public CompletionStage<Resource> get(final IRI id, Instant time) {
         log.debug("Retrieving Memento for: {} at {}", id, time);
-        return getMemento.execute(id, time).thenApply(result -> parse(result, log, id));
+        return getMemento.execute(id, time)
+                        .thenCompose(result -> result.isExhausted() ? getFirstMemento.execute(id)
+                                        : completedFuture(result))
+                        .thenApply(result -> parse(result, log, id));
     }
 
     @Override
