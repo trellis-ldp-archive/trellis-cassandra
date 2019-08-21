@@ -10,6 +10,7 @@ import static org.trellisldp.vocabulary.LDP.BasicContainer;
 import static org.trellisldp.vocabulary.LDP.Container;
 import static org.trellisldp.vocabulary.LDP.NonRDFSource;
 import static org.trellisldp.vocabulary.LDP.RDFSource;
+import static org.trellisldp.vocabulary.LDP.getSuperclassOf;
 
 import com.datastax.driver.core.utils.UUIDs;
 import com.google.common.collect.ImmutableSet;
@@ -20,20 +21,22 @@ import edu.si.trellis.query.rdf.Get;
 import edu.si.trellis.query.rdf.ImmutableInsert;
 import edu.si.trellis.query.rdf.ImmutableRetrieve;
 import edu.si.trellis.query.rdf.MutableInsert;
-import edu.si.trellis.query.rdf.MutableRetrieve;
 import edu.si.trellis.query.rdf.Touch;
 
 import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
+import org.apache.commons.rdf.api.Quad;
 import org.slf4j.Logger;
 import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.Metadata;
@@ -49,7 +52,7 @@ import org.trellisldp.vocabulary.LDP;
  * @author ajs6f
  *
  */
-public class CassandraResourceService extends CassandraBuildingService implements ResourceService {
+class CassandraResourceService extends CassandraBuildingService implements ResourceService {
 
     private static final ImmutableSet<IRI> SUPPORTED_INTERACTION_MODELS = ImmutableSet.of(LDP.Resource, RDFSource,
                     NonRDFSource, Container, BasicContainer);
@@ -68,32 +71,17 @@ public class CassandraResourceService extends CassandraBuildingService implement
 
     private final BasicContainment bcontainment;
 
-    private final MutableRetrieve mutableRetrieve;
-
     private final ImmutableRetrieve immutableRetrieve;
 
-    /**
-     * Constructor.
-     * 
-     * @param delete {@link Delete} query to use to delete resources
-     * @param get {@link Get} query to support retrieving content
-     * @param immutableInsert {@link ImmutableInsert} query to support storing immutable data
-     * @param mutableInsert {@link MutableInsert} query to support storing mutable data
-     * @param touch {@link Touch} query to support updating the value of {@link Resource#getModified()}
-     * @param mutableRetrieve {@link MutableRetrieve} to support retrieving content
-     * @param immutableRetrieve {@link ImmutableRetrieve} to support retrieving content
-     * @param bcontainment {@link BasicContainment} to support retrieving content
-     */
     @Inject
-    public CassandraResourceService(Delete delete, Get get, ImmutableInsert immutableInsert,
-                    MutableInsert mutableInsert, Touch touch, MutableRetrieve mutableRetrieve,
+    CassandraResourceService(Delete delete, Get get, ImmutableInsert immutableInsert,
+                    MutableInsert mutableInsert, Touch touch,
                     ImmutableRetrieve immutableRetrieve, BasicContainment bcontainment) {
         this.delete = delete;
         this.get = get;
         this.immutableInsert = immutableInsert;
         this.mutableInsert = mutableInsert;
         this.touch = touch;
-        this.mutableRetrieve = mutableRetrieve;
         this.immutableRetrieve = immutableRetrieve;
         this.bcontainment = bcontainment;
 
@@ -121,7 +109,24 @@ public class CassandraResourceService extends CassandraBuildingService implement
 
     @Override
     public CompletionStage<? extends Resource> get(final IRI id) {
-        return get.execute(id).thenApply(rows -> parse(rows, log, id));
+        final Stream<Quad> immutable = immutableRetrieve.execute(id);
+
+        CompletableFuture<Resource> resource = get.execute(id)
+                        .thenApply(rows -> parse(rows, log, id))
+                        .thenApply(res -> {
+                            immutable.forEach(res.dataset()::add);
+                            return res;
+                        }).thenApply(res -> {
+                            if (isContainer(res))
+                                bcontainment.execute(id).forEach(res.dataset()::add);
+                            return res;
+                        });
+        return resource;
+    }
+
+    private static boolean isContainer(Resource res) {
+        return Container.equals(res.getInteractionModel())
+                        || Container.equals(getSuperclassOf(res.getInteractionModel()));
     }
 
     @Override
@@ -177,12 +182,5 @@ public class CassandraResourceService extends CassandraBuildingService implement
         Instant now = now();
 
         return mutableInsert.execute(ixnModel, mimeType, container, data, now, binaryIdentifier, UUIDs.timeBased(), id);
-    }
-
-    @Override
-    Resource construct(IRI id, IRI ixnModel, boolean hasAcl, IRI binaryId, String mimeType, IRI container,
-                    Instant modified) {
-        return new CassandraResource(id, ixnModel, hasAcl, binaryId, mimeType, container, modified, immutableRetrieve,
-                        mutableRetrieve, bcontainment);
     }
 }

@@ -20,9 +20,7 @@ public class GetMemento extends ResourceQuery {
 
     @Inject
     public GetMemento(Session session, @MutableReadConsistency ConsistencyLevel consistency) {
-        super(session, "SELECT "
-                        + " identifier, interactionModel, hasAcl, binaryIdentifier, mimeType, container, modified "
-                        + " FROM " + MEMENTO_MUTABLE_TABLENAME
+        super(session, "SELECT * FROM " + MEMENTO_MUTABLE_TABLENAME
                         + " WHERE identifier = :identifier AND mementomodified <= :time " + " LIMIT 1 ALLOW FILTERING;",
                         consistency);
     }

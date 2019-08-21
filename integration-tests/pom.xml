@@ -131,7 +131,7 @@
               <artifactId>webapp</artifactId>
               <type>war</type>
               <pingUrlPath>/</pingUrlPath>
-              <pingTimeout>60000</pingTimeout>
+              <pingTimeout>120000</pingTimeout>
             </deployable>
           </deployables>
         </configuration>

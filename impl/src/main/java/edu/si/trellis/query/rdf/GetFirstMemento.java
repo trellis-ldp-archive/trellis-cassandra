@@ -19,10 +19,7 @@ public class GetFirstMemento extends ResourceQuery {
 
     @Inject
     public GetFirstMemento(Session session, @MutableReadConsistency ConsistencyLevel consistency) {
-        super(session, "SELECT "
-                        + " identifier, interactionModel, hasAcl, binaryIdentifier, mimeType, container, modified "
-                        + " FROM " + MEMENTO_MUTABLE_TABLENAME
-                        + " WHERE identifier = :identifier LIMIT 1 ;",
+        super(session, "SELECT * FROM " + MEMENTO_MUTABLE_TABLENAME + " WHERE identifier = :identifier LIMIT 1 ;",
                         consistency);
     }
 
@@ -31,7 +28,6 @@ public class GetFirstMemento extends ResourceQuery {
      * @return the data for the Memento
      */
     public CompletionStage<ResultSet> execute(IRI id) {
-        return executeRead(
-                        preparedStatement().bind().set("identifier", id, IRI.class));
+        return executeRead(preparedStatement().bind().set("identifier", id, IRI.class));
     }
 }
