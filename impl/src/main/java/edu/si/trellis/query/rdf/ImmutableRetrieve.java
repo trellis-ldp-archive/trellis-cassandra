@@ -5,6 +5,7 @@ import com.datastax.driver.core.Session;
 
 import edu.si.trellis.MutableReadConsistency;
 
+import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -26,7 +27,7 @@ public class ImmutableRetrieve extends ResourceQuery {
      * @param id the {@link IRI} of the resource, the immutable data of which is to be retrieved
      * @return the RDF retrieved
      */
-    public Stream<Quad> execute(IRI id) {
+    public CompletionStage<Stream<Quad>> execute(IRI id) {
         return quads(preparedStatement().bind().set("identifier", id, IRI.class));
     }
 }
