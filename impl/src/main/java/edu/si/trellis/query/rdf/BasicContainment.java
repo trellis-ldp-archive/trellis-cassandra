@@ -12,6 +12,7 @@ import com.datastax.driver.core.Session;
 
 import edu.si.trellis.MutableReadConsistency;
 
+import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -38,10 +39,17 @@ public class BasicContainment extends ResourceQuery {
      * @param id the {@link IRI} of the container
      * @return a {@link ResultSet} of the resources contained in {@code id}
      */
-    public Stream<Quad> execute(IRI id) {
+    public CompletionStage<Stream<Quad>> execute(IRI id) {
         final BoundStatement query = preparedStatement().bind().set("container", id, IRI.class);
-        final Stream<Row> rows = stream(executeSyncRead(query).spliterator(), false);
-        return rows.map(r -> r.get("contained", IRI.class)).map(con -> containmentQuad(id, con));
+        return executeRead(query)
+                        .thenApply(ResultSet::spliterator)
+                        .thenApply(rows -> stream(rows, false))
+                        .thenApply(rows -> rows.map(this::getContained))
+                        .thenApply(rows -> rows.map(con -> containmentQuad(id, con)));
+    }
+
+    private IRI getContained(Row r) {
+        return r.get("contained", IRI.class);
     }
 
     private static Quad containmentQuad(IRI id, IRI con) {

@@ -6,6 +6,7 @@ import com.datastax.driver.core.Session;
 import edu.si.trellis.MutableReadConsistency;
 
 import java.time.Instant;
+import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -30,7 +31,7 @@ public class MementoMutableRetrieve extends ResourceQuery {
      * @param time the time for which this Memento must be valid
      * @return the RDF retrieved
      */
-    public Stream<Quad> execute(IRI id, Instant time) {
+    public CompletionStage<Stream<Quad>> execute(IRI id, Instant time) {
         return quads(preparedStatement().bind()
                         .set("time", time, Instant.class)
                         .set("identifier", id, IRI.class));

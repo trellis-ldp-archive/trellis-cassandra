@@ -5,7 +5,8 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 
 import edu.si.trellis.MutableReadConsistency;
-import java.util.concurrent.CompletableFuture;
+
+import java.util.concurrent.CompletionStage;
 
 import javax.inject.Inject;
 
@@ -21,7 +22,7 @@ public class Get extends ResourceQuery {
         super(session, "SELECT * FROM " + MUTABLE_TABLENAME + " WHERE identifier = :identifier;", consistency);
     }
 
-    public CompletableFuture<ResultSet> execute(IRI id) {
+    public CompletionStage<ResultSet> execute(IRI id) {
         return executeRead(preparedStatement().bind().set("identifier", id, IRI.class));
     }
 }

@@ -26,7 +26,6 @@ import edu.si.trellis.query.rdf.Touch;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
@@ -74,9 +73,8 @@ class CassandraResourceService extends CassandraBuildingService implements Resou
     private final ImmutableRetrieve immutableRetrieve;
 
     @Inject
-    CassandraResourceService(Delete delete, Get get, ImmutableInsert immutableInsert,
-                    MutableInsert mutableInsert, Touch touch,
-                    ImmutableRetrieve immutableRetrieve, BasicContainment bcontainment) {
+    CassandraResourceService(Delete delete, Get get, ImmutableInsert immutableInsert, MutableInsert mutableInsert,
+                    Touch touch, ImmutableRetrieve immutableRetrieve, BasicContainment bcontainment) {
         this.delete = delete;
         this.get = get;
         this.immutableInsert = immutableInsert;
@@ -109,19 +107,19 @@ class CassandraResourceService extends CassandraBuildingService implements Resou
 
     @Override
     public CompletionStage<? extends Resource> get(final IRI id) {
-        final Stream<Quad> immutable = immutableRetrieve.execute(id);
-
-        CompletableFuture<Resource> resource = get.execute(id)
+        final CompletionStage<Stream<Quad>> immutableData = immutableRetrieve.execute(id);
+        final CompletionStage<Resource> resource = get.execute(id)
                         .thenApply(rows -> parse(rows, log, id))
-                        .thenApply(res -> {
-                            immutable.forEach(res.dataset()::add);
-                            return res;
-                        }).thenApply(res -> {
-                            if (isContainer(res))
-                                bcontainment.execute(id).forEach(res.dataset()::add);
+                        .thenCombine(immutableData, (res, imm) -> {
+                            imm.forEach(res.dataset()::add);
                             return res;
                         });
-        return resource;
+
+        return resource.thenCompose(
+                        res -> isContainer(res) ? resource.thenCombine(bcontainment.execute(id), (res2, con) -> {
+                            con.forEach(res2.dataset()::add);
+                            return res2;
+                        }) : resource);
     }
 
     private static boolean isContainer(Resource res) {
