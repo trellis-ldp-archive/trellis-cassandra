@@ -7,6 +7,7 @@ import com.datastax.driver.core.Row;
 
 import java.time.Instant;
 
+import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.slf4j.Logger;
 import org.trellisldp.api.Resource;
@@ -33,10 +34,9 @@ abstract class CassandraBuildingService {
         log.debug("Found container = {} for resource {}", container, id);
         Instant modified = metadata.get("modified", Instant.class);
         log.debug("Found modified = {} for resource {}", modified, id);
-
-        return construct(id, ixnModel, hasAcl, binaryId, mimeType, container, modified);
+        Dataset dataset = metadata.get("quads", Dataset.class);
+        log.debug("Found dataset = {} for resource {}", dataset, id);
+        
+        return new CassandraResource(id, ixnModel, hasAcl, binaryId, mimeType, container, modified, dataset);
     }
-
-    abstract Resource construct(IRI id, IRI ixnModel, boolean hasAcl, IRI binaryId, String mimeType,
-                    IRI container, Instant modified);
 }

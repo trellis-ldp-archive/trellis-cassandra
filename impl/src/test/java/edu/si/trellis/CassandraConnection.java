@@ -7,15 +7,16 @@ import static edu.si.trellis.IRICodec.iriCodec;
 import static edu.si.trellis.InputStreamCodec.inputStreamCodec;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import com.datastax.driver.core.*;
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.CodecRegistry;
+import com.datastax.driver.core.ConsistencyLevel;
+import com.datastax.driver.core.QueryLogger;
+import com.datastax.driver.core.Session;
 import com.datastax.driver.extras.codecs.date.SimpleTimestampCodec;
 import com.datastax.driver.extras.codecs.jdk8.InstantCodec;
 
-import edu.si.trellis.CassandraBinaryService;
-import edu.si.trellis.CassandraResourceService;
 import edu.si.trellis.query.rdf.GetFirstMemento;
 import edu.si.trellis.query.rdf.GetMemento;
-import edu.si.trellis.query.rdf.MementoMutableRetrieve;
 import edu.si.trellis.query.rdf.Mementoize;
 import edu.si.trellis.query.rdf.Mementos;
 
@@ -68,7 +69,6 @@ class CassandraConnection implements AfterAllCallback, BeforeAllCallback {
                         new edu.si.trellis.query.rdf.ImmutableInsert(session, testConsistency),
                         new edu.si.trellis.query.rdf.MutableInsert(session, testConsistency),
                         new edu.si.trellis.query.rdf.Touch(session, testConsistency),
-                        new edu.si.trellis.query.rdf.MutableRetrieve(session, testConsistency),
                         new edu.si.trellis.query.rdf.ImmutableRetrieve(session, testConsistency),
                         new edu.si.trellis.query.rdf.BasicContainment(session, testConsistency));
         resourceService.initializeRoot();
@@ -76,8 +76,6 @@ class CassandraConnection implements AfterAllCallback, BeforeAllCallback {
                         new Mementos(session, testConsistency),
                         new Mementoize(session, testConsistency),
                         new GetMemento(session, testConsistency),
-                        new MementoMutableRetrieve(session, testConsistency),
-                        new edu.si.trellis.query.rdf.ImmutableRetrieve(session, testConsistency),
                         new GetFirstMemento(session, testConsistency));
         this.binaryService = new CassandraBinaryService((IdentifierService) null, 1024 * 1024,
                         new edu.si.trellis.query.binary.GetChunkSize(session, testConsistency),

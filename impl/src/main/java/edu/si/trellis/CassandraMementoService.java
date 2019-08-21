@@ -46,20 +46,13 @@ public class CassandraMementoService extends CassandraBuildingService implements
 
     private final GetFirstMemento getFirstMemento;
 
-    private ImmutableRetrieve immutableRetrieve;
-
-    private MementoMutableRetrieve mementoMutableRetrieve;
-
     @Inject
-    public CassandraMementoService(Mementos mementos, Mementoize mementoize, GetMemento getMemento,
-                    MementoMutableRetrieve mementoMutableRetrieve, ImmutableRetrieve immutableRetrieve,
+    CassandraMementoService(Mementos mementos, Mementoize mementoize, GetMemento getMemento,
                     GetFirstMemento getFirstMemento) {
         this.mementos = mementos;
         this.mementoize = mementoize;
         this.getMemento = getMemento;
         this.getFirstMemento = getFirstMemento;
-        this.mementoMutableRetrieve = mementoMutableRetrieve;
-        this.immutableRetrieve = immutableRetrieve;
     }
 
     @Override
@@ -93,16 +86,8 @@ public class CassandraMementoService extends CassandraBuildingService implements
     @Override
     public CompletionStage<Resource> get(final IRI id, Instant time) {
         log.debug("Retrieving Memento for: {} at {}", id, time);
-        return getMemento.execute(id, time)
-                        .thenCompose(result -> result.isExhausted() ? getFirstMemento.execute(id)
-                                        : completedFuture(result))
+        return getMemento.execute(id, time).thenCompose(
+                        result -> result.isExhausted() ? getFirstMemento.execute(id) : completedFuture(result))
                         .thenApply(result -> parse(result, log, id));
-    }
-
-    @Override
-    Resource construct(IRI id, IRI ixnModel, boolean hasAcl, IRI binaryId, String mimeType, IRI container,
-                    Instant modified) {
-        return new CassandraMemento(id, ixnModel, hasAcl, binaryId, mimeType, container, modified, immutableRetrieve,
-                        mementoMutableRetrieve);
     }
 }
