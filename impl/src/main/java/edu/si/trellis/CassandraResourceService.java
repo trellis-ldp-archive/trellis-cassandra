@@ -108,23 +108,26 @@ class CassandraResourceService extends CassandraBuildingService implements Resou
     @Override
     public CompletionStage<? extends Resource> get(final IRI id) {
         final CompletionStage<Stream<Quad>> immutableData = immutableRetrieve.execute(id);
-        final CompletionStage<Resource> resource = get.execute(id)
-                        .thenApply(rows -> parse(rows, log, id))
-                        .thenCombine(immutableData, (res, imm) -> {
-                            imm.forEach(res.dataset()::add);
-                            return res;
-                        });
+        // get resource and add immutable tuples
+        final CompletionStage<Resource> resource = get.execute(id).thenApply(rows -> parse(rows, log, id))
+                        .thenCombine(immutableData, this::addTuples);
+        // add containment tuples if needed
+        CompletionStage<Resource> resourceWithContainment = resource.thenCompose(res -> {
+            if (!isContainer(res)) return resource;
+            return resource.thenCombine(bcontainment.execute(id), this::addTuples);
+        });
+        return resourceWithContainment;
+    }
 
-        return resource.thenCompose(
-                        res -> isContainer(res) ? resource.thenCombine(bcontainment.execute(id), (res2, con) -> {
-                            con.forEach(res2.dataset()::add);
-                            return res2;
-                        }) : resource);
+    private Resource addTuples(Resource resource, Stream<Quad> additionalTuples) {
+        additionalTuples.forEach(resource.dataset()::add);
+        return resource;
     }
 
     private static boolean isContainer(Resource res) {
-        return Container.equals(res.getInteractionModel())
-                        || Container.equals(getSuperclassOf(res.getInteractionModel()));
+        final IRI interactionModel = res.getInteractionModel();
+        final IRI superclass = getSuperclassOf(interactionModel);
+        return Container.equals(interactionModel) || Container.equals(superclass);
     }
 
     @Override

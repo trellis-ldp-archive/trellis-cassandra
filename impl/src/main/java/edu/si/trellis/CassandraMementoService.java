@@ -9,8 +9,6 @@ import com.datastax.driver.core.utils.UUIDs;
 
 import edu.si.trellis.query.rdf.GetFirstMemento;
 import edu.si.trellis.query.rdf.GetMemento;
-import edu.si.trellis.query.rdf.ImmutableRetrieve;
-import edu.si.trellis.query.rdf.MementoMutableRetrieve;
 import edu.si.trellis.query.rdf.Mementoize;
 import edu.si.trellis.query.rdf.Mementos;
 
