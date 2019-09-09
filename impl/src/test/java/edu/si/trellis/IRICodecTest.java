@@ -5,8 +5,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.datastax.driver.core.exceptions.InvalidTypeException;
-
 import java.nio.ByteBuffer;
 
 import org.apache.commons.rdf.api.IRI;
@@ -20,7 +18,7 @@ class IRICodecTest {
 
     @Test
     void badParse() {
-        assertThrows(InvalidTypeException.class, () -> iriCodec.parse("SGDF   &&$$$dfshgou;sdfhgoudfhogh"));
+        assertThrows(IllegalArgumentException.class, () -> iriCodec.parse("SGDF   &&$$$dfshgou;sdfhgoudfhogh"));
     }
 
     @Test
@@ -41,14 +39,14 @@ class IRICodecTest {
     void testDeserialize() {
         IRI iri = rdf.createIRI("http://example.com");
         ByteBuffer fieldForm = ByteBuffer.wrap(iri.getIRIString().getBytes(UTF_8));
-        assertEquals(iri, iriCodec.deserialize(fieldForm, null));
+        assertEquals(iri, iriCodec.decode(fieldForm, null));
     }
 
     @Test
     void nullForNull() {
         assertEquals(null, iriCodec.parse(null));
         assertEquals(null, iriCodec.format(null));
-        assertEquals(null, iriCodec.serialize(null, null));
-        assertEquals(null, iriCodec.deserialize(null, null));
+        assertEquals(null, iriCodec.encode(null, null));
+        assertEquals(null, iriCodec.decode(null, null));
     }
 }

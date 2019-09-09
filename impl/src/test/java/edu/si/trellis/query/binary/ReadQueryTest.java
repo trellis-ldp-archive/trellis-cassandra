@@ -3,7 +3,9 @@ package edu.si.trellis.query.binary;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import edu.si.trellis.query.binary.BinaryReadQuery.SequenceInputStream;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;

@@ -9,7 +9,7 @@ import java.nio.Buffer;
  * An {@link InputStream} that wraps a {@link ByteBuffer} to avoid copying byte arrays.
  *
  */
-class ByteBufferInputStream extends InputStream {
+public class ByteBufferInputStream extends InputStream {
 
     private static final int ENDOFSTREAM = -1;
 
@@ -27,7 +27,7 @@ class ByteBufferInputStream extends InputStream {
     }
 
     @Override
-    public long skip(long n) throws IOException {
+    public long skip(long n) {
         int toSkip = (int) Math.min(n, buffer.remaining());
         buffer.position(buffer.position() + toSkip);
         return toSkip;

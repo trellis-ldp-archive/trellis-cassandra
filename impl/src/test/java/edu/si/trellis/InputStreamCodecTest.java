@@ -30,7 +30,7 @@ class InputStreamCodecTest {
 
     @Test
     void nullByteBufferShouldDeserializeAsNull() throws IOException {
-        try (InputStream testResult = inputStreamCodec.deserialize(null, null)) {
+        try (InputStream testResult = inputStreamCodec.decode(null, null)) {
             assertNull(testResult, "Parsed null InputStream should be null!");
         }
     }
@@ -43,20 +43,20 @@ class InputStreamCodecTest {
 
     @Test
     void nullInputStreamShouldSerializeAsNull() {
-        ByteBuffer testResult = inputStreamCodec.serialize(null, null);
+        ByteBuffer testResult = inputStreamCodec.encode(null, null);
         assertNull(testResult, "Parsed null InputStream should be null!");
     }
 
     @Test
     void emptyInputStreamShouldSerializeAsEmpty() {
-        ByteBuffer testResult = inputStreamCodec.serialize(new ByteArrayInputStream(new byte[] {}), null);
+        ByteBuffer testResult = inputStreamCodec.encode(new ByteArrayInputStream(new byte[] {}), null);
         assertFalse(testResult.hasRemaining(), "Parsed null InputStream should be null!");
     }
 
     @Test
     void emptyByteBufferShouldParseAsEmpty() throws IOException {
         ByteBuffer testBuffer = ByteBuffer.wrap(new byte[] {});
-        try (InputStream testResult = inputStreamCodec.deserialize(testBuffer, null)) {
+        try (InputStream testResult = inputStreamCodec.decode(testBuffer, null)) {
             assertEquals(-1, testResult.read(), "Parsed null InputStream should be null!");
         }
     }

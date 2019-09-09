@@ -39,7 +39,7 @@
     <trellis.version>0.9.0-SNAPSHOT</trellis.version>
 
     <cassandra.test.version>3.11.3</cassandra.test.version>
-    <cassandra.driver.version>3.7.0</cassandra.driver.version>
+    <cassandra.driver.version>4.1.0</cassandra.driver.version>
     <jena.version>3.12.0</jena.version>
     <commons.rdf.version>0.5.0</commons.rdf.version>
     <thorntail.version>2.4.0.Final</thorntail.version>
@@ -61,7 +61,7 @@
       <dependency>
         <groupId>org.junit</groupId>
         <artifactId>junit-bom</artifactId>
-        <version>5.3.2</version>
+        <version>5.4.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>

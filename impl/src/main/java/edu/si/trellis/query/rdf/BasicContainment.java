@@ -4,13 +4,13 @@ import static java.util.stream.StreamSupport.stream;
 import static org.trellisldp.vocabulary.LDP.PreferContainment;
 import static org.trellisldp.vocabulary.LDP.contains;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.ConsistencyLevel;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.BoundStatement;
+import com.datastax.oss.driver.api.core.cql.Row;
 
 import edu.si.trellis.MutableReadConsistency;
+import edu.si.trellis.query.AsyncResultSetSpliterator;
 
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
@@ -30,7 +30,7 @@ public class BasicContainment extends ResourceQuery {
     private static final RDF rdfFactory = TrellisUtils.getInstance();
 
     @Inject
-    public BasicContainment(Session session, @MutableReadConsistency ConsistencyLevel consistency) {
+    public BasicContainment(CqlSession session, @MutableReadConsistency ConsistencyLevel consistency) {
         super(session, "SELECT identifier AS contained FROM " + BASIC_CONTAINMENT_TABLENAME
                         + " WHERE container = :container ;", consistency);
     }
@@ -42,7 +42,7 @@ public class BasicContainment extends ResourceQuery {
     public CompletionStage<Stream<Quad>> execute(IRI id) {
         final BoundStatement query = preparedStatement().bind().set("container", id, IRI.class);
         return executeRead(query)
-                        .thenApply(ResultSet::spliterator)
+                        .thenApply(AsyncResultSetSpliterator::new)
                         .thenApply(rows -> stream(rows, false))
                         .thenApply(rows -> rows.map(this::getContained))
                         .thenApply(rows -> rows.map(con -> containmentQuad(id, con)));

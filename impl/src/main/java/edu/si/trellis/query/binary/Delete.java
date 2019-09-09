@@ -1,10 +1,11 @@
 package edu.si.trellis.query.binary;
 
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.ConsistencyLevel;
+import com.datastax.oss.driver.api.core.CqlSession;
 
 import edu.si.trellis.BinaryWriteConsistency;
-import java.util.concurrent.CompletableFuture;
+
+import java.util.concurrent.CompletionStage;
 
 import javax.inject.Inject;
 
@@ -17,7 +18,7 @@ import org.apache.commons.rdf.api.IRI;
 public class Delete extends BinaryQuery {
 
     @Inject
-    public Delete(Session session, @BinaryWriteConsistency ConsistencyLevel consistency) {
+    public Delete(CqlSession session, @BinaryWriteConsistency ConsistencyLevel consistency) {
         super(session, "DELETE FROM " + BINARY_TABLENAME + " WHERE identifier = :identifier;", consistency);
     }
 
@@ -25,7 +26,7 @@ public class Delete extends BinaryQuery {
      * @param id an {@link IRI} for a binary to delete
      * @return whether and when it has been deleted
      */
-    public CompletableFuture<Void> execute(IRI id) {
+    public CompletionStage<Void> execute(IRI id) {
         return executeWrite(preparedStatement().bind().set("identifier", id, IRI.class));
     }
 }

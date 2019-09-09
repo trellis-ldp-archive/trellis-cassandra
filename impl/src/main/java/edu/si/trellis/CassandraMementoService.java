@@ -3,10 +3,14 @@ package edu.si.trellis;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toCollection;
+import static java.util.stream.StreamSupport.stream;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import com.datastax.driver.core.utils.UUIDs;
+import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.uuid.Uuids;
 
+import edu.si.trellis.query.AsyncResultSetSpliterator;
 import edu.si.trellis.query.rdf.GetFirstMemento;
 import edu.si.trellis.query.rdf.GetMemento;
 import edu.si.trellis.query.rdf.Mementoize;
@@ -17,6 +21,7 @@ import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 import javax.inject.Inject;
@@ -64,7 +69,7 @@ public class CassandraMementoService extends CassandraBuildingService implements
         String mimeType = binary.flatMap(BinaryMetadata::getMimeType).orElse(null);
         Dataset data = r.dataset();
         Instant modified = r.getModified();
-        UUID creation = UUIDs.timeBased();
+        UUID creation = Uuids.timeBased();
 
         log.debug("Writing Memento for {} at time: {}", id, modified);
         return mementoize.execute(ixnModel, mimeType, container, data, modified, binaryIdentifier, creation, id);
@@ -73,8 +78,10 @@ public class CassandraMementoService extends CassandraBuildingService implements
     //@formatter:off
     @Override
     public CompletionStage<SortedSet<Instant>> mementos(IRI id) {
-        return mementos.execute(id).thenApply(
-                        results -> results.all().stream()
+        return mementos.execute(id)
+                        .thenApply(AsyncResultSetSpliterator::new)
+                        .thenApply(r -> stream(r, false))
+                        .thenApply(results -> results
                                         .map(row -> row.get("modified", Instant.class))
                                         .map(time -> time.truncatedTo(SECONDS))
                                         .collect(toCollection(TreeSet::new)));
@@ -84,8 +91,9 @@ public class CassandraMementoService extends CassandraBuildingService implements
     @Override
     public CompletionStage<Resource> get(final IRI id, Instant time) {
         log.debug("Retrieving Memento for: {} at {}", id, time);
-        return getMemento.execute(id, time).thenCompose(
-                        result -> result.isExhausted() ? getFirstMemento.execute(id) : completedFuture(result))
-                        .thenApply(result -> parse(result, log, id));
+        return getMemento.execute(id, time).thenApply(AsyncResultSet::one).thenCompose(row -> {
+            if (row == null) return getFirstMemento.execute(id).thenApply(AsyncResultSet::one);
+            return completedFuture(row);
+        }).thenApply(this::parse);
     }
 }

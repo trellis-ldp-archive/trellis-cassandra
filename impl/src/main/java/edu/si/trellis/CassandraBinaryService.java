@@ -1,13 +1,20 @@
 package edu.si.trellis;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.concurrent.Executors.newCachedThreadPool;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import edu.si.trellis.query.binary.*;
+import edu.si.trellis.query.binary.Delete;
+import edu.si.trellis.query.binary.GetChunkSize;
+import edu.si.trellis.query.binary.Insert;
+import edu.si.trellis.query.binary.Read;
+import edu.si.trellis.query.binary.ReadRange;
 
 import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.inject.Inject;
@@ -15,7 +22,11 @@ import javax.inject.Inject;
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.rdf.api.IRI;
 import org.slf4j.Logger;
-import org.trellisldp.api.*;
+import org.trellisldp.api.Binary;
+import org.trellisldp.api.BinaryMetadata;
+import org.trellisldp.api.BinaryService;
+import org.trellisldp.api.IdentifierService;
+import org.trellisldp.api.RuntimeTrellisException;
 
 /**
  * Implements {@link BinaryService} by chunking binary data across Cassandra.
@@ -27,6 +38,8 @@ public class CassandraBinaryService implements BinaryService {
 
     @SuppressWarnings("boxing")
     private static final CompletableFuture<Long> DONE = completedFuture(-1L);
+
+    private final Executor writeWorkers = newCachedThreadPool();
 
     // package-private for testing
     static final String CASSANDRA_CHUNK_HEADER_NAME = "Cassandra-Chunk-Size";
@@ -68,13 +81,14 @@ public class CassandraBinaryService implements BinaryService {
     }
 
     @Override
-    public CompletableFuture<Binary> get(IRI id) {
-        log.debug("Retrieving binary content from: {}", id);
-        return get.execute(id).thenApply(r -> new CassandraBinary(id, read, readRange, r.getInt("chunkSize")));
+    public CompletionStage<Binary> get(IRI id) {
+        log.trace("Retrieving binary content from: {}", id);
+        return get.execute(id).thenApply(row -> row.getInt("chunkSize"))
+                        .thenApply(chunkSize -> new CassandraBinary(id, read, readRange, chunkSize));
     }
 
     @Override
-    public CompletableFuture<Void> setContent(BinaryMetadata meta, InputStream stream) {
+    public CompletionStage<Void> setContent(BinaryMetadata meta, InputStream stream) {
         log.debug("Recording binary content under: {}", meta.getIdentifier());
         final int chunkSize;
         if (meta.getHints() == null) chunkSize = defaultChunkLength;
@@ -90,7 +104,7 @@ public class CassandraBinaryService implements BinaryService {
     }
 
     @SuppressWarnings("resource")
-    private CompletableFuture<Long> setChunk(BinaryMetadata meta, InputStream data, AtomicInteger chunkIndex,
+    private CompletionStage<Long> setChunk(BinaryMetadata meta, InputStream data, AtomicInteger chunkIndex,
                     int chunkLength) {
         IRI id = meta.getIdentifier();
         log.debug("Recording chunk {} of binary content under: {}", chunkIndex.get(), id);
@@ -103,12 +117,12 @@ public class CassandraBinaryService implements BinaryService {
             return insert.execute(id, chunkLength, chunkIndex.getAndIncrement(), chunk)
                             .thenComposeAsync(dummy -> countingChunk.getByteCount() == chunkLength
                                             ? setChunk(meta, data, chunkIndex, chunkLength)
-                                            : DONE, insert);
+                                            : DONE, writeWorkers);
         }
     }
 
     @Override
-    public CompletableFuture<Void> purgeContent(IRI identifier) {
+    public CompletionStage<Void> purgeContent(IRI identifier) {
         return delete.execute(identifier);
     }
 

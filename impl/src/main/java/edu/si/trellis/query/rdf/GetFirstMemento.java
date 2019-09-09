@@ -1,8 +1,7 @@
 package edu.si.trellis.query.rdf;
-
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.ConsistencyLevel;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
 
 import edu.si.trellis.MutableReadConsistency;
 
@@ -18,7 +17,7 @@ import org.apache.commons.rdf.api.IRI;
 public class GetFirstMemento extends ResourceQuery {
 
     @Inject
-    public GetFirstMemento(Session session, @MutableReadConsistency ConsistencyLevel consistency) {
+    public GetFirstMemento(CqlSession session, @MutableReadConsistency ConsistencyLevel consistency) {
         super(session, "SELECT * FROM " + MEMENTO_MUTABLE_TABLENAME + " WHERE identifier = :identifier LIMIT 1 ;",
                         consistency);
     }
@@ -27,7 +26,7 @@ public class GetFirstMemento extends ResourceQuery {
      * @param id the {@link IRI} of the Memento to retrieve
      * @return the data for the Memento
      */
-    public CompletionStage<ResultSet> execute(IRI id) {
+    public CompletionStage<AsyncResultSet> execute(IRI id) {
         return executeRead(preparedStatement().bind().set("identifier", id, IRI.class));
     }
 }

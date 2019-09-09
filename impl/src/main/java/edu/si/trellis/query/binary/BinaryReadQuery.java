@@ -1,22 +1,29 @@
 package edu.si.trellis.query.binary;
 
-import static java.util.stream.StreamSupport.stream;
+import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.concurrent.Executors.newCachedThreadPool;
+import static java.util.stream.Collectors.toList;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.Statement;
+import com.datastax.oss.driver.api.core.ConsistencyLevel;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
+import com.datastax.oss.driver.api.core.cql.BoundStatement;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 
-import edu.si.trellis.LazyChunkInputStream;
+import edu.si.trellis.query.AsyncResultSetSpliterator;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.Executor;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.rdf.api.IRI;
 import org.slf4j.Logger;
-import org.trellisldp.api.RuntimeTrellisException;
 
 /**
  * A query that reads binary data from Cassandra.
@@ -28,32 +35,58 @@ abstract class BinaryReadQuery extends BinaryQuery {
     private static final String READ_CHUNK_QUERY = "SELECT chunk FROM " + BINARY_TABLENAME
                     + " WHERE identifier = :identifier and chunkIndex = :chunkIndex;";
 
+    private static final InputStream EMPTY_INPUTSTREAM = new InputStream() {
+
+        @Override
+        public int read() {
+            return -1;
+        }
+    };
+
+    private static final CompletableFuture<InputStream> COMPLETED_FUTURE = completedFuture(EMPTY_INPUTSTREAM);
+
     private final PreparedStatement readChunkStatement;
 
-    BinaryReadQuery(Session session, String queryString, ConsistencyLevel consistency) {
+    private final Executor readWorkers = newCachedThreadPool();
+
+    BinaryReadQuery(CqlSession session, String queryString, ConsistencyLevel consistency) {
         super(session, queryString, consistency);
         this.readChunkStatement = session.prepare(READ_CHUNK_QUERY);
     }
 
-    //@formatter:off
     /**
-     * @param id an {@link IRI} for a binary 
+     * @param id an {@link IRI} for a binary
      * @param statement a CQL query that retrieves the chunk indexes of chunks for {@code id}
-     * @return An {@link InputStream} of bytes as requested. The {@code skip} method of this {@code InputStream} is
-     *         guaranteed to skip as many bytes as asked.
+     * @return A future for an {@link InputStream} of bytes as requested. The {@code skip} method of this
+     *         {@code InputStream} is guaranteed to skip as many bytes as asked.
      */
-    protected InputStream retrieve(IRI id, Statement statement) {
-        return stream(executeSyncRead(statement).spliterator(), false)
+
+    protected CompletionStage<InputStream> retrieve(IRI id, BoundStatement statement) {
+        return executeRead(statement).thenApply(AsyncResultSetSpliterator::stream).thenApply(stream -> stream
                         .mapToInt(r -> r.getInt("chunkIndex"))
-                        .mapToObj(chunkIndex -> readChunkStatement.bind()
-                                            .setInt("chunkIndex", chunkIndex)
-                                            .set("identifier", id, IRI.class))
-                        .peek(chunkIndex -> log.debug("Retrieving stream for chunk: {}", chunkIndex))
-                        .<InputStream> map(s -> new LazyChunkInputStream(session, s))
-                        .reduce(SequenceInputStream::new) // chunks now in one large stream
-                        .orElseThrow(() -> new RuntimeTrellisException("Binary not found under IRI: " + id.getIRIString()));
+                        .peek(chunkIndex -> log.debug("Building query for chunk: {} of binary: {}", chunkIndex, id))
+                        .mapToObj(chunkIndex -> readChunkStatement.bind().setInt("chunkIndex", chunkIndex)
+                                        .set("identifier", id, IRI.class))
+                        .collect(toList())).thenComposeAsync(list -> {
+                            // int numberOfChunks = list.size();
+                            // if (numberOfChunks < 1)
+                            // throw new RuntimeTrellisException("No chunks found for " + id + "!");
+                            // log.debug("Retrieving {} chunks for {}", numberOfChunks, id);
+                            CompletionStage<InputStream> chain = COMPLETED_FUTURE;
+                            for (BoundStatement s : list)
+                                chain = chain.thenComposeAsync(thusFar -> executeRead(s).thenApply(AsyncResultSet::one)
+                                                .thenApply(row -> {
+                                                    try (InputStream currentStream = row.get("chunk",
+                                                                    InputStream.class)) {
+                                                        return new SequenceInputStream(thusFar, currentStream);
+                                                    } catch (IOException e) {
+                                                        throw new UncheckedIOException(e);
+                                                    }
+                                                }), readWorkers);
+
+                            return chain;
+                        }, readWorkers);
     }
-    //@formatter:on
 
     /**
      * An {@link InputStream} that sequentially streams two underlying streams. {@link #skip(long)} calls {@code skip}

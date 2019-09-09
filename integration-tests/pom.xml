@@ -117,7 +117,7 @@
               <org.jboss.logging.provider>slf4j</org.jboss.logging.provider>
               <logback.configurationFile>${project.build.directory}/test-classes/logback-test.xml</logback.configurationFile>
               <resteasy.preferJacksonOverJsonB>false</resteasy.preferJacksonOverJsonB>
-              <project.build.directory>${project.build.directory}</project.build.directory>
+              <project.build.directory>${project.build.directory}</project.build.directory>                            
             </systemProperties>
           </container>
           <configuration>

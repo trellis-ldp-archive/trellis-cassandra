@@ -6,8 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.datastax.driver.core.exceptions.InvalidTypeException;
-
 import java.nio.ByteBuffer;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -29,7 +27,7 @@ class DatasetCodecTest {
 
     @Test
     void badParse() {
-        assertThrows(InvalidTypeException.class, () -> datasetCodec.parse("SGDF   &&$$$dfshgou;sdfhgoudfhogh"));
+        assertThrows(RiotException.class, () -> datasetCodec.parse("SGDF   &&$$$dfshgou;sdfhgoudfhogh"));
     }
 
     @Test
@@ -57,7 +55,7 @@ class DatasetCodecTest {
         String nQuad3 = "<s> <p> <o> <g2> .";
         Quad q3 = quad(iri("g2"), iri("s"), iri("p"), iri("o"));
         ByteBuffer nQuads = ByteBuffer.wrap(String.join("\n", nQuad1, nQuad2, nQuad3).getBytes(UTF_8));
-        try (Dataset dataset = datasetCodec.deserialize(nQuads, null)) {
+        try (Dataset dataset = datasetCodec.decode(nQuads, null)) {
             assertEquals(3, dataset.size());
             for (Quad q : new Quad[] { q1, q2, q3 })
                 assertTrue(dataset.contains(q));
@@ -96,23 +94,23 @@ class DatasetCodecTest {
     @Test
     void edgeCase4() throws Exception {
         try (Dataset empty = rdf.createDataset()) {
-            assertEquals(null, datasetCodec.serialize(empty, null));
+            assertEquals(null, datasetCodec.encode(empty, null));
         }
     }
 
     @Test
     void edgeCase5() {
-        assertEquals(null, datasetCodec.serialize(null, null));
+        assertEquals(null, datasetCodec.encode(null, null));
     }
 
     @Test
     void edgeCase6() {
-        assertEquals(0, datasetCodec.deserialize(null, null).size());
+        assertEquals(0, datasetCodec.decode(null, null).size());
     }
 
     @Test
     void badData() {
-        assertThrows(InvalidTypeException.class, () -> datasetCodec.serialize(new BadDataset(), null));
+        assertThrows(RiotException.class, () -> datasetCodec.encode(new BadDataset(), null));
     }
 
     private Quad quad(BlankNodeOrIRI g, BlankNodeOrIRI s, IRI p, RDFTerm o) {

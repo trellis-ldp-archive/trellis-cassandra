@@ -1,9 +1,9 @@
 package edu.si.trellis;
 
+import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
+import com.datastax.oss.driver.api.core.cql.Row;
 
 import java.time.Instant;
 
@@ -13,18 +13,17 @@ import org.slf4j.Logger;
 import org.trellisldp.api.Resource;
 
 abstract class CassandraBuildingService {
+    
+    private static final Logger log = getLogger(CassandraBuildingService.class);
 
-    Resource parse(ResultSet rows, Logger log, IRI id) {
-        final Row metadata;
-        if ((metadata = rows.one()) == null) {
-            log.debug("{} was not found.", id);
-            return MISSING_RESOURCE;
-        }
-
+    Resource parse(Row metadata) {
+        if (metadata == null) return MISSING_RESOURCE;
+        IRI id = metadata.get("identifier", IRI.class);
         log.debug("{} was found, computing metadata.", id);
+        
         IRI ixnModel = metadata.get("interactionModel", IRI.class);
         log.debug("Found interactionModel = {} for resource {}", ixnModel, id);
-        boolean hasAcl = metadata.getBool("hasAcl");
+        boolean hasAcl = metadata.getBoolean("hasAcl");
         log.debug("Found hasAcl = {} for resource {}", hasAcl, id);
         IRI binaryId = metadata.get("binaryIdentifier", IRI.class);
         log.debug("Found binaryIdentifier = {} for resource {}", binaryId, id);

@@ -44,8 +44,8 @@
     </dependency>
 
     <dependency>
-      <groupId>com.datastax.cassandra</groupId>
-      <artifactId>cassandra-driver-extras</artifactId>
+      <groupId>com.datastax.oss</groupId>
+      <artifactId>java-driver-core</artifactId>
       <version>${cassandra.driver.version}</version>
       <exclusions>
         <exclusion>

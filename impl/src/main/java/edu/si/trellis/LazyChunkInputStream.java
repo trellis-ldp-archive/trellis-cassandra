@@ -1,12 +1,17 @@
 package edu.si.trellis;
 
 import static java.util.Objects.requireNonNull;
+import static org.slf4j.LoggerFactory.getLogger;
 
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.Statement;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
+import com.datastax.oss.driver.api.core.cql.BoundStatement;
 
 import java.io.InputStream;
+import java.util.concurrent.CompletionStage;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An {@link InputStream} backed by a Cassandra query to retrieve one binary chunk.
@@ -18,22 +23,29 @@ import java.io.InputStream;
  */
 public class LazyChunkInputStream extends LazyFilterInputStream {
 
-    private final Session session;
+    private static final Logger log = getLogger(LazyChunkInputStream.class);
 
-    private final Statement query;
+    private final CqlSession session;
+
+    private final BoundStatement query;
 
     /**
      * @param session The Cassandra session to use
      * @param query the CQL query to use
      */
-    public LazyChunkInputStream(Session session, Statement query) {
+    public LazyChunkInputStream(CqlSession session, BoundStatement query) {
         this.session = session;
         this.query = query;
     }
 
     @Override
-    protected void initialize() {
-        Row row = requireNonNull(session.execute(query).one(), "Missing binary chunk!");
-        wrap(row.get("chunk", InputStream.class));
+    protected CompletionStage<InputStream> initialize() {
+        log.trace("Initializing…");
+        CompletionStage<AsyncResultSet> executeAsync = session.executeAsync(query);
+        log.trace("Retrieved bytes…");
+        return executeAsync.thenApply(AsyncResultSet::one)
+                        .thenApply(row -> requireNonNull(row, "Missing binary chunk!"))
+                        .thenApply(row -> row.get("chunk", InputStream.class))
+                        .thenApply(is -> {log.debug("Retrieved chunk");return is;});
     }
 }

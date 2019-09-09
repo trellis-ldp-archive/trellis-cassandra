@@ -1,8 +1,15 @@
 package edu.si.trellis;
 
+import static org.slf4j.LoggerFactory.getLogger;
+
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Like {@link FilterInputStream} but lazier; does not fill the slot for wrapped {@link InputStream} until
@@ -10,24 +17,24 @@ import java.io.InputStream;
  */
 public abstract class LazyFilterInputStream extends InputStream {
 
+    private static final Logger log = getLogger(LazyFilterInputStream.class);
+
     private InputStream wrapped;
 
     private InputStream wrapped() {
-        if (wrapped == null) initialize();
+        if (wrapped == null) {
+            initialize().thenAccept(inputstream -> wrapped = inputstream);
+            log.debug("Initialization begun…");
+        }
         return wrapped;
     }
 
     /**
      * Implementations of this method should use {@link #wrap(InputStream)} to fill {@link #wrapped}.
+     * 
+     * @return whether and when initialization is
      */
-    protected abstract void initialize();
-
-    /**
-     * @param w the {@link InputStream} to wrap
-     */
-    protected void wrap(InputStream w) {
-        this.wrapped = w;
-    }
+    protected abstract CompletionStage<InputStream> initialize();
 
     @Override
     public int read() throws IOException {

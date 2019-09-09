@@ -1,20 +1,15 @@
 package edu.si.trellis;
 
-import static com.google.common.cache.CacheBuilder.newBuilder;
-import static com.google.common.cache.CacheLoader.from;
+import static com.datastax.oss.driver.api.core.type.DataTypes.TEXT;
 import static java.nio.ByteBuffer.wrap;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.ProtocolVersion;
-import com.datastax.driver.core.TypeCodec;
-import com.datastax.driver.core.exceptions.InvalidTypeException;
-import com.datastax.driver.core.utils.Bytes;
-import com.google.common.cache.LoadingCache;
-import com.google.common.util.concurrent.UncheckedExecutionException;
+import com.datastax.oss.driver.api.core.ProtocolVersion;
+import com.datastax.oss.driver.api.core.type.DataType;
+import com.datastax.oss.driver.api.core.type.codec.TypeCodec;
+import com.datastax.oss.driver.api.core.type.reflect.GenericType;
 
 import java.nio.ByteBuffer;
-import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
@@ -26,31 +21,27 @@ import org.trellisldp.api.TrellisUtils;
  * @author ajs6f
  *
  */
-class IRICodec extends TypeCodec<IRI> {
+class IRICodec extends CassandraCodec implements TypeCodec<IRI> {
+
+    private static final GenericType<IRI> IRI_TYPE = GenericType.of(IRI.class);
 
     /**
      * Singleton instance.
      */
     static final IRICodec iriCodec = new IRICodec();
 
-    protected static final int CACHE_CONCURRENCY_LEVEL = 16;
-
-    protected static final long CACHE_MAXIMUM_SIZE = 10 ^ 6;
+    protected static final int CACHE_MAXIMUM_SIZE = 10 ^ 6;
 
     protected static final RDF rdf = TrellisUtils.getInstance();
 
-    private final LoadingCache<String, IRI> cache = newBuilder().concurrencyLevel(CACHE_CONCURRENCY_LEVEL)
-                    .maximumSize(CACHE_MAXIMUM_SIZE).build(from(this::deserialize));
-
-    /**
-     * Default constructor.
-     */
-    private IRICodec() {
-        super(DataType.text(), IRI.class);
+    @Override
+    public DataType getCqlType() {
+        return TEXT;
     }
 
-    private IRI deserialize(String v) {
-        return rdf.createIRI(v);
+    @Override
+    public GenericType<IRI> getJavaType() {
+        return IRI_TYPE;
     }
 
     @Override
@@ -59,22 +50,18 @@ class IRICodec extends TypeCodec<IRI> {
     }
 
     @Override
-    public ByteBuffer serialize(IRI iri, ProtocolVersion protocolVersion) {
+    public ByteBuffer encode(IRI iri, ProtocolVersion protocolVersion) {
         return iri != null ? wrap(format(iri).getBytes(UTF_8)) : null;
     }
 
     @Override
-    public IRI deserialize(ByteBuffer bytes, ProtocolVersion protocolVersion) {
-        return bytes == null ? null : parse(new String(Bytes.getArray(bytes), UTF_8));
+    public IRI decode(ByteBuffer bytes, ProtocolVersion protocolVersion) {
+        return bytes == null ? null : parse(new String(bytesFromBuffer(bytes), UTF_8));
     }
 
     @Override
     public IRI parse(String v) {
         if (v == null || v.isEmpty()) return null;
-        try {
-            return cache.get(v);
-        } catch (ExecutionException|UncheckedExecutionException e) {
-            throw new InvalidTypeException("Bad URI!", e);
-        }
+        return rdf.createIRI(v);
     }
 }
