@@ -100,17 +100,6 @@
       <artifactId>trellis-webdav</artifactId>
       <version>${trellis.version}</version>
     </dependency>
-<!--     <dependency>
-      <groupId>org.trellisldp</groupId>
-      <artifactId>trellis-webac</artifactId>
-      <version>${trellis.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.tamaya</groupId>
-          <artifactId>tamaya-api</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency> -->
 
   <!-- Configuration -->
 
