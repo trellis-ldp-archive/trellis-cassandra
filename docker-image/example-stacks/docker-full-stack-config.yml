@@ -3,20 +3,29 @@ version: "3"
 # https://github.com/thelastpickle/docker-cassandra-bootstrap - monitoring/grafana, other docker details
 services:
   trellis-cassandra:
-    image: trellisldp/trellis-cassandra:0.8.1-SNAPSHOT
+    image: trellisldp/trellis-cassandra:latest
     environment:
-      - CASSANDRA_CONTACT_ADDRESS="cassandra-1"
-      - CASSANDRA_CONTACT_PORT=9042
-      - CASSANDRA_MAX_CHUNK_SIZE=1048576
-      #- CASSANDRA_BINARY_READ_CONSISTENCY="ConsistencyLevel.ONE"
-      #- CASSANDRA_BINARY_WRITE_CONSISTENCY="ConsistencyLevel.ONE"
-      - TRELLIS_JMS_USE_QUEUE="false"
-      - TRELLIS_JMS_QUEUE_NAME="trellis"
-      - TRELLIS_JMS_URL="tcp://activemq:61616"
+      tamaya.ordinal: 500
+      cassandra.contactAddress: "cassandra-1"
+      cassandra.contactPort: 9042
+      cassandra.maxChunkSize: 1048576
+      cassandra.replicationFactor: 1
+      cassandra.binaryReadConsistency: ONE
+      cassandra.binaryWriteConsistency: ONE
+      cassandra.rdfReadConsistency: ONE
+      cassandra.rdfWriteConsistency: QUORUM
+      trellis.jms.use.queue: "true"
+      trellis.jms.queue: "trellis"
+      trellis.jms.url: "tcp://activemq:61616"
+      trellis.auth.basic.credentials: "/etc/users.auth"
+      trellis.auth.webac.cache.size: 0
+      trellis.auth.webac.cache.expire.seconds: 0
     volumes:
       - ./users.auth:/etc/users.auth
     ports:
       - "8080:8080"
+    networks:
+      - trellis-network
     deploy:
       mode: replicated
       replicas: 1
@@ -24,20 +33,17 @@ services:
         condition: on-failure
         max_attempts: 20
         window: 120s
-    links:
-      - cassandra-1
-      - cassandra-2
-      - cassandra-3
-      - activemq
     depends_on:
       - cassandra-1
       - cassandra-2
-      - cassandra-3
       - activemq
   activemq:
     image: rmohr/activemq:latest
     ports:
       - "61616:61616"
+      - "8161:8161"
+    networks:
+      - trellis-network
     deploy:
       restart_policy:
         condition: on-failure
@@ -47,9 +53,8 @@ services:
     image: cassandra
     environment:
       CASSANDRA_BROADCAST_ADDRESS: cassandra-1
-    links:
-      - cassandra-2
-      - cassandra-3
+    networks:
+      - trellis-network
     deploy:
       restart_policy:
         condition: on-failure
@@ -60,9 +65,8 @@ services:
     environment:
       CASSANDRA_BROADCAST_ADDRESS: cassandra-2
       CASSANDRA_SEEDS: cassandra-1
-    links:
-      - cassandra-1
-      - cassandra-3
+    networks:
+      - trellis-network
     deploy:
       restart_policy:
         condition: on-failure
@@ -70,29 +74,16 @@ services:
         window: 120s
     depends_on:
       - cassandra-1
-  cassandra-3:
-    image: cassandra
-    environment:
-      CASSANDRA_BROADCAST_ADDRESS: cassandra-3
-      CASSANDRA_SEEDS: cassandra-1
-    links:
-      - cassandra-1
-      - cassandra-2
-    deploy:
-      restart_policy:
-        condition: on-failure
-        max_attempts: 3
-        window: 120s
-    depends_on:
-      - cassandra-2
   cassandra-init:
     image: trellisldp/trellis-cassandra-init:0.8.1-SNAPSHOT
     depends_on:
-      - cassandra-3
-    links:
-      - cassandra-1
+      - cassandra-2
+    networks:
+      - trellis-network
     deploy:
       restart_policy:
         condition: on-failure
         delay: 30s
-    command: cqlsh cassandra-1 -f /load.cql
+    command: cqlsh cassandra-1 -f /load.cql  # && cqlsh -e "ALTER KEYSPACE trellis WITH REPLICATION = \{'class' : 'SimpleStrategy', 'replication_factor' : $$CASSANDRA_REPLICATION_FACTOR" cassandra-1\}"
+networks:
+  trellis-network:

@@ -16,4 +16,4 @@ LABEL git.url=${GIT_ORIGIN_REMOTE_URL}
 LABEL git.commit=${GIT_COMMIT_ID_DESCRIBE}
 
 
-CMD ["/command.sh"]
+CMD ["/bin/bash", "/command.sh"]
