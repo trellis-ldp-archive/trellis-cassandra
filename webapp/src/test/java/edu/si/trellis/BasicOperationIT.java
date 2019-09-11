@@ -53,5 +53,25 @@ class BasicOperationIT {
             log.debug("Response body for resource: {}", responseBody);
             assertTrue(responseBody.contains("http://example.com/example"));
         }
+        
+        UUID binarySlug = randomUUID();
+        String binaryId;
+        log.info("Using Slug {} for binary to smoke test webapp.", binarySlug);
+        req = new HttpPost(trellisUri);
+        req.setHeader("Slug", binarySlug.toString());
+        req.setHeader("Content-Type", "text/plain");
+        req.setEntity(new StringEntity("<> a <http://example.com/example> ."));
+        try (CloseableHttpResponse res = client.execute(req); InputStream url = res.getEntity().getContent()) {
+            assertEquals(SC_CREATED, res.getStatusLine().getStatusCode());
+            binaryId = res.getFirstHeader("Location").getValue();
+        }
+        log.info("Using location {} for binary resource location.", binaryId);
+        get = new HttpGet(binaryId);
+        try (CloseableHttpResponse res = client.execute(get); InputStream url = res.getEntity().getContent()) {
+            assertEquals(SC_OK, res.getStatusLine().getStatusCode());
+            String responseBody = EntityUtils.toString(res.getEntity());
+            log.debug("Response body for resource: {}", responseBody);
+            assertTrue(responseBody.contains("http://example.com/example"));
+        }
     }
 }

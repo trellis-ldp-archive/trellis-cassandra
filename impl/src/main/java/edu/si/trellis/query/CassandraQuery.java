@@ -1,6 +1,5 @@
 package edu.si.trellis.query;
 
-import static java.util.concurrent.Executors.newCachedThreadPool;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
@@ -8,15 +7,12 @@ import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
 import com.datastax.oss.driver.api.core.cql.BoundStatement;
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
-import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.cql.SimpleStatementBuilder;
 
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.Executor;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.trellisldp.api.RuntimeTrellisException;
 
 /**

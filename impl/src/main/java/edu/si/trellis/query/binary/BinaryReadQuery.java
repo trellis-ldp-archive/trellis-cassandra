@@ -67,14 +67,21 @@ abstract class BinaryReadQuery extends BinaryQuery {
                         .peek(chunkIndex -> log.debug("Building query for chunk: {} of binary: {}", chunkIndex, id))
                         .mapToObj(chunkIndex -> readChunkStatement.bind().setInt("chunkIndex", chunkIndex)
                                         .set("identifier", id, IRI.class))
-                        .collect(toList())).thenComposeAsync(list -> {
+                        .collect(toList())).thenApply(list -> {
+                            log.debug("Built statements:");
+                            list.forEach(st -> {
+                                log.debug(st.getPreparedStatement().getQuery());
+                                log.debug("with values: {} {}", st.getString("identifier"), st.getInt("chunkIndex"));
+                            });
+                            return list;
+                        }).thenComposeAsync(list -> {
                             // int numberOfChunks = list.size();
                             // if (numberOfChunks < 1)
                             // throw new RuntimeTrellisException("No chunks found for " + id + "!");
                             // log.debug("Retrieving {} chunks for {}", numberOfChunks, id);
                             CompletionStage<InputStream> chain = COMPLETED_FUTURE;
                             for (BoundStatement s : list)
-                                chain = chain.thenComposeAsync(thusFar -> executeRead(s).thenApply(AsyncResultSet::one)
+                                chain = chain.thenCompose(thusFar -> executeRead(s).thenApply(AsyncResultSet::one)
                                                 .thenApply(row -> {
                                                     try (InputStream currentStream = row.get("chunk",
                                                                     InputStream.class)) {
@@ -82,7 +89,7 @@ abstract class BinaryReadQuery extends BinaryQuery {
                                                     } catch (IOException e) {
                                                         throw new UncheckedIOException(e);
                                                     }
-                                                }), readWorkers);
+                                                }));
 
                             return chain;
                         }, readWorkers);

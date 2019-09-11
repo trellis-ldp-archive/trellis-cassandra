@@ -11,7 +11,6 @@ import java.io.InputStream;
 import java.util.concurrent.CompletionStage;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * An {@link InputStream} backed by a Cassandra query to retrieve one binary chunk.

@@ -1,8 +1,6 @@
 package edu.si.trellis.query;
 
 import static java.util.Spliterators.spliteratorUnknownSize;
-import static java.util.stream.StreamSupport.stream;
-
 import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
 
@@ -11,8 +9,6 @@ import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
-import org.objectweb.asm.tree.analysis.Analyzer;
 
 /**
  * A simple {@link Spliterator} backed by a {@link AsyncResultSet}.
