@@ -7,8 +7,6 @@ import static org.apache.tamaya.Configuration.setCurrent;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_PUT_UNCONTAINED;
 
-import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -27,11 +25,9 @@ import javax.inject.Inject;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 
-import org.apache.tamaya.TypeLiteral;
 import org.apache.tamaya.format.ConfigurationFormats;
 import org.apache.tamaya.inject.api.Config;
 import org.apache.tamaya.spi.PropertySource;
-import org.apache.tamaya.spisupport.EnumConverter;
 import org.slf4j.Logger;
 import org.trellisldp.http.TrellisHttpFilter;
 import org.trellisldp.http.TrellisHttpResource;
@@ -84,7 +80,7 @@ public class CassandraApplication extends Application {
      * Load in any additional configuration.
      */
     @PostConstruct
-    private void importAdditionalConfig() {
+    public void importAdditionalConfig() {
         // we require contained PUT because we use the Trellis WebDAV module, which requires it
         System.setProperty(CONFIG_HTTP_PUT_UNCONTAINED, "false");
         additionalConfigFile.map(this::toUrl).ifPresent(this::addConfig);
@@ -97,11 +93,6 @@ public class CassandraApplication extends Application {
         current().getContext().getPropertySources().stream().map(PropertySource::getName).forEach(log::debug);
         log.debug("Using Tamaya configuration:");
         log(current().getProperties());
-        // add a PropertyConvertor for enum used in Datastax config
-        final EnumConverter<DefaultConsistencyLevel> enumConverter = new EnumConverter<>(DefaultConsistencyLevel.class);
-        log.debug("Created PropertyConvertor: {}", enumConverter);
-        final TypeLiteral<DefaultConsistencyLevel> typeToConvert = new TypeLiteral<>(DefaultConsistencyLevel.class);
-        setCurrent(current().toBuilder().addPropertyConverters(typeToConvert, enumConverter).build());
     }
 
     private static <K, V> void log(Map<K, V> config) {
