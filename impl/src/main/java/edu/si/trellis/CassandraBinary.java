@@ -8,7 +8,6 @@ import edu.si.trellis.query.binary.ReadRange;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 import org.apache.commons.io.input.BoundedInputStream;
