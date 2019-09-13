@@ -7,7 +7,6 @@ import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
 import org.trellisldp.api.*;
-import org.trellisldp.http.core.EtagGenerator;
 import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.http.core.TimemapGenerator;
 import org.trellisldp.io.JenaIOService;
@@ -52,9 +51,6 @@ public class CassandraServiceBundler implements ServiceBundler {
     private TimemapGenerator timemapGenerator;
 
     @Inject
-    private EtagGenerator etagGenerator;
-
-    @Inject
     private Instance<ConstraintService> constraintServices;
 
     @PostConstruct
@@ -95,11 +91,6 @@ public class CassandraServiceBundler implements ServiceBundler {
     @Override
     public EventService getEventService() {
         return eventService;
-    }
-
-    @Override
-    public EtagGenerator getEtagGenerator() {
-        return etagGenerator;
     }
 
     @Override

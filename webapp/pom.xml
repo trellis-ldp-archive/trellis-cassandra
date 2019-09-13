@@ -55,50 +55,26 @@
     <dependency>
       <groupId>org.trellisldp</groupId>
       <artifactId>trellis-http</artifactId>
-      <version>${trellis.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.tamaya</groupId>
-          <artifactId>tamaya-api</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.trellisldp</groupId>
       <artifactId>trellis-constraint-rules</artifactId>
-      <version>${trellis.version}</version>
     </dependency>
     <dependency>
       <groupId>org.trellisldp</groupId>
       <artifactId>trellis-rdfa</artifactId>
-      <version>${trellis.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.tamaya</groupId>
-          <artifactId>tamaya-api</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.trellisldp</groupId>
       <artifactId>trellis-io-jena</artifactId>
-      <version>${trellis.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.tamaya</groupId>
-          <artifactId>tamaya-api</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.trellisldp</groupId>
       <artifactId>trellis-agent</artifactId>
-      <version>${trellis.version}</version>
     </dependency>
     <dependency>
       <groupId>org.trellisldp</groupId>
       <artifactId>trellis-webdav</artifactId>
-      <version>${trellis.version}</version>
     </dependency>
 
   <!-- Configuration -->
