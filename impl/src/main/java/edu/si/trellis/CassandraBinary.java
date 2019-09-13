@@ -43,12 +43,12 @@ public class CassandraBinary implements Binary {
     }
 
     @Override
-    public CompletionStage<InputStream> getContent() {
-        return completedFuture(read.execute(id));
+    public InputStream getContent() {
+        return read.execute(id);
     }
 
     @Override
-    public CompletionStage<InputStream> getContent(int from, int to) {
+    public InputStream getContent(int from, int to) {
         int firstChunk = from / chunkLength;
         int lastChunk = to / chunkLength;
         int chunkStreamStart = from % chunkLength;
@@ -60,6 +60,6 @@ public class CassandraBinary implements Binary {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         } // we needn't check the result; see BinaryReadQuery#retrieve
-        return completedFuture(new BoundedInputStream(retrieve, rangeSize)); // apply limit for upper end of range
+        return new BoundedInputStream(retrieve, rangeSize); // apply limit for upper end of range
     }
 }

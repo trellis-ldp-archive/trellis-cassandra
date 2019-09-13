@@ -42,12 +42,12 @@ class CassandraBinaryServiceIT extends CassandraServiceIT {
             connection.binaryService.setContent(builder(id).build(), testInput).join();
         }
 
-        try (InputStream got = connection.binaryService.get(id).join().getContent().toCompletableFuture().join()) {
+        try (InputStream got = connection.binaryService.get(id).join().getContent()) {
             String reply = IOUtils.toString(got, UTF_8);
             assertEquals(content, reply);
         }
 
-        try (InputStream got = connection.binaryService.get(id).join().getContent(5, 11).toCompletableFuture().join()) {
+        try (InputStream got = connection.binaryService.get(id).join().getContent(5, 11)) {
             String reply = IOUtils.toString(got, UTF_8);
             assertEquals(content.subSequence(5, 12), reply);
         }
@@ -77,11 +77,11 @@ class CassandraBinaryServiceIT extends CassandraServiceIT {
         assertTrue(got.isDone());
 
         try (InputStream testData = new FileInputStream("src/test/resources/test.jpg");
-             InputStream content = binary.getContent().toCompletableFuture().join()) {
+             InputStream content = binary.getContent()) {
             assertTrue(contentEquals(testData, content), "Didn't retrieve correct content!");
         }
 
-        try (InputStream content = binary.getContent().toCompletableFuture().join()) {
+        try (InputStream content = binary.getContent()) {
             String digest = DigestUtils.md5Hex(content);
             assertEquals(md5sum, digest);
         }
@@ -102,11 +102,11 @@ class CassandraBinaryServiceIT extends CassandraServiceIT {
         assertTrue(got.isDone());
 
         try (InputStream testData = new FileInputStream("src/test/resources/test.jpg");
-             InputStream content = binary.getContent().toCompletableFuture().join()) {
+             InputStream content = binary.getContent()) {
             assertTrue(contentEquals(testData, content), "Didn't retrieve correct content!");
         }
 
-        try (InputStream content = binary.getContent().toCompletableFuture().join()) {
+        try (InputStream content = binary.getContent()) {
             String digest = DigestUtils.md5Hex(content);
             assertEquals(md5sum, digest);
         }

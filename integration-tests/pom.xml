@@ -41,14 +41,7 @@
     <dependency>
       <groupId>org.trellisldp</groupId>
       <artifactId>trellis-test</artifactId>
-      <version>${trellis.version}</version>
       <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.tamaya</groupId>
-          <artifactId>tamaya-api</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <!-- needed to support trellis-test -->
     <dependency>
