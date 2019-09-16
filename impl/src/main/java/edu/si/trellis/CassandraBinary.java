@@ -8,7 +8,6 @@ import edu.si.trellis.query.binary.ReadRange;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
-import java.util.concurrent.CompletionStage;
 
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.rdf.api.IRI;
@@ -28,7 +27,7 @@ public class CassandraBinary implements Binary {
     private final Read read;
 
     private final ReadRange readRange;
-    
+
     private static final Logger log = getLogger(CassandraBinary.class);
 
     /**
@@ -46,29 +45,26 @@ public class CassandraBinary implements Binary {
     }
 
     @Override
-    public CompletionStage<InputStream> getContent() {
+    public InputStream getContent() {
         return read.execute(id);
     }
 
     @Override
-    public CompletionStage<InputStream> getContent(int from, int to) {
+    public InputStream getContent(int from, int to) {
         int firstChunk = from / chunkLength;
         int lastChunk = to / chunkLength;
         int chunkStreamStart = from % chunkLength;
         int rangeSize = to - from + 1; // +1 because range is inclusive
-        return readRange.execute(id, firstChunk, lastChunk)
-                        // skip to fulfill lower end of range
-                        .thenApply(retrieve -> {
-                            try {
-                                log.trace("Skipping {} bytes…", chunkStreamStart);
-                                // we needn't check the result; see BinaryReadQuery#retrieve
-                                retrieve.skip(chunkStreamStart);
-                                log.trace("Done skipping {} bytes.", chunkStreamStart);                               
-                                return retrieve;
-                            } catch (IOException e) {
-                                throw new UncheckedIOException(e);
-                            }
-                            // apply limit for upper end of range
-                        }).thenApply(retrieve -> new BoundedInputStream(retrieve, rangeSize));
+        InputStream stream = readRange.execute(id, firstChunk, lastChunk);
+        // skip to fulfill lower end of range
+        try {
+            log.trace("Skipping {} bytes…", chunkStreamStart);
+            // we needn't check the result; see BinaryReadQuery#retrieve
+            stream.skip(chunkStreamStart);
+            log.trace("Done skipping {} bytes.", chunkStreamStart);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        } // apply limit for upper end of range
+        return new BoundedInputStream(stream, rangeSize);
     }
 }

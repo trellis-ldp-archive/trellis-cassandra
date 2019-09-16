@@ -10,6 +10,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
 
 import edu.si.trellis.query.rdf.GetFirstMemento;
 import edu.si.trellis.query.rdf.GetMemento;
@@ -29,7 +30,7 @@ class CassandraConnection implements AfterAllCallback, BeforeAllCallback {
     private static final String[] CLEANOUT_QUERIES = new String[] { "TRUNCATE metadata ; ", "TRUNCATE mutabledata ; ",
             "TRUNCATE immutabledata ;", "TRUNCATE binarydata ;", "TRUNCATE mementodata ;" };
 
-    private static final ConsistencyLevel testConsistency = ONE;
+    private static final DefaultConsistencyLevel testConsistency = ONE;
 
     private static final Logger log = getLogger(CassandraConnection.class);
 

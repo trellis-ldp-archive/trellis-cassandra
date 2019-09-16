@@ -71,15 +71,15 @@ public class CassandraApplication extends Application {
 
     @PostConstruct
     private void initialize() {
+        importAdditionalConfig();
         List<Object> list = asList(ldpHttpResource, httpFilter, webDav, webDavRequestFilter, webDavResponseFilter);
         this.singletons = unmodifiableSet(new HashSet<>(list));
-        importAdditionalConfig();
+        log.info("JAX-RS components initialized.");
     }
 
     /**
      * Load in any additional configuration.
      */
-    @PostConstruct
     public void importAdditionalConfig() {
         // we require contained PUT because we use the Trellis WebDAV module, which requires it
         System.setProperty(CONFIG_HTTP_PUT_UNCONTAINED, "false");
@@ -93,6 +93,7 @@ public class CassandraApplication extends Application {
         current().getContext().getPropertySources().stream().map(PropertySource::getName).forEach(log::debug);
         log.debug("Using Tamaya configuration:");
         log(current().getProperties());
+        log.info("Additional configuration imported.");
     }
 
     private static <K, V> void log(Map<K, V> config) {

@@ -33,7 +33,7 @@ class BasicOperationIT {
     private static final String trellisUri = "http://localhost:" + port + "/";
 
     @Test
-    void smokeTest() throws MalformedURLException, IOException {
+    void rdfSmokeTest() throws MalformedURLException, IOException {
         UUID slug = randomUUID();
         String id;
         log.info("Using Slug {} to smoke test webapp.", slug);
@@ -53,11 +53,15 @@ class BasicOperationIT {
             log.debug("Response body for resource: {}", responseBody);
             assertTrue(responseBody.contains("http://example.com/example"));
         }
-        
+
+    }
+
+    @Test
+    void binarySmokeTest() throws IOException {
         UUID binarySlug = randomUUID();
         String binaryId;
         log.info("Using Slug {} for binary to smoke test webapp.", binarySlug);
-        req = new HttpPost(trellisUri);
+        HttpPost req = new HttpPost(trellisUri);
         req.setHeader("Slug", binarySlug.toString());
         req.setHeader("Content-Type", "text/plain");
         req.setEntity(new StringEntity("<> a <http://example.com/example> ."));
@@ -66,8 +70,9 @@ class BasicOperationIT {
             binaryId = res.getFirstHeader("Location").getValue();
         }
         log.info("Using location {} for binary resource location.", binaryId);
-        get = new HttpGet(binaryId);
+        HttpGet get = new HttpGet(binaryId);
         try (CloseableHttpResponse res = client.execute(get); InputStream url = res.getEntity().getContent()) {
+            log.debug("Retrieved binary response.");
             assertEquals(SC_OK, res.getStatusLine().getStatusCode());
             String responseBody = EntityUtils.toString(res.getEntity());
             log.debug("Response body for resource: {}", responseBody);

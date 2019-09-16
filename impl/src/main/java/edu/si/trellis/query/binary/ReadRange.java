@@ -2,12 +2,12 @@ package edu.si.trellis.query.binary;
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
 import com.datastax.oss.driver.api.core.cql.BoundStatement;
 
 import edu.si.trellis.BinaryReadConsistency;
 
 import java.io.InputStream;
-import java.util.concurrent.CompletionStage;
 
 import javax.inject.Inject;
 
@@ -21,7 +21,7 @@ public class ReadRange extends BinaryReadQuery {
 
     @Inject
     public ReadRange(CqlSession session, @BinaryReadConsistency ConsistencyLevel consistency) {
-        super(session, "SELECT chunkIndex FROM " + BINARY_TABLENAME
+        super(session, "SELECT chunkIndex, chunk FROM " + BINARY_TABLENAME
                         + " WHERE identifier = :identifier and chunkIndex >= :start and chunkIndex <= :end;",
                         consistency);
     }
@@ -30,16 +30,14 @@ public class ReadRange extends BinaryReadQuery {
      * @param id the {@link IRI} of a binary to read
      * @param first which byte to begin reading on
      * @param last which byte to end reading on
-     * @return A future for an {@link InputStream} of bytes as requested. The {@code skip} method of this
-     *         {@code InputStream} is guaranteed to skip as many bytes as asked.
+     * @return An {@link InputStream} of bytes as requested. The {@code skip} method of this {@code InputStream} is
+     *         guaranteed to skip as many bytes as asked.
      * 
      * @see BinaryReadQuery#retrieve(IRI, BoundStatement)
      */
-    public CompletionStage<InputStream> execute(IRI id, int first, int last) {
-        BoundStatement bound = preparedStatement().bind()
-                        .set("identifier", id, IRI.class)
-                        .setInt("start", first)
+    public InputStream execute(IRI id, int first, int last) {
+        BoundStatement bound = preparedStatement().bind().set("identifier", id, IRI.class).setInt("start", first)
                         .setInt("end", last);
-        return retrieve(id, bound);
+        return retrieve(bound);
     }
 }

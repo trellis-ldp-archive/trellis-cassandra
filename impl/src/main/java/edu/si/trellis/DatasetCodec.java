@@ -16,7 +16,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.jena.JenaRDF;

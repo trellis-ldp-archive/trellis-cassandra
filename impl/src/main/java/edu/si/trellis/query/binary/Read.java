@@ -2,12 +2,12 @@ package edu.si.trellis.query.binary;
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
 import com.datastax.oss.driver.api.core.cql.BoundStatement;
 
 import edu.si.trellis.BinaryReadConsistency;
 
 import java.io.InputStream;
-import java.util.concurrent.CompletionStage;
 
 import javax.inject.Inject;
 
@@ -21,7 +21,7 @@ public class Read extends BinaryReadQuery {
 
     @Inject
     public Read(CqlSession session, @BinaryReadConsistency ConsistencyLevel consistency) {
-        super(session, "SELECT chunkIndex FROM " + BINARY_TABLENAME + " WHERE identifier = :identifier;", consistency);
+        super(session, "SELECT chunkIndex, chunk FROM " + BINARY_TABLENAME + " WHERE identifier = :identifier;", consistency);
     }
 
     /**
@@ -31,8 +31,8 @@ public class Read extends BinaryReadQuery {
      * 
      * @see BinaryReadQuery#retrieve(IRI, BoundStatement)
      */
-    public CompletionStage<InputStream> execute(IRI id) {
+    public InputStream execute(IRI id) {
         BoundStatement bound = preparedStatement().bind().set("identifier", id, IRI.class);
-        return retrieve(id, bound);
+        return retrieve(bound);
     }
 }

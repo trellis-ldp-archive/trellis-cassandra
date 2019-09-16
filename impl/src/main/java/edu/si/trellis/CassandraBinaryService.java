@@ -85,14 +85,12 @@ public class CassandraBinaryService implements BinaryService {
     @Override
     public CompletionStage<Binary> get(IRI id) {
         log.trace("Retrieving binary content from: {}", id);
-        CompletionStage<Row> execute = get.execute(id);
-        log.debug("Retrieved row of metadata for binary {}", id);
-        return execute.thenApply(row -> {
+        return get.execute(id).thenApply(row -> {
             @SuppressWarnings("boxing")
             Integer chunkSize = row.getInt("chunkSize");
             log.debug("Chunk size for {} is {}", id, chunkSize);
             return chunkSize;
-        }).thenApply(chunkSize -> new CassandraBinary(id, read, readRange, chunkSize));
+        }).thenApplyAsync(chunkSize -> new CassandraBinary(id, read, readRange, chunkSize));
     }
 
     @Override

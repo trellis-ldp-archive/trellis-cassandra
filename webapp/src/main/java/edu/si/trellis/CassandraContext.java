@@ -4,15 +4,18 @@ import static edu.si.trellis.DatasetCodec.datasetCodec;
 import static edu.si.trellis.IRICodec.iriCodec;
 import static edu.si.trellis.InputStreamCodec.inputStreamCodec;
 import static java.lang.Integer.parseInt;
+import static java.lang.Thread.currentThread;
 import static java.net.InetSocketAddress.createUnresolved;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
 import com.datastax.oss.driver.api.core.type.codec.TypeCodec;
 
 import java.net.InetSocketAddress;
+import java.util.Objects;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CountDownLatch;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -49,22 +52,22 @@ public class CassandraContext {
     @Inject
     @Config(key = "cassandra.binaryReadConsistency", alternateKeys = {
             "CASSANDRA_BINARY_READ_CONSISTENCY" }, defaultValue = "ONE")
-    private ConsistencyLevel binaryReadConsistency;
+    private DefaultConsistencyLevel binaryReadConsistency;
 
     @Inject
     @Config(key = "cassandra.binaryWriteConsistency", alternateKeys = {
             "CASSANDRA_BINARY_WRITE_CONSISTENCY" }, defaultValue = "ONE")
-    private ConsistencyLevel binaryWriteConsistency;
+    private DefaultConsistencyLevel binaryWriteConsistency;
 
     @Inject
     @Config(key = "cassandra.rdfReadConsistency", alternateKeys = {
             "CASSANDRA_RDF_READ_CONSISTENCY" }, defaultValue = "ONE")
-    private ConsistencyLevel rdfReadConsistency;
+    private DefaultConsistencyLevel rdfReadConsistency;
 
     @Inject
     @Config(key = "cassandra.rdfWriteConsistency", alternateKeys = {
             "CASSANDRA_RDF_WRITE_CONSISTENCY" }, defaultValue = "ONE")
-    private ConsistencyLevel rdfWriteConsistency;
+    private DefaultConsistencyLevel rdfWriteConsistency;
 
     /**
      * @return the default size of chunk for a {@link CassandraBinaryService}
@@ -80,7 +83,7 @@ public class CassandraContext {
      */
     @Produces
     @BinaryReadConsistency
-    public ConsistencyLevel binaryReadConsistency() {
+    public DefaultConsistencyLevel binaryReadConsistency() {
         return binaryReadConsistency;
     }
 
@@ -89,7 +92,7 @@ public class CassandraContext {
      */
     @Produces
     @BinaryWriteConsistency
-    public ConsistencyLevel binaryWriteConsistency() {
+    public DefaultConsistencyLevel binaryWriteConsistency() {
         return binaryWriteConsistency;
     }
 
@@ -98,7 +101,7 @@ public class CassandraContext {
      */
     @Produces
     @MutableReadConsistency
-    public ConsistencyLevel rdfReadConsistency() {
+    public DefaultConsistencyLevel rdfReadConsistency() {
         return rdfReadConsistency;
     }
 
@@ -107,11 +110,11 @@ public class CassandraContext {
      */
     @Produces
     @MutableWriteConsistency
-    public ConsistencyLevel rdfWriteConsistency() {
+    public DefaultConsistencyLevel rdfWriteConsistency() {
         return rdfWriteConsistency;
     }
 
-    private CompletionStage<CqlSession> futureSession;
+    private CountDownLatch sessionGuard = new CountDownLatch(1);
 
     private CqlSession session;
 
@@ -127,11 +130,20 @@ public class CassandraContext {
         log.debug("Looking for connection...");
         final InetSocketAddress socketAddress = createUnresolved(contactAddress, parseInt(contactPort));
 
-        this.futureSession = CqlSession.builder()
+        CompletionStage<CqlSession> futureSession = CqlSession.builder()
                         .addTypeCodecs(STANDARD_CODECS)
                         .withKeyspace("trellis")
                         .withLocalDatacenter("datacenter1")
-                        .addContactPoint(socketAddress).buildAsync();
+                        .addContactPoint(socketAddress)
+                        .buildAsync();
+        futureSession.thenApply(Objects::requireNonNull)
+                        .thenAccept(this::session)
+                        .thenRun(sessionGuard::countDown)
+                        .thenRun(()->log.debug("Connection found."));
+    }
+
+    private void session(CqlSession s) {
+        this.session = s;
     }
 
     /**
@@ -139,8 +151,19 @@ public class CassandraContext {
      */
     @Produces
     @ApplicationScoped
-    public synchronized CqlSession getSession() {
-        return session == null ? session = futureSession.toCompletableFuture().join() : session;
+    public CqlSession session() {
+        boolean interrupted = false;
+        try {
+            while (true)
+                try {
+                    sessionGuard.await();
+                    return session;
+                } catch (InterruptedException e) {
+                    interrupted = true;
+                }
+        } finally {
+            if (interrupted) currentThread().interrupt();
+        }
     }
 
     /**
