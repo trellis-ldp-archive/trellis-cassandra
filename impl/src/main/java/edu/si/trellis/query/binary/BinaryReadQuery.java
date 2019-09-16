@@ -12,9 +12,9 @@ import com.datastax.oss.driver.api.core.cql.BoundStatement;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TransferQueue;
 
@@ -40,31 +40,35 @@ abstract class BinaryReadQuery extends BinaryQuery {
     protected InputStream retrieve(BoundStatement statement) {
         TransferQueue<ByteBuffer> buffers = new LinkedTransferQueue<>();
         CompletableFuture<AsyncResultSet> response = executeRead(statement).toCompletableFuture();
-        RollingInputStream assembledStream = new RollingInputStream(buffers, response);
-        response
-            .thenApply(results -> results.map(row -> row.getByteBuffer("chunk")))
-            .thenAcceptAsync(page -> recurseThroughPages(buffers, page))
-            .thenRun(assembledStream::finishRolling);
+        RollingInputStream assembledStream = new RollingInputStream(buffers);
+        CompletableFuture<MappedAsyncPagingIterable<ByteBuffer>> thenApply = response
+                        .thenApply(results -> results.map(row -> row.getByteBuffer("chunk")));
+        CompletableFuture<MappedAsyncPagingIterable<ByteBuffer>> compose = thenApply
+                        .thenCompose(page -> recurseThroughPages(buffers, page));
+        CompletableFuture<Void> loadBuffers = compose 
+                        .thenRun(assembledStream::finishRolling);
+        assembledStream.finisher(loadBuffers);
         return assembledStream;
     }
 
-    private void recurseThroughPages(TransferQueue<ByteBuffer> buffers, MappedAsyncPagingIterable<ByteBuffer> results) {
-        log.trace("Entering recurseThroughPages");
+    private CompletionStage<MappedAsyncPagingIterable<ByteBuffer>> recurseThroughPages(
+                    TransferQueue<ByteBuffer> buffers, MappedAsyncPagingIterable<ByteBuffer> results) {
+        log.trace("entering recurseThroughPages()");
         handleOnePage(buffers, results); // head
-        while (results.hasMorePages()) {
-            log.trace("Entering loop inside recurseThroughPages");
-            handleOnePage(buffers, results);
-            results.fetchNextPage().thenAcceptAsync(nextPage -> recurseThroughPages(buffers, nextPage)); // tail
-        }
+        if (results.hasMorePages()) // tail
+            return results.fetchNextPage().thenCompose(nextPage -> recurseThroughPages(buffers, nextPage));
+        return CompletableFuture.completedFuture(results);
     }
+    
+    
 
     private void handleOnePage(TransferQueue<ByteBuffer> buffers, MappedAsyncPagingIterable<ByteBuffer> results) {
         log.trace("Entering handleOnePage");
-        results.currentPage().forEach(chunk ->
-            uninterruptably(() -> {
-                  buffers.transfer(chunk);
-                  return true;
-            }));
+        results.currentPage().forEach(chunk -> uninterruptably(() -> {
+            buffers.transfer(chunk);
+            log.trace("transferred one chunk");
+            return true;
+        }));
         log.trace("Exiting handleOnePage");
     }
 
@@ -100,14 +104,17 @@ abstract class BinaryReadQuery extends BinaryQuery {
         /**
          * Used in {@link #close()}.
          */
-        private CompletableFuture<?> response;
+        private CompletableFuture<?> finisher;
 
-        private RollingInputStream(TransferQueue<ByteBuffer> buffers, CompletableFuture<?> response) {
+        private RollingInputStream(TransferQueue<ByteBuffer> buffers) {
             this.buffers = buffers;
-            this.response = response;
         }
 
-        private ByteBuffer current;
+        void finisher(CompletableFuture<?> c) {
+            this.finisher = c;
+        }
+
+        private volatile ByteBuffer current;
 
         private volatile boolean closed, finishedRolling;
 
@@ -116,80 +123,67 @@ abstract class BinaryReadQuery extends BinaryQuery {
          * 
          * @throws IOException
          */
-        private boolean next() {
+        private synchronized boolean next() {
             log.trace("Entering next()");
             return uninterruptably(() -> {
                 do {
-                    log.trace("Entering loop in next()");
-                    // in between checking to see if we have been closed
-                    if (closed || finishedRolling) {
-                        log.trace("Finished or closed, no more buffers allowed ");
-                        return false;
-                    }
+                    log.trace("Entering next() loop");
+                    // are we closed or done?
+                    if (closed || finishedRolling) return false;
+                    log.trace("we are not closed or finished");
                     // while we still haven't received a new buffer we keep checking
                 } while ((current = buffers.poll(1, SECONDS)) == null);
-                log.trace("Polled a new buffer for current");
                 return true;
             });
         }
 
-        private void ensureCurrent() {
-            if (current == null) next();
+        private boolean ensureCurrent() {
+
+            log.trace("entering ensureCurrent()");
+            if (current == null) return next();
+
+            log.trace("did not need to call next()");
+            return true;
         }
 
         @Override
         public long skip(long n) throws IOException {
-            log.trace("Entering skip({})", n);
             if (closed) return 0;
             ensureCurrent();
             int skip = (int) Math.min(n, current.remaining());
             current.position(current.position() + skip);
-            if (skip < n) {
-                log.trace("skip < n {} < {}", skip, n);
-                if (next()) return skip + skip(n - skip);
-            }
+            if (skip < n) if (next()) return skip + skip(n - skip);
+
             return skip;
         }
 
         @Override
         public int read(byte[] b, int offset, int length) throws IOException {
-            log.trace("Calling read({}, {}, {})", "b", offset, length);
             if (closed || length == 0) return 0;
-            ensureCurrent();
-            
-            log.trace("Current has {} remaining", current.remaining());
-            
+            if (!ensureCurrent()) throw new IOException("Could not transfer bytes!");
             if (length <= current.remaining()) {
-                log.trace("We have enough in our current buffer");
+                // we have enough in our current buffer
                 current.get(b, offset, length);
                 return length;
             }
-            
-            log.trace("we don't have enough in our current buffer");
+            // we do not have enough in our current buffer
             // how many bytes are left in current
             int available = current.remaining();
-            // how many bytes we will need after current is changed
+            // how many more bytes we will need after current is changed
             int toGo = length - available;
             // get the bytes we can from current
             current.get(b, offset, available);
+            // how many bytes we have gotten
             int transferred = available;
-            log.trace("Got {} bytes, looking for {} more", transferred, toGo);
             // if there is another buffer, read from it too
             if (next()) {
-                log.trace("Found a new current to get them from");
+                // recurse
                 int nextRead = read(b, offset + transferred, toGo);
-                log.trace("Recursed to get {} more bytes", nextRead);
-                if (nextRead != -1) {
-                    transferred += nextRead;
-                }
-                log.trace("and we've read {}", transferred);
+                // if we successfully read from fresh buffer(s) record how many bytes
+                if (nextRead != -1) transferred += nextRead;
                 return transferred;
             }
-            log.trace("No more buffers, we cannot get the last {} bytes", toGo);
-            if (transferred == 0) {
-                log.trace("No more buffers and we got no more data from current");
-                return -1;
-            }
+            if (transferred == 0) return -1;
             return transferred;
         }
 
@@ -197,39 +191,25 @@ abstract class BinaryReadQuery extends BinaryQuery {
          * Indicates that no further data will be rolled.
          */
         public void finishRolling() {
-            log.trace("Entering finishRolling()");
+            log.trace("entering finishRolling()");
             finishedRolling = true;
         }
 
         @Override
         public void close() {
-            log.trace("Entering close()");
+            log.trace("entering close()");
             closed = true;
-            response.cancel(true);
+            finisher.cancel(true);
             buffers.clear();
         }
 
         @Override
         public int read() throws IOException {
-            log.trace("Entering read()");
             if (closed) return DONE;
-            log.trace("Not closed in read()");
             ensureCurrent();
-            log.trace("Did find a current, asking for a byte");
-            if (current.hasRemaining()) {
-                log.trace("Current has a byte!");
-                int unsignedInt = Byte.toUnsignedInt(current.get());
-                log.trace("Found a byte: {}", unsignedInt);
-                return unsignedInt;
-            }
-            log.trace("Didn't find any bytes, calling next()");
-            if (next()) {
-                log.trace("There was a next buffer, recursing into read()");
-                return read();
-            }
-            log.trace("There was no next buffer  we are done");
+            if (current.hasRemaining()) return Byte.toUnsignedInt(current.get());
+            if (next()) return read();
             return DONE;
-
         }
     }
 }

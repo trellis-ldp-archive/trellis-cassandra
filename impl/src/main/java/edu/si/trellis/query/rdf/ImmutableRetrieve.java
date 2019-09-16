@@ -4,7 +4,6 @@ import static java.util.stream.StreamSupport.stream;
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
 import com.datastax.oss.driver.api.core.cql.Row;
 
 import edu.si.trellis.MutableReadConsistency;

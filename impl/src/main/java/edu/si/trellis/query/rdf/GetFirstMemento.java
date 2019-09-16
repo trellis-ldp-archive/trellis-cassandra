@@ -1,7 +1,6 @@
 package edu.si.trellis.query.rdf;
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
 import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
 
 import edu.si.trellis.MutableReadConsistency;

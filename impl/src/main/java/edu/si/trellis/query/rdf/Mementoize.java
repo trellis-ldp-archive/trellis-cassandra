@@ -4,7 +4,6 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
 
 import edu.si.trellis.MutableWriteConsistency;
 

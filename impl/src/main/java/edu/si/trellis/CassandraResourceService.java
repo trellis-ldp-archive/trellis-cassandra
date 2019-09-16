@@ -100,16 +100,22 @@ class CassandraResourceService extends CassandraBuildingService implements Resou
     void initializeRoot() {
 
         IRI rootIri = TrellisUtils.getInstance().createIRI(TRELLIS_DATA_PREFIX);
+        boolean interrupted = false;
         try {
-            if (get(rootIri).toCompletableFuture().get().equals(MISSING_RESOURCE)) {
-                Metadata rootResource = builder(rootIri).interactionModel(BasicContainer).build();
-                create(rootResource, null).toCompletableFuture().get();
-            }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new InterruptedStartupException("Interrupted while building repository root!", e);
-        } catch (ExecutionException e) {
-            throw new RuntimeTrellisException(e);
+            while (true)
+                try {
+                    if (get(rootIri).toCompletableFuture().get().equals(MISSING_RESOURCE)) {
+                        Metadata rootResource = builder(rootIri).interactionModel(BasicContainer).build();
+                        create(rootResource, null).toCompletableFuture().get();
+                    }
+                    break;
+                } catch (InterruptedException e) {
+                    interrupted = true;
+                } catch (ExecutionException e) {
+                    throw new RuntimeTrellisException(e.getCause());
+                }
+        } finally {
+            if (interrupted) Thread.currentThread().interrupt();
         }
     }
 

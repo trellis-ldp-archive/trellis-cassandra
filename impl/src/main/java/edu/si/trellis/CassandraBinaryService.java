@@ -4,8 +4,6 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.Executors.newCachedThreadPool;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import com.datastax.oss.driver.api.core.cql.Row;
-
 import edu.si.trellis.query.binary.Delete;
 import edu.si.trellis.query.binary.GetChunkSize;
 import edu.si.trellis.query.binary.Insert;
@@ -84,10 +82,8 @@ public class CassandraBinaryService implements BinaryService {
 
     @Override
     public CompletionStage<Binary> get(IRI id) {
-        log.trace("Retrieving binary content from: {}", id);
         return get.execute(id).thenApply(row -> {
-            @SuppressWarnings("boxing")
-            Integer chunkSize = row.getInt("chunkSize");
+            Integer chunkSize = Integer.valueOf(row.getInt("chunkSize"));
             log.debug("Chunk size for {} is {}", id, chunkSize);
             return chunkSize;
         }).thenApplyAsync(chunkSize -> new CassandraBinary(id, read, readRange, chunkSize));

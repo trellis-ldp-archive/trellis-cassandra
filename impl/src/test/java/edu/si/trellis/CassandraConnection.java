@@ -8,7 +8,6 @@ import static edu.si.trellis.InputStreamCodec.inputStreamCodec;
 import static java.net.InetSocketAddress.createUnresolved;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
 
