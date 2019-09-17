@@ -45,8 +45,7 @@ abstract class BinaryReadQuery extends BinaryQuery {
                         .thenApply(results -> results.map(row -> row.getByteBuffer("chunk")));
         CompletableFuture<MappedAsyncPagingIterable<ByteBuffer>> compose = thenApply
                         .thenCompose(page -> recurseThroughPages(buffers, page));
-        CompletableFuture<Void> loadBuffers = compose 
-                        .thenRun(assembledStream::finishRolling);
+        CompletableFuture<Void> loadBuffers = compose.thenRun(assembledStream::finishRolling);
         assembledStream.finisher(loadBuffers);
         return assembledStream;
     }
@@ -59,31 +58,29 @@ abstract class BinaryReadQuery extends BinaryQuery {
             return results.fetchNextPage().thenCompose(nextPage -> recurseThroughPages(buffers, nextPage));
         return CompletableFuture.completedFuture(results);
     }
-    
-    
 
     private void handleOnePage(TransferQueue<ByteBuffer> buffers, MappedAsyncPagingIterable<ByteBuffer> results) {
         log.trace("Entering handleOnePage");
         results.currentPage().forEach(chunk -> uninterruptably(() -> {
             buffers.transfer(chunk);
             log.trace("transferred one chunk");
-            return true;
+            return null;
         }));
         log.trace("Exiting handleOnePage");
     }
 
-    private interface Interruptible {
+    private interface Interruptible<T> {
         /**
          * @return whether the operation succeeded
          * @throws InterruptedException
          */
-        boolean run() throws InterruptedException;
+        T run() throws InterruptedException;
     }
 
-    private static boolean uninterruptably(Interruptible task) {
+    private static <S> S uninterruptably(Interruptible<S> task) {
         boolean interrupted = false;
         try {
-            while (!interrupted)
+            while (true)
                 try {
                     return task.run();
                 } catch (InterruptedException e) {
@@ -92,12 +89,13 @@ abstract class BinaryReadQuery extends BinaryQuery {
         } finally {
             if (interrupted) currentThread().interrupt();
         }
-        return false;
     }
 
     private static class RollingInputStream extends InputStream {
 
         private static final int DONE = -1;
+
+        private static final ByteBuffer INITIAL = ByteBuffer.allocate(0);
 
         private TransferQueue<ByteBuffer> buffers;
 
@@ -108,6 +106,7 @@ abstract class BinaryReadQuery extends BinaryQuery {
 
         private RollingInputStream(TransferQueue<ByteBuffer> buffers) {
             this.buffers = buffers;
+            this.current = INITIAL;
         }
 
         void finisher(CompletableFuture<?> c) {
@@ -116,57 +115,82 @@ abstract class BinaryReadQuery extends BinaryQuery {
 
         private volatile ByteBuffer current;
 
-        private volatile boolean closed, finishedRolling;
+        private volatile boolean closed, finished;
 
         /**
          * Blocks until another buffer is available.
          * 
-         * @throws IOException
+         * @return a buffer with fresh data
          */
-        private synchronized boolean next() {
+        private void next() {
             log.trace("Entering next()");
-            return uninterruptably(() -> {
-                do {
+            if (closed) return;
+            uninterruptably(() -> {
+                ByteBuffer next = null;
+                // while we still haven't received a new buffer we keep checking
+                while ((next = buffers.poll(1, SECONDS)) == null) {
                     log.trace("Entering next() loop");
-                    // are we closed or done?
-                    if (closed || finishedRolling) return false;
-                    log.trace("we are not closed or finished");
-                    // while we still haven't received a new buffer we keep checking
-                } while ((current = buffers.poll(1, SECONDS)) == null);
-                return true;
+                    if (closed || finished) { 
+                        log.trace("Closed, leaving current alone");
+                        return null;
+                        }
+                    log.trace("we are not closed");
+                }
+                log.trace("polled fresh buffer, setting current to  it");
+                current = next;
+                return null;
             });
         }
 
-        private boolean ensureCurrent() {
+        private void ensureCurrent() {
 
             log.trace("entering ensureCurrent()");
-            if (current == null) return next();
-
-            log.trace("did not need to call next()");
-            return true;
+            if (finished && !current.hasRemaining()) close();
+            if (current == INITIAL) next();
         }
 
         @Override
-        public long skip(long n) throws IOException {
-            if (closed) return 0;
+        public long skip(long n) {
             ensureCurrent();
+            if (closed) return 0;
             int skip = (int) Math.min(n, current.remaining());
             current.position(current.position() + skip);
-            if (skip < n) if (next()) return skip + skip(n - skip);
-
+            if (skip < n) {
+                if (finished) {
+                    close();
+                    return skip;
+                }
+                ByteBuffer last = current;
+                next();
+                // no more fresh buffers
+                if (last == current) return skip;
+                // there are fresh buffers
+                return skip + skip(n - skip);
+            }
             return skip;
         }
 
         @Override
-        public int read(byte[] b, int offset, int length) throws IOException {
-            if (closed || length == 0) return 0;
-            if (!ensureCurrent()) throw new IOException("Could not transfer bytes!");
+        public int read(byte[] b, int offset, int length) {
+            log.trace("Entering read(byte[] b, int {}, int {})", offset, length);
+            ensureCurrent();
+            if (closed) return DONE;
+            if (length == 0) { return 0; }
             if (length <= current.remaining()) {
                 // we have enough in our current buffer
                 current.get(b, offset, length);
                 return length;
             }
             // we do not have enough in our current buffer
+            if (finished) {
+                // there will be no more bytes
+                int available = current.remaining();
+                if (available == 0) return DONE;
+                current.get(b, offset, available);
+                // we just used up all our bytes
+                close();
+                return available;
+            }
             // how many bytes are left in current
             int available = current.remaining();
             // how many more bytes we will need after current is changed
@@ -176,23 +200,23 @@ abstract class BinaryReadQuery extends BinaryQuery {
             // how many bytes we have gotten
             int transferred = available;
             // if there is another buffer, read from it too
-            if (next()) {
-                // recurse
-                int nextRead = read(b, offset + transferred, toGo);
-                // if we successfully read from fresh buffer(s) record how many bytes
-                if (nextRead != -1) transferred += nextRead;
-                return transferred;
-            }
-            if (transferred == 0) return -1;
-            return transferred;
+            ByteBuffer last = current;
+            next();
+            // if no more fresh buffers
+            if (last == current) return transferred;
+            // otherwise there are fresh buffers, so recurse
+            int nextRead = read(b, offset + transferred, toGo);
+            // if we successfully read from fresh buffer(s) record how many bytes
+            if (nextRead != -1) transferred += nextRead;
+            return transferred == 0 ? DONE : transferred;
         }
 
         /**
          * Indicates that no further data will be rolled.
          */
-        public void finishRolling() {
+        void finishRolling() {
             log.trace("entering finishRolling()");
-            finishedRolling = true;
+            finished = true;
         }
 
         @Override
@@ -204,12 +228,21 @@ abstract class BinaryReadQuery extends BinaryQuery {
         }
 
         @Override
-        public int read() throws IOException {
-            if (closed) return DONE;
+        public int read() {
             ensureCurrent();
+            if (closed) return DONE;
             if (current.hasRemaining()) return Byte.toUnsignedInt(current.get());
-            if (next()) return read();
-            return DONE;
+            if (finished) {
+                // no more bytes
+                close();
+                return DONE;
+            }
+            ByteBuffer last = current;
+            next();
+            // no fresh buffers
+            if (last == current) return DONE;
+            // there are fresh buffers, so recurse
+            return read();
         }
     }
 }
