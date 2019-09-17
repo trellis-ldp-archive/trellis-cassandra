@@ -25,7 +25,7 @@
 
   <logger name="org.apache.cassandra" level="WARN"/>
   <logger name="org.apache.tamaya" level="ERROR"/>
-  <logger name="edu.si" level="INFO"/>
+  <logger name="edu.si" level="TRACE"/>
   <logger name="com.datastax.oss.driver" level="INFO"/>
 
 </configuration>
