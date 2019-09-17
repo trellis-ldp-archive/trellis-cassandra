@@ -77,8 +77,7 @@ public class CassandraMementoService extends CassandraBuildingService implements
     @Override
     public CompletionStage<SortedSet<Instant>> mementos(IRI id) {
         return mementos.execute(id)
-                        .thenApply(AsyncResultSetSpliterator::new)
-                        .thenApply(r -> stream(r, false))
+                        .thenApply(AsyncResultSetSpliterator::stream)
                         .thenApply(results -> results
                                         .map(row -> row.get("modified", Instant.class))
                                         .map(time -> time.truncatedTo(SECONDS))

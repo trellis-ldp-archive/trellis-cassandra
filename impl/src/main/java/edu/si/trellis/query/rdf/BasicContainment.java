@@ -42,8 +42,7 @@ public class BasicContainment extends ResourceQuery {
     public CompletionStage<Stream<Quad>> execute(IRI id) {
         final BoundStatement query = preparedStatement().bind().set("container", id, IRI.class);
         return executeRead(query)
-                        .thenApply(AsyncResultSetSpliterator::new)
-                        .thenApply(rows -> stream(rows, false))
+                        .thenApply(AsyncResultSetSpliterator::stream)
                         .thenApply(rows -> rows.map(this::getContained))
                         .thenApply(rows -> rows.map(con -> containmentQuad(id, con)));
     }

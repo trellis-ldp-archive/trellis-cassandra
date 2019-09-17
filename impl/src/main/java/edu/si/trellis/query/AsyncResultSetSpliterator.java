@@ -17,7 +17,7 @@ import java.util.stream.StreamSupport;
  */
 public class AsyncResultSetSpliterator implements Spliterator<Row> {
 
-    private final AsyncResultSet results;
+    private AsyncResultSet results;
 
     private Iterator<Row> currentResults;
 
@@ -31,7 +31,7 @@ public class AsyncResultSetSpliterator implements Spliterator<Row> {
         return StreamSupport.stream(new AsyncResultSetSpliterator(results), false);
     }
 
-    public AsyncResultSetSpliterator(AsyncResultSet r) {
+    private AsyncResultSetSpliterator(AsyncResultSet r) {
         this.results = r;
         this.currentResults = r.currentPage().iterator();
     }
@@ -59,9 +59,12 @@ public class AsyncResultSetSpliterator implements Spliterator<Row> {
         return null;
     }
 
+    /**
+     * Blocks until next page of results is available.
+     */
     private void nextPage() {
         if (currentResults.hasNext()) return;
-        results.fetchNextPage();
+        results = results.fetchNextPage().toCompletableFuture().join();
         currentResults = results.currentPage().iterator();
     }
 

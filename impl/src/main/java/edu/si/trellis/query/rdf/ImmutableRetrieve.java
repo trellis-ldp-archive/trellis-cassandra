@@ -34,8 +34,7 @@ public class ImmutableRetrieve extends ResourceQuery {
      */
     public CompletionStage<Stream<Quad>> execute(IRI id) {
         return executeRead(preparedStatement().bind().set("identifier", id, IRI.class))
-                        .thenApply(AsyncResultSetSpliterator::new)
-                        .thenApply(r -> stream(r, false))
+                        .thenApply(AsyncResultSetSpliterator::stream)
                         .thenApply(row -> row.map(this::getDataset))
                         .thenApply(r -> r.flatMap(Dataset::stream));
     }
