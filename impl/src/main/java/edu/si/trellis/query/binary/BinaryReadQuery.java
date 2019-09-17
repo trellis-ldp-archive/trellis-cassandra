@@ -15,6 +15,8 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TransferQueue;
 
@@ -26,6 +28,8 @@ import org.slf4j.Logger;
 abstract class BinaryReadQuery extends BinaryQuery {
 
     private static final Logger log = getLogger(BinaryReadQuery.class);
+    
+    private ExecutorService readWorkers = Executors.newCachedThreadPool();
 
     BinaryReadQuery(CqlSession session, String queryString, ConsistencyLevel consistency) {
         super(session, queryString, consistency);
@@ -41,11 +45,10 @@ abstract class BinaryReadQuery extends BinaryQuery {
         TransferQueue<ByteBuffer> buffers = new LinkedTransferQueue<>();
         CompletableFuture<AsyncResultSet> response = executeRead(statement).toCompletableFuture();
         RollingInputStream assembledStream = new RollingInputStream(buffers);
-        CompletableFuture<MappedAsyncPagingIterable<ByteBuffer>> thenApply = response
-                        .thenApply(results -> results.map(row -> row.getByteBuffer("chunk")));
-        CompletableFuture<MappedAsyncPagingIterable<ByteBuffer>> compose = thenApply
-                        .thenCompose(page -> recurseThroughPages(buffers, page));
-        CompletableFuture<Void> loadBuffers = compose.thenRun(assembledStream::finishRolling);
+        CompletableFuture<Void> loadBuffers = response
+                        .thenApplyAsync(results -> results.map(row -> row.getByteBuffer("chunk")), readWorkers)
+                        .thenCompose(page -> recurseThroughPages(buffers, page))
+                        .thenRun(assembledStream::finishRolling);
         assembledStream.finisher(loadBuffers);
         return assembledStream;
     }
@@ -55,7 +58,7 @@ abstract class BinaryReadQuery extends BinaryQuery {
         log.trace("entering recurseThroughPages()");
         handleOnePage(buffers, results); // head
         if (results.hasMorePages()) // tail
-            return results.fetchNextPage().thenCompose(nextPage -> recurseThroughPages(buffers, nextPage));
+            return results.fetchNextPage().thenComposeAsync(nextPage -> recurseThroughPages(buffers, nextPage));
         return CompletableFuture.completedFuture(results);
     }
 
