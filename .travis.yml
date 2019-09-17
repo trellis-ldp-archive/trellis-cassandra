@@ -12,6 +12,9 @@ cache:
   directories:
     - $HOME/.m2/repository
 
+env:
+  - JAVA_OPTS="-Xmx2048m"
+
 matrix:
   fast_finish: true
 
