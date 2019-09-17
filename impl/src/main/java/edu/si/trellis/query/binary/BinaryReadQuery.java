@@ -58,7 +58,7 @@ abstract class BinaryReadQuery extends BinaryQuery {
         log.trace("entering recurseThroughPages()");
         handleOnePage(buffers, results); // head
         if (results.hasMorePages()) // tail
-            return results.fetchNextPage().thenComposeAsync(nextPage -> recurseThroughPages(buffers, nextPage));
+            return results.fetchNextPage().thenComposeAsync(nextPage -> recurseThroughPages(buffers, nextPage), readWorkers);
         return CompletableFuture.completedFuture(results);
     }
 
