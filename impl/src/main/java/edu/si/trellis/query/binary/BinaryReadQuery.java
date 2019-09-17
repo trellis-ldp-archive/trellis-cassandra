@@ -2,7 +2,6 @@ package edu.si.trellis.query.binary;
 
 import static java.lang.Thread.currentThread;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.slf4j.LoggerFactory.getLogger;
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlSession;
@@ -10,7 +9,6 @@ import com.datastax.oss.driver.api.core.MappedAsyncPagingIterable;
 import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
 import com.datastax.oss.driver.api.core.cql.BoundStatement;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.concurrent.CompletableFuture;
@@ -20,15 +18,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TransferQueue;
 
-import org.slf4j.Logger;
-
 /**
  * A query that reads binary data from Cassandra.
  */
 abstract class BinaryReadQuery extends BinaryQuery {
 
-    private static final Logger log = getLogger(BinaryReadQuery.class);
-    
     private ExecutorService readWorkers = Executors.newCachedThreadPool();
 
     BinaryReadQuery(CqlSession session, String queryString, ConsistencyLevel consistency) {
@@ -44,48 +38,42 @@ abstract class BinaryReadQuery extends BinaryQuery {
     protected InputStream retrieve(BoundStatement statement) {
         TransferQueue<ByteBuffer> buffers = new LinkedTransferQueue<>();
         CompletableFuture<AsyncResultSet> response = executeRead(statement).toCompletableFuture();
-        RollingInputStream assembledStream = new RollingInputStream(buffers);
+        RollingByteBufferInputStream assembledStream = new RollingByteBufferInputStream(buffers);
         CompletableFuture<Void> loadBuffers = response
-                        .thenApplyAsync(results -> results.map(row -> row.getByteBuffer("chunk")), readWorkers)
-                        .thenCompose(page -> recurseThroughPages(buffers, page))
-                        .thenRun(assembledStream::finishRolling);
-        assembledStream.finisher(loadBuffers);
+                                                .thenApplyAsync(results -> results.map(row -> row.getByteBuffer("chunk")), readWorkers)
+                                                .thenCompose(page -> recurseThroughPages(buffers, page))
+                                                .thenRun(assembledStream::finish);
+        assembledStream.finishWith(loadBuffers);
         return assembledStream;
     }
 
     private CompletionStage<MappedAsyncPagingIterable<ByteBuffer>> recurseThroughPages(
                     TransferQueue<ByteBuffer> buffers, MappedAsyncPagingIterable<ByteBuffer> results) {
-        log.trace("entering recurseThroughPages()");
         handleOnePage(buffers, results); // head
         if (results.hasMorePages()) // tail
-            return results.fetchNextPage().thenComposeAsync(nextPage -> recurseThroughPages(buffers, nextPage), readWorkers);
+            return results.fetchNextPage()
+                            .thenComposeAsync(nextPage -> recurseThroughPages(buffers, nextPage), readWorkers);
         return CompletableFuture.completedFuture(results);
     }
 
     private void handleOnePage(TransferQueue<ByteBuffer> buffers, MappedAsyncPagingIterable<ByteBuffer> results) {
-        log.trace("Entering handleOnePage");
-        results.currentPage().forEach(chunk -> uninterruptably(() -> {
-            buffers.transfer(chunk);
-            log.trace("transferred one chunk");
-            return null;
-        }));
-        log.trace("Exiting handleOnePage");
+        results.currentPage().forEach(chunk -> uninterruptably(() -> buffers.transfer(chunk)));
     }
 
-    private interface Interruptible<T> {
+    private interface Interruptible {
         /**
-         * @return whether the operation succeeded
          * @throws InterruptedException
          */
-        T run() throws InterruptedException;
+        void run() throws InterruptedException;
     }
 
-    private static <S> S uninterruptably(Interruptible<S> task) {
+    private static void uninterruptably(Interruptible task) {
         boolean interrupted = false;
         try {
             while (true)
                 try {
-                    return task.run();
+                    task.run();
+                    return;
                 } catch (InterruptedException e) {
                     interrupted = true;
                 }
@@ -94,7 +82,7 @@ abstract class BinaryReadQuery extends BinaryQuery {
         }
     }
 
-    private static class RollingInputStream extends InputStream {
+    private static class RollingByteBufferInputStream extends InputStream {
 
         private static final int DONE = -1;
 
@@ -103,58 +91,48 @@ abstract class BinaryReadQuery extends BinaryQuery {
         private TransferQueue<ByteBuffer> buffers;
 
         /**
-         * Used in {@link #close()}.
+         * Used in {@link #close()} to hopefully cancel any upstream operations.
          */
-        private CompletableFuture<?> finisher;
+        private CompletableFuture<?> finishWith;
 
-        private RollingInputStream(TransferQueue<ByteBuffer> buffers) {
+        private RollingByteBufferInputStream(TransferQueue<ByteBuffer> buffers) {
             this.buffers = buffers;
             this.current = INITIAL;
         }
 
-        void finisher(CompletableFuture<?> c) {
-            this.finisher = c;
+        /**
+         * @param c a task that will eventually call {@link #finish}.
+         */
+        private void finishWith(CompletableFuture<?> c) {
+            this.finishWith = c;
         }
 
-        private volatile ByteBuffer current;
+        private ByteBuffer current;
 
-        private volatile boolean closed, finished;
+        private boolean closed, finished;
 
         /**
          * Blocks until another buffer is available.
-         * 
-         * @return a buffer with fresh data
          */
         private void next() {
-            log.trace("Entering next()");
             if (closed) return;
             uninterruptably(() -> {
-                ByteBuffer next = null;
+                ByteBuffer next;
                 // while we still haven't received a new buffer we keep checking
-                while ((next = buffers.poll(1, SECONDS)) == null) {
-                    log.trace("Entering next() loop");
-                    if (closed || finished) { 
-                        log.trace("Closed, leaving current alone");
-                        return null;
-                        }
-                    log.trace("we are not closed");
-                }
-                log.trace("polled fresh buffer, setting current to  it");
+                while ((next = buffers.poll(1, SECONDS)) == null) 
+                    if (closed || finished) return; 
                 current = next;
-                return null;
             });
         }
 
-        private void ensureCurrent() {
-
-            log.trace("entering ensureCurrent()");
-            if (finished && !current.hasRemaining()) close();
+        private void checkCurrent() {
             if (current == INITIAL) next();
+            if (finished && !current.hasRemaining()) close();
         }
 
         @Override
         public long skip(long n) {
-            ensureCurrent();
+            checkCurrent();
             if (closed) return 0;
             int skip = (int) Math.min(n, current.remaining());
             current.position(current.position() + skip);
@@ -167,7 +145,7 @@ abstract class BinaryReadQuery extends BinaryQuery {
                 next();
                 // no more fresh buffers
                 if (last == current) return skip;
-                // there are fresh buffers
+                // there are fresh buffers so recurse
                 return skip + skip(n - skip);
             }
             return skip;
@@ -175,10 +153,9 @@ abstract class BinaryReadQuery extends BinaryQuery {
 
         @Override
         public int read(byte[] b, int offset, int length) {
-            log.trace("Entering read(byte[] b, int {}, int {})", offset, length);
-            ensureCurrent();
+            checkCurrent();
             if (closed) return DONE;
-            if (length == 0) { return 0; }
+            if (length == 0) return 0;
             if (length <= current.remaining()) {
                 // we have enough in our current buffer
                 current.get(b, offset, length);
@@ -200,12 +177,12 @@ abstract class BinaryReadQuery extends BinaryQuery {
             int toGo = length - available;
             // get the bytes we can from current
             current.get(b, offset, available);
-            // how many bytes we have gotten
+            // how many bytes have we gotten?
             int transferred = available;
             // if there is another buffer, read from it too
             ByteBuffer last = current;
             next();
-            // if no more fresh buffers
+            // if no more fresh buffers, we have done as much as we can
             if (last == current) return transferred;
             // otherwise there are fresh buffers, so recurse
             int nextRead = read(b, offset + transferred, toGo);
@@ -215,24 +192,22 @@ abstract class BinaryReadQuery extends BinaryQuery {
         }
 
         /**
-         * Indicates that no further data will be rolled.
+         * Call to indicate that no further buffers will be offered.
          */
-        void finishRolling() {
-            log.trace("entering finishRolling()");
+        void finish() {
             finished = true;
         }
 
         @Override
         public void close() {
-            log.trace("entering close()");
             closed = true;
-            finisher.cancel(true);
+            finishWith.cancel(true);
             buffers.clear();
         }
 
         @Override
         public int read() {
-            ensureCurrent();
+            checkCurrent();
             if (closed) return DONE;
             if (current.hasRemaining()) return Byte.toUnsignedInt(current.get());
             if (finished) {
@@ -242,9 +217,9 @@ abstract class BinaryReadQuery extends BinaryQuery {
             }
             ByteBuffer last = current;
             next();
-            // no fresh buffers
+            // if no fresh buffers we are done
             if (last == current) return DONE;
-            // there are fresh buffers, so recurse
+            // otherwise there are fresh buffers, so recurse
             return read();
         }
     }

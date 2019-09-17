@@ -49,6 +49,7 @@ public class CassandraBinary implements Binary {
         return read.execute(id);
     }
 
+    @SuppressWarnings("resource")
     @Override
     public InputStream getContent(int from, int to) {
         int firstChunk = from / chunkLength;

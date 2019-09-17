@@ -86,7 +86,7 @@ public class CassandraBinaryService implements BinaryService {
             Integer chunkSize = Integer.valueOf(row.getInt("chunkSize"));
             log.debug("Chunk size for {} is {}", id, chunkSize);
             return chunkSize;
-        }).thenApplyAsync(chunkSize -> new CassandraBinary(id, read, readRange, chunkSize));
+        }).thenApplyAsync(chunkSize -> new CassandraBinary(id, read, readRange, chunkSize.intValue()));
     }
 
     @Override
