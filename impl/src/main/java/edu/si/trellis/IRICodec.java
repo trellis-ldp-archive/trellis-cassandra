@@ -6,7 +6,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.datastax.oss.driver.api.core.ProtocolVersion;
 import com.datastax.oss.driver.api.core.type.DataType;
-import com.datastax.oss.driver.api.core.type.codec.TypeCodec;
 import com.datastax.oss.driver.api.core.type.reflect.GenericType;
 
 import java.nio.ByteBuffer;
@@ -21,14 +20,14 @@ import org.trellisldp.api.TrellisUtils;
  * @author ajs6f
  *
  */
-class IRICodec extends CassandraCodec implements TypeCodec<IRI> {
+class IRICodec extends CassandraCodec<IRI> {
 
     private static final GenericType<IRI> IRI_TYPE = GenericType.of(IRI.class);
 
     /**
      * Singleton instance.
      */
-    static final IRICodec iriCodec = new IRICodec();
+    static final IRICodec IRI_CODEC = new IRICodec();
 
     protected static final int CACHE_MAXIMUM_SIZE = 10 ^ 6;
 

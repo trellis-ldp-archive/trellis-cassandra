@@ -8,7 +8,6 @@ import static org.apache.jena.riot.RDFDataMgr.writeQuads;
 
 import com.datastax.oss.driver.api.core.ProtocolVersion;
 import com.datastax.oss.driver.api.core.type.DataType;
-import com.datastax.oss.driver.api.core.type.codec.TypeCodec;
 import com.datastax.oss.driver.api.core.type.reflect.GenericType;
 
 import java.io.ByteArrayInputStream;
@@ -21,11 +20,11 @@ import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.jena.JenaRDF;
 import org.apache.jena.query.DatasetFactory;
 
-class DatasetCodec extends CassandraCodec implements TypeCodec<Dataset> {
+class DatasetCodec extends CassandraCodec<Dataset> {
 
     private static final GenericType<Dataset> DATASET_TYPE = GenericType.of(Dataset.class);
 
-    static final DatasetCodec datasetCodec = new DatasetCodec();
+    static final DatasetCodec DATASET_CODEC = new DatasetCodec();
 
     private static final JenaRDF rdf = new JenaRDF();
 

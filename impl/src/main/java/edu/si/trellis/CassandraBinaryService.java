@@ -118,8 +118,9 @@ public class CassandraBinaryService implements BinaryService {
             InputStream chunk = (InputStream) countingChunk;
             return insert.execute(id, chunkLength, chunkIndex.getAndIncrement(), chunk)
                             .thenComposeAsync(dummy -> countingChunk.getByteCount() == chunkLength
-                                            ? setChunk(meta, data, chunkIndex, chunkLength)
-                                            : DONE, writeWorkers);
+                                                            ? setChunk(meta, data, chunkIndex, chunkLength)
+                                                            : DONE,
+                                            writeWorkers);
         }
     }
 

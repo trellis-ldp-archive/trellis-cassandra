@@ -1,9 +1,11 @@
 package edu.si.trellis;
 
+import com.datastax.oss.driver.api.core.type.codec.TypeCodec;
+
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-public class CassandraCodec {
+abstract class CassandraCodec<T>  implements TypeCodec<T> {
 
     protected byte[] bytesFromBuffer(ByteBuffer buffer) {
         int length = buffer.remaining();

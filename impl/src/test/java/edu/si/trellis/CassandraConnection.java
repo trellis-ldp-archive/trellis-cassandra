@@ -2,9 +2,9 @@ package edu.si.trellis;
 
 import static com.datastax.oss.driver.api.core.CqlSession.builder;
 import static com.datastax.oss.driver.api.core.DefaultConsistencyLevel.ONE;
-import static edu.si.trellis.DatasetCodec.datasetCodec;
-import static edu.si.trellis.IRICodec.iriCodec;
-import static edu.si.trellis.InputStreamCodec.inputStreamCodec;
+import static edu.si.trellis.DatasetCodec.DATASET_CODEC;
+import static edu.si.trellis.IRICodec.IRI_CODEC;
+import static edu.si.trellis.InputStreamCodec.INPUTSTREAM_CODEC;
 import static java.net.InetSocketAddress.createUnresolved;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -57,7 +57,7 @@ class CassandraConnection implements AfterAllCallback, BeforeAllCallback {
         final InetSocketAddress socketAddress = createUnresolved(contactAddress, contactPort);
         this.session = builder()
                         .withLocalDatacenter("datacenter1")
-                        .addTypeCodecs(inputStreamCodec, iriCodec, datasetCodec)
+                        .addTypeCodecs(INPUTSTREAM_CODEC, IRI_CODEC, DATASET_CODEC)
                         .withKeyspace("trellis")
                         .addContactPoint(socketAddress).build();
         this.resourceService = new CassandraResourceService(new edu.si.trellis.query.rdf.Delete(session, ONE),

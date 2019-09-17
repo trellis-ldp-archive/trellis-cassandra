@@ -1,8 +1,8 @@
 package edu.si.trellis;
 
-import static edu.si.trellis.DatasetCodec.datasetCodec;
-import static edu.si.trellis.IRICodec.iriCodec;
-import static edu.si.trellis.InputStreamCodec.inputStreamCodec;
+import static edu.si.trellis.DatasetCodec.DATASET_CODEC;
+import static edu.si.trellis.IRICodec.IRI_CODEC;
+import static edu.si.trellis.InputStreamCodec.INPUTSTREAM_CODEC;
 import static java.lang.Integer.parseInt;
 import static java.lang.Thread.currentThread;
 import static java.net.InetSocketAddress.createUnresolved;
@@ -118,8 +118,8 @@ public class CassandraContext {
 
     private CqlSession session;
 
-    private static final TypeCodec<?>[] STANDARD_CODECS = new TypeCodec<?>[] { inputStreamCodec, iriCodec,
-            datasetCodec };
+    private static final TypeCodec<?>[] STANDARD_CODECS = new TypeCodec<?>[] { INPUTSTREAM_CODEC, IRI_CODEC,
+            DATASET_CODEC };
 
     /**
      * Connect to Cassandra, lazily.

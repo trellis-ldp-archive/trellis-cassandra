@@ -5,7 +5,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import com.datastax.oss.driver.api.core.ProtocolVersion;
 import com.datastax.oss.driver.api.core.type.DataType;
 import com.datastax.oss.driver.api.core.type.DataTypes;
-import com.datastax.oss.driver.api.core.type.codec.TypeCodec;
 import com.datastax.oss.driver.api.core.type.reflect.GenericType;
 
 import java.io.IOException;
@@ -19,9 +18,9 @@ import org.apache.commons.io.IOUtils;
  * Serializes {@link InputStream}s in Cassandra text fields.
  *
  */
-class InputStreamCodec extends CassandraCodec implements TypeCodec<InputStream> {
+class InputStreamCodec extends CassandraCodec<InputStream> {
 
-    public static final InputStreamCodec inputStreamCodec = new InputStreamCodec();
+    public static final InputStreamCodec INPUTSTREAM_CODEC = new InputStreamCodec();
 
     private static final GenericType<InputStream> INPUTSTREAM_TYPE = GenericType.of(InputStream.class);
 

@@ -1,6 +1,6 @@
 package edu.si.trellis;
 
-import static edu.si.trellis.DatasetCodec.datasetCodec;
+import static edu.si.trellis.DatasetCodec.DATASET_CODEC;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -27,7 +27,7 @@ class DatasetCodecTest {
 
     @Test
     void badParse() {
-        assertThrows(RiotException.class, () -> datasetCodec.parse("SGDF   &&$$$dfshgou;sdfhgoudfhogh"));
+        assertThrows(RiotException.class, () -> DATASET_CODEC.parse("SGDF   &&$$$dfshgou;sdfhgoudfhogh"));
     }
 
     @Test
@@ -39,7 +39,7 @@ class DatasetCodecTest {
         String nQuad3 = "<s> <p> <o> <g2> .";
         Quad q3 = quad(iri("g2"), iri("s"), iri("p"), iri("o"));
         String nQuads = String.join("\n", nQuad1, nQuad2, nQuad3);
-        try (Dataset dataset = datasetCodec.parse(nQuads)) {
+        try (Dataset dataset = DATASET_CODEC.parse(nQuads)) {
             assertEquals(3, dataset.size());
             for (Quad q : new Quad[] { q1, q2, q3 })
                 assertTrue(dataset.contains(q));
@@ -55,7 +55,7 @@ class DatasetCodecTest {
         String nQuad3 = "<s> <p> <o> <g2> .";
         Quad q3 = quad(iri("g2"), iri("s"), iri("p"), iri("o"));
         ByteBuffer nQuads = ByteBuffer.wrap(String.join("\n", nQuad1, nQuad2, nQuad3).getBytes(UTF_8));
-        try (Dataset dataset = datasetCodec.decode(nQuads, null)) {
+        try (Dataset dataset = DATASET_CODEC.decode(nQuads, null)) {
             assertEquals(3, dataset.size());
             for (Quad q : new Quad[] { q1, q2, q3 })
                 assertTrue(dataset.contains(q));
@@ -68,7 +68,7 @@ class DatasetCodecTest {
         Quad q = quad(iri("g"), iri("s"), iri("p"), iri("o"));
         try (Dataset dataset = rdf.createDataset()) {
             dataset.add(q);
-            String nQuads = datasetCodec.format(dataset);
+            String nQuads = DATASET_CODEC.format(dataset);
             assertEquals(1, dataset.size());
             assertEquals(nQuad, nQuads.trim());
         }
@@ -76,41 +76,41 @@ class DatasetCodecTest {
 
     @Test
     void edgeCase1() {
-        assertEquals(0, datasetCodec.parse(null).size());
+        assertEquals(0, DATASET_CODEC.parse(null).size());
     }
 
     @Test
     void edgeCase2() {
-        assertEquals(null, datasetCodec.format(null));
+        assertEquals(null, DATASET_CODEC.format(null));
     }
 
     @Test
     void edgeCase3() throws Exception {
         try (Dataset empty = rdf.createDataset()) {
-            assertEquals(null, datasetCodec.format(empty));
+            assertEquals(null, DATASET_CODEC.format(empty));
         }
     }
 
     @Test
     void edgeCase4() throws Exception {
         try (Dataset empty = rdf.createDataset()) {
-            assertEquals(null, datasetCodec.encode(empty, null));
+            assertEquals(null, DATASET_CODEC.encode(empty, null));
         }
     }
 
     @Test
     void edgeCase5() {
-        assertEquals(null, datasetCodec.encode(null, null));
+        assertEquals(null, DATASET_CODEC.encode(null, null));
     }
 
     @Test
     void edgeCase6() {
-        assertEquals(0, datasetCodec.decode(null, null).size());
+        assertEquals(0, DATASET_CODEC.decode(null, null).size());
     }
 
     @Test
     void badData() {
-        assertThrows(RiotException.class, () -> datasetCodec.encode(new BadDataset(), null));
+        assertThrows(RiotException.class, () -> DATASET_CODEC.encode(new BadDataset(), null));
     }
 
     private Quad quad(BlankNodeOrIRI g, BlankNodeOrIRI s, IRI p, RDFTerm o) {
