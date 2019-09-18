@@ -107,9 +107,9 @@ abstract class BinaryReadQuery extends BinaryQuery {
             this.finishWith = c;
         }
 
-        private ByteBuffer current;
+        private volatile ByteBuffer current;
 
-        private boolean closed, finished;
+        private volatile boolean closed, finished;
 
         /**
          * Blocks until another buffer is available.
