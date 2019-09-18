@@ -2,6 +2,7 @@ package edu.si.trellis.query.binary;
 
 import static java.lang.Thread.currentThread;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlSession;
@@ -11,18 +12,26 @@ import com.datastax.oss.driver.api.core.cql.BoundStatement;
 
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TransferQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A query that reads binary data from Cassandra.
  */
 abstract class BinaryReadQuery extends BinaryQuery {
 
+    private static final Logger log = getLogger(BinaryReadQuery.class);
+    
     private ExecutorService readWorkers = Executors.newCachedThreadPool();
 
     BinaryReadQuery(CqlSession session, String queryString, ConsistencyLevel consistency) {
@@ -88,6 +97,11 @@ abstract class BinaryReadQuery extends BinaryQuery {
 
         private static final ByteBuffer INITIAL = ByteBuffer.allocate(0);
 
+        /**
+         * Ms to wait for a buffer from Cassandra before timing out.
+         */
+        private static final int BUFFER_TIMEOUT = 5000;
+
         private TransferQueue<ByteBuffer> buffers;
 
         /**
@@ -116,11 +130,25 @@ abstract class BinaryReadQuery extends BinaryQuery {
          */
         private void next() {
             if (closed) return;
+            AtomicBoolean timedout = new AtomicBoolean();
+            Timer timer = new Timer();
+            TimerTask task = new TimerTask() {
+
+                @Override
+                public void run() {
+                    timedout.set(true);
+                }};
+            timer.schedule(task, BUFFER_TIMEOUT);
             uninterruptably(() -> {
                 ByteBuffer next;
                 // while we still haven't received a new buffer we keep checking
                 while ((next = buffers.poll(1, SECONDS)) == null) 
-                    if (closed || finished) return; 
+                    {if (closed || finished) return; 
+                    if (timedout.get()) {
+                        log.warn("Timed out waiting {}ms for a buffer!", BUFFER_TIMEOUT);
+                        return;
+                    }}
+                    
                 current = next;
             });
         }
