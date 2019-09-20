@@ -18,7 +18,7 @@
     </encoder>
   </appender>
 
-  <root level="DEBUG">
+  <root level="INFO">
     <appender-ref ref="FILE"/>
     <appender-ref ref="STDOUT"/>
   </root>
@@ -29,12 +29,12 @@
 
   <logger name="org.apache.tamaya" level="ERROR"/>
 
-  <logger name="com.datastax.oss.driver" level="DEBUG"/>
+  <logger name="com.datastax.oss.driver" level="INFO"/>
 
   <logger name="org.apache.cassandra" level="ERROR"/>
 
   <logger name="org.trellisldp" level="INFO"/>
 
-  <logger name="edu.si" level="TRACE"/>
+  <logger name="edu.si" level="INFO"/>
 
 </configuration>
