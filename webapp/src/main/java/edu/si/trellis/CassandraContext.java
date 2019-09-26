@@ -4,7 +4,6 @@ import static edu.si.trellis.DatasetCodec.DATASET_CODEC;
 import static edu.si.trellis.IRICodec.IRI_CODEC;
 import static edu.si.trellis.InputStreamCodec.INPUTSTREAM_CODEC;
 import static java.lang.Integer.parseInt;
-import static java.lang.Thread.currentThread;
 import static java.net.InetSocketAddress.createUnresolved;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -13,9 +12,6 @@ import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
 import com.datastax.oss.driver.api.core.type.codec.TypeCodec;
 
 import java.net.InetSocketAddress;
-import java.util.Objects;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.CountDownLatch;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -114,8 +110,6 @@ public class CassandraContext {
         return rdfWriteConsistency;
     }
 
-    private CountDownLatch sessionGuard = new CountDownLatch(1);
-
     private CqlSession session;
 
     private static final TypeCodec<?>[] STANDARD_CODECS = new TypeCodec<?>[] { INPUTSTREAM_CODEC, IRI_CODEC,
@@ -130,20 +124,12 @@ public class CassandraContext {
         log.debug("Looking for connection...");
         final InetSocketAddress socketAddress = createUnresolved(contactAddress, parseInt(contactPort));
 
-        CompletionStage<CqlSession> futureSession = CqlSession.builder()
+        this.session = CqlSession.builder()
                         .addTypeCodecs(STANDARD_CODECS)
                         .withKeyspace("trellis")
                         .withLocalDatacenter("datacenter1")
                         .addContactPoint(socketAddress)
-                        .buildAsync();
-        futureSession.thenApply(Objects::requireNonNull)
-                        .thenAccept(this::session)
-                        .thenRun(sessionGuard::countDown)
-                        .thenRun(()->log.debug("Connection found."));
-    }
-
-    private void session(CqlSession s) {
-        this.session = s;
+                        .build();
     }
 
     /**
@@ -152,18 +138,7 @@ public class CassandraContext {
     @Produces
     @ApplicationScoped
     public CqlSession session() {
-        boolean interrupted = false;
-        try {
-            while (true)
-                try {
-                    sessionGuard.await();
-                    return session;
-                } catch (InterruptedException e) {
-                    interrupted = true;
-                }
-        } finally {
-            if (interrupted) currentThread().interrupt();
-        }
+        return session;
     }
 
     /**
