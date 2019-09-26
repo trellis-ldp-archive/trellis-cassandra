@@ -30,9 +30,6 @@ public class CassandraServiceBundler implements ServiceBundler {
     @Inject
     private CassandraBinaryService binaryService;
 
-    @Inject
-    private AgentService agentService;
-
     @Produces
     @ApplicationScoped
     private NamespaceService namespaceService = new NoopNamespaceService();
@@ -56,11 +53,6 @@ public class CassandraServiceBundler implements ServiceBundler {
     @PostConstruct
     void init() {
         this.ioService = new JenaIOService(namespaceService, null, cacheService, "", "");
-    }
-
-    @Override
-    public AgentService getAgentService() {
-        return agentService;
     }
 
     @Override

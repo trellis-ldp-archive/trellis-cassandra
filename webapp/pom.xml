@@ -70,10 +70,6 @@
     </dependency>
     <dependency>
       <groupId>org.trellisldp</groupId>
-      <artifactId>trellis-agent</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.trellisldp</groupId>
       <artifactId>trellis-webdav</artifactId>
     </dependency>
 
