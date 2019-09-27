@@ -19,6 +19,7 @@ import org.trellisldp.io.JenaIOService;
 public class CassandraServiceBundler implements ServiceBundler {
 
     @Inject
+    @NoopImplementation
     private AuditService auditService;
 
     @Inject
@@ -39,6 +40,7 @@ public class CassandraServiceBundler implements ServiceBundler {
     private IOService ioService;
 
     @Inject
+    @NoopImplementation
     private EventService eventService;
 
     @Inject
@@ -50,9 +52,12 @@ public class CassandraServiceBundler implements ServiceBundler {
     @Inject
     private Instance<ConstraintService> constraintServices;
 
+    @Inject
+    private RDFaWriterService rdfaService;
+
     @PostConstruct
     void init() {
-        this.ioService = new JenaIOService(namespaceService, null, cacheService, "", "");
+        this.ioService = new JenaIOService(namespaceService, rdfaService, cacheService, "", "");
     }
 
     @Override
