@@ -20,8 +20,8 @@ matrix:
 
   include:
     - jdk: openjdk8
-
-    - jdk: openjdk11
+    # Cassandra's nodetool does not work on jdk11
+    #- jdk: openjdk11
 
   allow_failures:
     - jdk: openjdk11
@@ -45,7 +45,8 @@ before_script: src/test/resources/load.sh
 
 # build
 # turn off Cassandra Maven plugin to use Travis' service instead
-script: mvn -Dcassandra.skip -Dcassandra.nativeTransportPort=9042 install
+# skip integration tests b/c travis can't seem to handle them
+script: mvn -Dcassandra.skip -Dcassandra.nativeTransportPort=9042 -pl '!integration-tests' install
 
 # in case of failure, spew reports
 after_failure:
