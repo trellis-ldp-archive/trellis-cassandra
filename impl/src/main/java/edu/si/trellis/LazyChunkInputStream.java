@@ -32,8 +32,9 @@ public class LazyChunkInputStream extends LazyFilterInputStream {
     }
 
     @Override
-    protected void initialize() {
-        Row row = requireNonNull(session.execute(query).one(), "Missing binary chunk!");
-        wrap(row.get("chunk", InputStream.class));
+    protected InputStream initialize() {
+        Row row = session.execute(query).one();
+        requireNonNull(row, "Missing binary chunk!");
+        return row.get("chunk", InputStream.class);
     }
 }
