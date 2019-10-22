@@ -7,16 +7,14 @@ import static edu.si.trellis.InputStreamCodec.inputStreamCodec;
 import static java.lang.Integer.parseInt;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import com.datastax.driver.core.*;
+import com.datastax.driver.core.AtomicMonotonicTimestampGenerator;
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.ConsistencyLevel;
+import com.datastax.driver.core.QueryLogger;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.TypeCodec;
 import com.datastax.driver.extras.codecs.date.SimpleTimestampCodec;
 import com.datastax.driver.extras.codecs.jdk8.InstantCodec;
-
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.CountDownLatch;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -114,51 +112,23 @@ public class CassandraContext {
 
     private Session session;
 
-    private final CountDownLatch sessionInitialized = new CountDownLatch(1);
-
-    /**
-     * Poll timeout in ms for waiting for Cassandra connection.
-     */
-    private static final int POLL_TIMEOUT = 1000;
-
     private static final TypeCodec<?>[] STANDARD_CODECS = new TypeCodec<?>[] { SimpleTimestampCodec.instance,
             inputStreamCodec, iriCodec, datasetCodec, bigint(), InstantCodec.instance };
 
     /**
-     * Connect to Cassandra, lazily.
+     * Connect to Cassandra.
      */
     @PostConstruct
     public void connect() {
         log.info("Using Cassandra node address: {} and port: {}", contactAddress, contactPort);
-        log.debug("Looking for connection...");
         this.cluster = Cluster.builder().withTimestampGenerator(new AtomicMonotonicTimestampGenerator())
                         .withoutJMXReporting().withoutMetrics().addContactPoint(contactAddress)
                         .withPort(parseInt(contactPort)).build();
         if (log.isDebugEnabled()) cluster.register(QueryLogger.builder().withMaxParameterValueLength(1000).build());
         cluster.getConfiguration().getCodecRegistry().register(STANDARD_CODECS);
-        Timer connector = new Timer("Cassandra Connection Maker", true);
         log.info("Connecting to Cassandra...");
-        connector.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                if (isPortOpen(contactAddress, contactPort)) {
-                    session = cluster.connect("trellis");
-                    log.info("Connection made and keyspace set to 'trellis'.");
-                    sessionInitialized.countDown();
-                    this.cancel();
-                    connector.cancel();
-                } else log.warn("Still trying connection to {}:{}...", contactAddress, contactPort);
-            }
-        }, 0, POLL_TIMEOUT);
-    }
-
-    private static boolean isPortOpen(String ip, String port) {
-        try (Socket socket = new Socket()) {
-            socket.connect(new InetSocketAddress(ip, parseInt(port)), POLL_TIMEOUT);
-            return true;
-        } catch (@SuppressWarnings("unused") IOException e) {
-            return false;
-        }
+        this.session = cluster.connect("Trellis");
+        log.info("Connected to Cassandra.");
     }
 
     /**
@@ -167,13 +137,6 @@ public class CassandraContext {
     @Produces
     @ApplicationScoped
     public Session getSession() {
-        try {
-            sessionInitialized.await();
-        } catch (InterruptedException e) {
-            close();
-            Thread.currentThread().interrupt();
-            throw new InterruptedStartupException("Interrupted while connectin to Cassandra!", e);
-        }
         return session;
     }
 
