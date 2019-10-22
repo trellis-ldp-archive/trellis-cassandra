@@ -2,7 +2,9 @@ package edu.si.trellis.query.binary;
 
 import static java.util.Objects.requireNonNull;
 
+import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.ConsistencyLevel;
+import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 
@@ -30,8 +32,10 @@ public class GetChunkSize extends BinaryQuery {
      * @return a {@link Row} with the chunk size for this binary
      */
     public CompletableFuture<Row> execute(IRI id) {
-        return executeRead(preparedStatement().bind().set("identifier", id, IRI.class))
-                        .thenApply(rows -> requireNonNull(rows.one(),
+        BoundStatement statement = preparedStatement().bind().set("identifier", id, IRI.class);
+        return executeRead(statement, readBinaryWorkers)
+                        .thenApply(ResultSet::one)
+                        .thenApply(row -> requireNonNull(row,
                                         () -> "Binary not found under IRI: " + id.getIRIString() + " !"));
     }
 }

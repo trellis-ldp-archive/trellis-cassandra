@@ -3,7 +3,12 @@ package edu.si.trellis.query;
 import static java.util.concurrent.Executors.newCachedThreadPool;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import com.datastax.driver.core.*;
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.ConsistencyLevel;
+import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.Statement;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import java.util.concurrent.CompletableFuture;
@@ -32,7 +37,8 @@ public abstract class CassandraQuery {
      * Worker threads that read and write from and to Cassandra. Reading and writing are thereby uncoupled from threads
      * calling into this class.
      */
-    protected final Executor writeWorkers = newCachedThreadPool(), readWorkers = newCachedThreadPool();
+    protected final Executor writeWorkers = newCachedThreadPool(), readWorkers = newCachedThreadPool(),
+                    readBinaryWorkers = newCachedThreadPool();
 
     private final PreparedStatement preparedStatement;
 
@@ -69,7 +75,15 @@ public abstract class CassandraQuery {
      * @return the results of that statement
      */
     protected CompletableFuture<ResultSet> executeRead(Statement statement) {
-        return translate(session.executeAsync(statement), readWorkers);
+        return executeRead(statement, readWorkers);
+    }
+
+    /**
+     * @param statement the CQL statement to execute
+     * @return the results of that statement
+     */
+    protected CompletableFuture<ResultSet> executeRead(Statement statement, Executor workers) {
+        return translate(session.executeAsync(statement), workers);
     }
 
     /**
