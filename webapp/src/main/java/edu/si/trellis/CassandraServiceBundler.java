@@ -2,6 +2,7 @@ package edu.si.trellis;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
@@ -19,7 +20,7 @@ import org.trellisldp.io.JenaIOService;
 public class CassandraServiceBundler implements ServiceBundler {
 
     @Inject
-    @NoopImplementation
+    @Any
     private AuditService auditService;
 
     @Inject
@@ -40,7 +41,7 @@ public class CassandraServiceBundler implements ServiceBundler {
     private IOService ioService;
 
     @Inject
-    @NoopImplementation
+    @Any
     private EventService eventService;
 
     @Inject

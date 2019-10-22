@@ -1,8 +1,9 @@
 package edu.si.trellis;
 
 import static java.lang.Boolean.TRUE;
-import static java.time.Duration.ofSeconds;
 import static org.awaitility.Awaitility.await;
+
+import java.time.Duration;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
@@ -21,6 +22,6 @@ class CassandraServiceIT {
     }
 
     protected void waitTwoSeconds() {
-        await().pollDelay(ofSeconds(2)).until(() -> TRUE);
+        await().pollDelay(Duration.ofSeconds(2)).until(() -> TRUE);
     }
 }
