@@ -1,14 +1,11 @@
 package edu.si.trellis;
 
-import static java.util.concurrent.CompletableFuture.completedFuture;
-
 import edu.si.trellis.query.binary.Read;
 import edu.si.trellis.query.binary.ReadRange;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
-import java.util.concurrent.CompletionStage;
 
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.rdf.api.IRI;
