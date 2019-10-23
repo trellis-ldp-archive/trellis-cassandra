@@ -2,13 +2,15 @@ package edu.si.trellis.query.rdf;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
 
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.ConsistencyLevel;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.BoundStatement;
 
 import edu.si.trellis.MutableWriteConsistency;
+
 import java.time.Instant;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 import javax.inject.Inject;
 
@@ -21,7 +23,7 @@ import org.apache.commons.rdf.api.IRI;
 public class Mementoize extends ResourceQuery {
 
     @Inject
-    public Mementoize(Session session, @MutableWriteConsistency ConsistencyLevel consistency) {
+    public Mementoize(CqlSession session, @MutableWriteConsistency ConsistencyLevel consistency) {
         super(session, "INSERT INTO " + MEMENTO_MUTABLE_TABLENAME
                         + " (interactionModel, mimeType, container, quads, modified, binaryIdentifier, "
                         + "created, identifier, mementomodified)" + " VALUES (?,?,?,?,?,?,?,?,?);", consistency);
@@ -41,10 +43,11 @@ public class Mementoize extends ResourceQuery {
      * @param id an {@link IRI} that identifies this resource
      * @return whether and when it has been inserted
      */
-    public CompletableFuture<Void> execute(IRI ixnModel, String mimeType, IRI container, Dataset data, Instant modified,
+    public CompletionStage<Void> execute(IRI ixnModel, String mimeType, IRI container, Dataset data, Instant modified,
                     IRI binaryIdentifier, UUID creation, IRI id) {
-        final Instant mementoModified = modified.truncatedTo(SECONDS);
-        return executeWrite(preparedStatement().bind(ixnModel, mimeType, container, data, modified, binaryIdentifier,
-                        creation, id, mementoModified));
+        Instant mementoModified = modified.truncatedTo(SECONDS);
+        BoundStatement statement = preparedStatement().bind(ixnModel, mimeType, container, data, modified,
+                        binaryIdentifier, creation, id, mementoModified);
+        return executeWrite(statement);
     }
 }

@@ -2,9 +2,9 @@ package edu.si.trellis;
 
 import static java.util.Objects.requireNonNull;
 
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.Statement;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.BoundStatement;
+import com.datastax.oss.driver.api.core.cql.Row;
 
 import java.io.InputStream;
 
@@ -18,15 +18,15 @@ import java.io.InputStream;
  */
 public class LazyChunkInputStream extends LazyFilterInputStream {
 
-    private final Session session;
+    private final CqlSession session;
 
-    private final Statement query;
+    private final BoundStatement query;
 
     /**
      * @param session The Cassandra session to use
      * @param query the CQL query to use
      */
-    public LazyChunkInputStream(Session session, Statement query) {
+    public LazyChunkInputStream(CqlSession session, BoundStatement query) {
         this.session = session;
         this.query = query;
     }

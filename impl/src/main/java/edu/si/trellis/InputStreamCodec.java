@@ -2,11 +2,11 @@ package edu.si.trellis;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import com.datastax.driver.core.DataType;
-import com.datastax.driver.core.ProtocolVersion;
-import com.datastax.driver.core.TypeCodec;
+import com.datastax.oss.driver.api.core.ProtocolVersion;
+import com.datastax.oss.driver.api.core.type.DataType;
+import com.datastax.oss.driver.api.core.type.DataTypes;
+import com.datastax.oss.driver.api.core.type.reflect.GenericType;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
@@ -18,27 +18,38 @@ import org.apache.commons.io.IOUtils;
  * Serializes {@link InputStream}s in Cassandra text fields.
  *
  */
-class InputStreamCodec extends TypeCodec<InputStream> {
+class InputStreamCodec extends CassandraCodec<InputStream> {
 
-    public static final InputStreamCodec inputStreamCodec = new InputStreamCodec();
+    public static final InputStreamCodec INPUTSTREAM_CODEC = new InputStreamCodec();
 
-    private InputStreamCodec() {
-        super(DataType.blob(), InputStream.class);
+    private static final GenericType<InputStream> INPUTSTREAM_TYPE = GenericType.of(InputStream.class);
+
+    @Override
+    public DataType getCqlType() {
+        return DataTypes.BLOB;
     }
 
     @Override
-    public ByteBuffer serialize(InputStream value, ProtocolVersion protocolVersion) {
+    public GenericType<InputStream> getJavaType() {
+        return INPUTSTREAM_TYPE;
+    }
+
+    @Override
+    public ByteBuffer encode(InputStream value, ProtocolVersion protocolVersion) {
         return value == null ? null : ByteBuffer.wrap(toBytes(value));
     }
 
     @Override
-    public InputStream deserialize(ByteBuffer bytes, ProtocolVersion protocolVersion) {
+    public InputStream decode(ByteBuffer bytes, ProtocolVersion protocolVersion) {
         return bytes == null ? null : new ByteBufferInputStream(bytes);
     }
 
     @Override
     public InputStream parse(String value) {
-        return value == null ? null : new ByteArrayInputStream(value.getBytes(UTF_8));
+        if (value == null) return null;
+        byte[] bytes = value.getBytes(UTF_8);
+        ByteBuffer buffer = ByteBuffer.wrap(bytes);
+        return new ByteBufferInputStream(buffer);
     }
 
     private static byte[] toBytes(InputStream in) {

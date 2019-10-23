@@ -1,12 +1,10 @@
 package edu.si.trellis.query.rdf;
 
-import static java.util.stream.StreamSupport.stream;
+import com.datastax.oss.driver.api.core.ConsistencyLevel;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.Row;
 
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
-
+import edu.si.trellis.AsyncResultSetUtils;
 import edu.si.trellis.MutableReadConsistency;
 
 import java.util.concurrent.CompletionStage;
@@ -24,7 +22,7 @@ import org.apache.commons.rdf.api.Quad;
 public class ImmutableRetrieve extends ResourceQuery {
 
     @Inject
-    public ImmutableRetrieve(Session session, @MutableReadConsistency ConsistencyLevel consistency) {
+    public ImmutableRetrieve(CqlSession session, @MutableReadConsistency ConsistencyLevel consistency) {
         super(session, "SELECT quads FROM " + IMMUTABLE_TABLENAME + "  WHERE identifier = :identifier ;", consistency);
     }
 
@@ -34,8 +32,7 @@ public class ImmutableRetrieve extends ResourceQuery {
      */
     public CompletionStage<Stream<Quad>> execute(IRI id) {
         return executeRead(preparedStatement().bind().set("identifier", id, IRI.class))
-                        .thenApply(ResultSet::spliterator)
-                        .thenApply(r -> stream(r, false))
+                        .thenApply(AsyncResultSetUtils::stream)
                         .thenApply(row -> row.map(this::getDataset))
                         .thenApply(r -> r.flatMap(Dataset::stream));
     }
