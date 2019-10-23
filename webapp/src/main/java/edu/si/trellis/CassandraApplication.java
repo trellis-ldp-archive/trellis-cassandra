@@ -1,11 +1,11 @@
 package edu.si.trellis;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.unmodifiableSet;
 import static org.apache.tamaya.Configuration.current;
 import static org.apache.tamaya.Configuration.setCurrent;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_PUT_UNCONTAINED;
-
-import com.google.common.collect.ImmutableSet;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,6 +13,8 @@ import java.io.UncheckedIOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -49,26 +51,35 @@ public class CassandraApplication extends Application {
     @Inject
     @Config(key = "configurationUrl", alternateKeys = { "TRELLIS_CONFIG_URL" })
     private Optional<URL> additionalConfigUrl;
-    
+
     @Inject
     private TrellisHttpResource ldpHttpResource;
-    
+
     @Inject
     private TrellisWebDAV webDav;
-    
+
     @Inject
     private TrellisWebDAVRequestFilter webDavRequestFilter;
-    
+
     @Inject
     private TrellisHttpFilter httpFilter;
-    
+
     @Inject
     private TrellisWebDAVResponseFilter webDavResponseFilter;
+
+    private Set<Object> singletons;
+
+    @PostConstruct
+    private void initialize() {
+        importAdditionalConfig();
+        List<Object> list = asList(ldpHttpResource, httpFilter, webDav, webDavRequestFilter, webDavResponseFilter);
+        this.singletons = unmodifiableSet(new HashSet<>(list));
+        log.info("JAX-RS components assembled.");
+    }
 
     /**
      * Load in any additional configuration.
      */
-    @PostConstruct
     public void importAdditionalConfig() {
         // we require contained PUT because we use the Trellis WebDAV module, which requires it
         System.setProperty(CONFIG_HTTP_PUT_UNCONTAINED, "false");
@@ -82,6 +93,7 @@ public class CassandraApplication extends Application {
         current().getContext().getPropertySources().stream().map(PropertySource::getName).forEach(log::debug);
         log.debug("Using Tamaya configuration:");
         log(current().getProperties());
+        log.info("Additional configuration imported.");
     }
 
     private static <K, V> void log(Map<K, V> config) {
@@ -110,6 +122,6 @@ public class CassandraApplication extends Application {
 
     @Override
     public Set<Object> getSingletons() {
-    	return ImmutableSet.of(ldpHttpResource, httpFilter, webDav, webDavRequestFilter, webDavResponseFilter);
+        return singletons;
     }
 }

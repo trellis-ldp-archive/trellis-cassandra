@@ -1,7 +1,7 @@
 package edu.si.trellis.query.rdf;
 
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.ConsistencyLevel;
+import com.datastax.oss.driver.api.core.CqlSession;
 
 import edu.si.trellis.query.CassandraQuery;
 
@@ -18,7 +18,7 @@ abstract class ResourceQuery extends CassandraQuery {
 
     static final String BASIC_CONTAINMENT_TABLENAME = "basiccontainment";
 
-    ResourceQuery(Session session, String queryString, ConsistencyLevel consistency) {
+    ResourceQuery(CqlSession session, String queryString, ConsistencyLevel consistency) {
         super(session, queryString, consistency);
     }
 }

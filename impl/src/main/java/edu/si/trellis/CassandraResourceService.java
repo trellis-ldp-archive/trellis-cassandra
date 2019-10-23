@@ -12,8 +12,8 @@ import static org.trellisldp.vocabulary.LDP.NonRDFSource;
 import static org.trellisldp.vocabulary.LDP.RDFSource;
 import static org.trellisldp.vocabulary.LDP.getSuperclassOf;
 
-import com.datastax.driver.core.utils.UUIDs;
-import com.google.common.collect.ImmutableSet;
+import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
+import com.datastax.oss.driver.api.core.uuid.Uuids;
 
 import edu.si.trellis.query.rdf.BasicContainment;
 import edu.si.trellis.query.rdf.Delete;
@@ -24,6 +24,9 @@ import edu.si.trellis.query.rdf.MutableInsert;
 import edu.si.trellis.query.rdf.Touch;
 
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
@@ -53,8 +56,13 @@ import org.trellisldp.vocabulary.LDP;
  */
 class CassandraResourceService extends CassandraBuildingService implements ResourceService {
 
-    private static final ImmutableSet<IRI> SUPPORTED_INTERACTION_MODELS = ImmutableSet.of(LDP.Resource, RDFSource,
-                    NonRDFSource, Container, BasicContainer);
+    private static final Set<IRI> SUPPORTED_INTERACTION_MODELS;
+
+    static {
+        Set<IRI> ixnModels = new HashSet<>();
+        ixnModels.addAll(Arrays.asList(LDP.Resource, RDFSource, NonRDFSource, Container, BasicContainer));
+        SUPPORTED_INTERACTION_MODELS = Collections.unmodifiableSet(ixnModels);
+    }
 
     static final Logger log = getLogger(CassandraResourceService.class);
 
@@ -107,14 +115,21 @@ class CassandraResourceService extends CassandraBuildingService implements Resou
 
     @Override
     public CompletionStage<? extends Resource> get(final IRI id) {
+        log.debug("Retrieving {}", id);
+        log.debug("Retrieving immutable data for {}", id);
         final CompletionStage<Stream<Quad>> immutableData = immutableRetrieve.execute(id);
         // get resource and add immutable tuples
-        final CompletionStage<Resource> resource = get.execute(id).thenApply(rows -> parse(rows, log, id))
+        log.debug("Retrieving mutable data for {}", id);
+        final CompletionStage<Resource> resource = get.execute(id)
+                        .thenApply(AsyncResultSet::one)
+                        .thenApply(row -> parse(row, log, id))
                         .thenCombine(immutableData, this::addTuples);
         // add containment tuples if needed
-        CompletionStage<Resource> resourceWithContainment = resource.thenCompose(res -> {
-            if (!isContainer(res)) return resource;
-            return resource.thenCombine(bcontainment.execute(id), this::addTuples);
+        CompletionStage<Resource> resourceWithContainment = resource
+                        .thenCompose(res -> {
+                            if (!isContainer(res)) return resource;
+                            log.debug("Retrieving containment data for {}", id);
+                            return resource.thenCombine(bcontainment.execute(id), this::addTuples);
         });
         return resourceWithContainment;
     }
@@ -159,9 +174,6 @@ class CassandraResourceService extends CassandraBuildingService implements Resou
         return delete.execute(meta.getIdentifier());
     }
 
-    /*
-     * (non-Javadoc) TODO avoid read-modify-write?
-     */
     @Override
     public CompletionStage<Void> touch(IRI id) {
         return touch.execute(now(), id);
@@ -182,6 +194,6 @@ class CassandraResourceService extends CassandraBuildingService implements Resou
         String mimeType = binary.flatMap(BinaryMetadata::getMimeType).orElse(null);
         Instant now = now();
 
-        return mutableInsert.execute(ixnModel, mimeType, container, data, now, binaryIdentifier, UUIDs.timeBased(), id);
+        return mutableInsert.execute(ixnModel, mimeType, container, data, now, binaryIdentifier, Uuids.timeBased(), id);
     }
 }

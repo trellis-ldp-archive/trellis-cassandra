@@ -1,10 +1,12 @@
 package edu.si.trellis.query.rdf;
 
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.ConsistencyLevel;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.BoundStatement;
 
 import edu.si.trellis.MutableWriteConsistency;
-import java.util.concurrent.CompletableFuture;
+
+import java.util.concurrent.CompletionStage;
 
 import javax.inject.Inject;
 
@@ -16,7 +18,7 @@ import org.apache.commons.rdf.api.IRI;
 public class Delete extends ResourceQuery {
 
     @Inject
-    public Delete(Session session, @MutableWriteConsistency ConsistencyLevel consistency) {
+    public Delete(CqlSession session, @MutableWriteConsistency ConsistencyLevel consistency) {
         super(session, "DELETE FROM " + MUTABLE_TABLENAME + " WHERE identifier = :identifier ;", consistency);
     }
 
@@ -24,7 +26,8 @@ public class Delete extends ResourceQuery {
      * @param id the {@link IRI} of the resource to delete
      * @return whether and when it has been deleted
      */
-    public CompletableFuture<Void> execute(IRI id) {
-        return executeWrite(preparedStatement().bind().set("identifier", id, IRI.class));
+    public CompletionStage<Void> execute(IRI id) {
+        BoundStatement statement = preparedStatement().bind().set("identifier", id, IRI.class);
+        return executeWrite(statement);
     }
 }

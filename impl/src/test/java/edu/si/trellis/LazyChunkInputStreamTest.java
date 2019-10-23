@@ -7,10 +7,10 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.datastax.driver.core.BoundStatement;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.BoundStatement;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
 
 import edu.si.trellis.LazyChunkInputStream;
 
@@ -26,7 +26,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class LazyChunkInputStreamTest {
 
     @Mock
-    private Session mockSession;
+    private CqlSession mockSession;
 
     @Mock
     private BoundStatement mockQuery;

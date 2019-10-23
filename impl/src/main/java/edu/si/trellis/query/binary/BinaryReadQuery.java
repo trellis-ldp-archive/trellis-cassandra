@@ -3,10 +3,10 @@ package edu.si.trellis.query.binary;
 import static java.util.stream.StreamSupport.stream;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.Statement;
+import com.datastax.oss.driver.api.core.ConsistencyLevel;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.BoundStatement;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 
 import edu.si.trellis.LazyChunkInputStream;
 import java.io.ByteArrayInputStream;
@@ -30,7 +30,7 @@ abstract class BinaryReadQuery extends BinaryQuery {
 
     private final PreparedStatement readChunkStatement;
 
-    BinaryReadQuery(Session session, String queryString, ConsistencyLevel consistency) {
+    BinaryReadQuery(CqlSession session, String queryString, ConsistencyLevel consistency) {
         super(session, queryString, consistency);
         this.readChunkStatement = session.prepare(READ_CHUNK_QUERY);
     }
@@ -42,7 +42,7 @@ abstract class BinaryReadQuery extends BinaryQuery {
      * @return An {@link InputStream} of bytes as requested. The {@code skip} method of this {@code InputStream} is
      *         guaranteed to skip as many bytes as asked.
      */
-    protected InputStream retrieve(IRI id, Statement statement) {
+    protected InputStream retrieve(IRI id, BoundStatement statement) {
         return stream(executeSyncRead(statement).spliterator(), false)
                         .mapToInt(r -> r.getInt("chunkIndex"))
                         .mapToObj(chunkIndex -> readChunkStatement.bind()

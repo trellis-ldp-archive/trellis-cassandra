@@ -1,12 +1,14 @@
 package edu.si.trellis.query.rdf;
 
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.Session;
+import com.datastax.oss.driver.api.core.ConsistencyLevel;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.BoundStatement;
 
 import edu.si.trellis.MutableWriteConsistency;
+
 import java.time.Instant;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 import javax.inject.Inject;
 
@@ -19,7 +21,7 @@ import org.apache.commons.rdf.api.IRI;
 public class MutableInsert extends ResourceQuery {
 
     @Inject
-    public MutableInsert(Session session, @MutableWriteConsistency ConsistencyLevel consistency) {
+    public MutableInsert(CqlSession session, @MutableWriteConsistency ConsistencyLevel consistency) {
         super(session, "INSERT INTO " + MUTABLE_TABLENAME
                         + " (interactionModel, mimeType, container, quads, modified, binaryIdentifier, created, identifier)"
                         + " VALUES (?,?,?,?,?,?,?,?);", consistency);
@@ -36,9 +38,10 @@ public class MutableInsert extends ResourceQuery {
      * @param id an {@link IRI} that identifies this resource
      * @return whether and when it has been inserted
      */
-    public CompletableFuture<Void> execute(IRI ixnModel, String mimeType, IRI container,
-                    Dataset data, Instant modified, IRI binaryIdentifier, UUID creation, IRI id) {
-        return executeWrite(preparedStatement().bind(ixnModel, mimeType, container, data, modified,
-                        binaryIdentifier, creation, id));
+    public CompletionStage<Void> execute(IRI ixnModel, String mimeType, IRI container, Dataset data, Instant modified,
+                    IRI binaryIdentifier, UUID creation, IRI id) {
+        BoundStatement statement = preparedStatement().bind(ixnModel, mimeType, container, data, modified,
+                        binaryIdentifier, creation, id);
+        return executeWrite(statement);
     }
 }

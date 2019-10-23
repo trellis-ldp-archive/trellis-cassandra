@@ -1,20 +1,17 @@
 package edu.si.trellis;
 
-import static com.datastax.driver.core.TypeCodec.bigint;
-import static edu.si.trellis.DatasetCodec.datasetCodec;
-import static edu.si.trellis.IRICodec.iriCodec;
-import static edu.si.trellis.InputStreamCodec.inputStreamCodec;
+import static edu.si.trellis.DatasetCodec.DATASET_CODEC;
+import static edu.si.trellis.IRICodec.IRI_CODEC;
+import static edu.si.trellis.InputStreamCodec.INPUTSTREAM_CODEC;
 import static java.lang.Integer.parseInt;
+import static java.net.InetSocketAddress.createUnresolved;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import com.datastax.driver.core.AtomicMonotonicTimestampGenerator;
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.QueryLogger;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.TypeCodec;
-import com.datastax.driver.extras.codecs.date.SimpleTimestampCodec;
-import com.datastax.driver.extras.codecs.jdk8.InstantCodec;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.DefaultConsistencyLevel;
+import com.datastax.oss.driver.api.core.type.codec.TypeCodec;
+
+import java.net.InetSocketAddress;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -26,7 +23,7 @@ import org.apache.tamaya.inject.api.Config;
 import org.slf4j.Logger;
 
 /**
- * Provides a Cassandra {@link Session} and other context for operating Cassandra-based services.
+ * Provides a Cassandra {@link CqlSession} and other context for operating Cassandra-based services.
  *
  */
 @ApplicationScoped
@@ -39,7 +36,8 @@ public class CassandraContext {
     private String contactPort;
 
     @Inject
-    @Config(key = "cassandra.contactAddress", alternateKeys = { "CASSANDRA_CONTACT_ADDRESS" }, defaultValue = "localhost")
+    @Config(key = "cassandra.contactAddress", alternateKeys = {
+            "CASSANDRA_CONTACT_ADDRESS" }, defaultValue = "localhost")
     private String contactAddress;
 
     @Inject
@@ -48,20 +46,24 @@ public class CassandraContext {
     private String defaultChunkSize;
 
     @Inject
-    @Config(key = "cassandra.binaryReadConsistency", alternateKeys = { "CASSANDRA_BINARY_READ_CONSISTENCY" }, defaultValue = "ONE")
-    private ConsistencyLevel binaryReadConsistency;
+    @Config(key = "cassandra.binaryReadConsistency", alternateKeys = {
+            "CASSANDRA_BINARY_READ_CONSISTENCY" }, defaultValue = "ONE")
+    private DefaultConsistencyLevel binaryReadConsistency;
 
     @Inject
-    @Config(key = "cassandra.binaryWriteConsistency", alternateKeys = { "CASSANDRA_BINARY_WRITE_CONSISTENCY" }, defaultValue = "ONE")
-    private ConsistencyLevel binaryWriteConsistency;
+    @Config(key = "cassandra.binaryWriteConsistency", alternateKeys = {
+            "CASSANDRA_BINARY_WRITE_CONSISTENCY" }, defaultValue = "ONE")
+    private DefaultConsistencyLevel binaryWriteConsistency;
 
     @Inject
-    @Config(key = "cassandra.rdfReadConsistency", alternateKeys = { "CASSANDRA_RDF_READ_CONSISTENCY" }, defaultValue = "ONE")
-    private ConsistencyLevel rdfReadConsistency;
+    @Config(key = "cassandra.rdfReadConsistency", alternateKeys = {
+            "CASSANDRA_RDF_READ_CONSISTENCY" }, defaultValue = "ONE")
+    private DefaultConsistencyLevel rdfReadConsistency;
 
     @Inject
-    @Config(key = "cassandra.rdfWriteConsistency", alternateKeys = { "CASSANDRA_RDF_WRITE_CONSISTENCY" }, defaultValue = "ONE")
-    private ConsistencyLevel rdfWriteConsistency;
+    @Config(key = "cassandra.rdfWriteConsistency", alternateKeys = {
+            "CASSANDRA_RDF_WRITE_CONSISTENCY" }, defaultValue = "ONE")
+    private DefaultConsistencyLevel rdfWriteConsistency;
 
     /**
      * @return the default size of chunk for a {@link CassandraBinaryService}
@@ -77,7 +79,7 @@ public class CassandraContext {
      */
     @Produces
     @BinaryReadConsistency
-    public ConsistencyLevel binaryReadConsistency() {
+    public DefaultConsistencyLevel binaryReadConsistency() {
         return binaryReadConsistency;
     }
 
@@ -86,7 +88,7 @@ public class CassandraContext {
      */
     @Produces
     @BinaryWriteConsistency
-    public ConsistencyLevel binaryWriteConsistency() {
+    public DefaultConsistencyLevel binaryWriteConsistency() {
         return binaryWriteConsistency;
     }
 
@@ -95,7 +97,7 @@ public class CassandraContext {
      */
     @Produces
     @MutableReadConsistency
-    public ConsistencyLevel rdfReadConsistency() {
+    public DefaultConsistencyLevel rdfReadConsistency() {
         return rdfReadConsistency;
     }
 
@@ -104,39 +106,38 @@ public class CassandraContext {
      */
     @Produces
     @MutableWriteConsistency
-    public ConsistencyLevel rdfWriteConsistency() {
+    public DefaultConsistencyLevel rdfWriteConsistency() {
         return rdfWriteConsistency;
     }
 
-    private Cluster cluster;
+    private CqlSession session;
 
-    private Session session;
-
-    private static final TypeCodec<?>[] STANDARD_CODECS = new TypeCodec<?>[] { SimpleTimestampCodec.instance,
-            inputStreamCodec, iriCodec, datasetCodec, bigint(), InstantCodec.instance };
+    private static final TypeCodec<?>[] STANDARD_CODECS = new TypeCodec<?>[] { INPUTSTREAM_CODEC, IRI_CODEC,
+            DATASET_CODEC };
 
     /**
-     * Connect to Cassandra.
+     * Connect to Cassandra, lazily.
      */
     @PostConstruct
     public void connect() {
         log.info("Using Cassandra node address: {} and port: {}", contactAddress, contactPort);
-        this.cluster = Cluster.builder().withTimestampGenerator(new AtomicMonotonicTimestampGenerator())
-                        .withoutJMXReporting().withoutMetrics().addContactPoint(contactAddress)
-                        .withPort(parseInt(contactPort)).build();
-        if (log.isDebugEnabled()) cluster.register(QueryLogger.builder().withMaxParameterValueLength(1000).build());
-        cluster.getConfiguration().getCodecRegistry().register(STANDARD_CODECS);
-        log.info("Connecting to Cassandra...");
-        this.session = cluster.connect("Trellis");
-        log.info("Connected to Cassandra.");
+        log.debug("Looking for connection...");
+        final InetSocketAddress socketAddress = createUnresolved(contactAddress, parseInt(contactPort));
+
+        this.session = CqlSession.builder()
+                        .addTypeCodecs(STANDARD_CODECS)
+                        .withKeyspace("trellis")
+                        .withLocalDatacenter("datacenter1")
+                        .addContactPoint(socketAddress)
+                        .build();
     }
 
     /**
-     * @return a {@link Session} for use with {@link CassandraResourceService} (and {@link CassandraBinaryService})
+     * @return a {@link CqlSession} for use with {@link CassandraResourceService} (and {@link CassandraBinaryService})
      */
     @Produces
     @ApplicationScoped
-    public Session getSession() {
+    public CqlSession session() {
         return session;
     }
 
@@ -146,6 +147,5 @@ public class CassandraContext {
     @PreDestroy
     public void close() {
         session.close();
-        cluster.close();
     }
 }
