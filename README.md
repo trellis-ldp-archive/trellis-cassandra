@@ -1,4 +1,7 @@
 # Trellis/Cassandra
+
+**Note: the code in this repository has been migrated to [trellis-extensions](https://github.com/trellis-ldp/trellis-extensions)**
+
 Rich, delicious [TrellisLDP](https://github.com/trellis-ldp/trellis) ice cream laced with tasty [Apache Cassandra](https://cassandra.apache.org/) ribbons.
 
 1. Clean separation of mutable and immutable (e.g. audit) RDF data in separate tables.
